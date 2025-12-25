@@ -2,3 +2,4 @@ shannon-results*
 .DS_Store*
 settings.json
 .python-version
+deployments*
