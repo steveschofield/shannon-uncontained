@@ -117,16 +117,22 @@ export class WAFDetector extends BaseAgent {
      * Run wafw00f
      */
     async runWafw00f(target) {
-        const cmd = `wafw00f "${target}" -o /dev/stdout -f json`;
+        const { promises: fsp } = await import('node:fs');
+        const os = await import('node:os');
+        const path = await import('node:path');
+
+        const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'wafw00f-'));
+        const outFile = path.join(tmpDir, 'wafw00f.json');
+
+        const cmd = `wafw00f "${target}" -o ${outFile} -f json`;
         const result = await runTool(cmd, { timeout: 60000 });
 
         try {
-            const lines = result.stdout.split('\n').filter(l => l.trim().startsWith('{'));
+            const content = await fsp.readFile(outFile, 'utf-8');
+            const lines = content.split('\n').filter(l => l.trim().startsWith('{'));
             for (const line of lines) {
                 const data = JSON.parse(line);
-                if (data.url) {
-                    return data;
-                }
+                if (data.url) return data;
             }
         } catch { }
 

@@ -4,6 +4,36 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(llm): Normalize Ollama/OpenAI base URLs (2025-12-25)
+
+### Overview
+Ensured OpenAI-compatible providers (including Ollama) automatically use a `/v1` base path and provided a sensible default for Ollama when no base URL is set.
+
+### Modified Files
+- `src/local-source-generator/v2/orchestrator/llm-client.js` — Adds provider-aware default base URLs (Ollama → `http://localhost:11434/v1`, OpenAI → `https://api.openai.com/v1`) and normalizes custom `LLM_BASE_URL` values to append `/v1` when missing for non-Anthropic providers.
+
+### Rationale
+Prevents 404s when pointing at Ollama/OpenAI-compatible endpoints that expect the `/v1` path.
+
+---
+## fix(tooling): Harden tool runners and installers (2025-12-25)
+
+### Overview
+Addressed failing tool runs by adding safe fallbacks and longer timeouts, and restored the all-tools installer script.
+
+### Modified Files
+- `scripts/install-all-tools.sh` — Restored installer for all agents/tools.
+- `src/local-source-generator/v2/agents/recon/secret-scanner-agent.js` — Skip gracefully when no `sourceDir` is provided to avoid undefined gitleaks source.
+- `src/local-source-generator/v2/agents/recon/content-discovery-agent.js` — Use resolved wordlist for ffuf to avoid missing wordlist errors.
+- `src/local-source-generator/v2/agents/recon/waf-detector-agent.js` — Write wafw00f output to a temp file instead of `/dev/stdout`.
+- `src/local-source-generator/v2/agents/analysis/tls-analyzer.js` — Write sslyze output to a temp file instead of `/dev/stdout`.
+- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Increased timeouts (katana, nuclei, commix) to reduce premature timeouts.
+
+### Rationale
+Prevents failures observed in tool logs: undefined gitleaks source, missing ffuf wordlist, /dev/stdout write errors for wafw00f/sslyze, and timeouts for katana/nuclei/commix.
+
+---
+
 ## docs: Add DevSecOps CI plan to README (2025-12-24)
 
 ### Overview

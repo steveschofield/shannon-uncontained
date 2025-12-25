@@ -161,9 +161,10 @@ export const TOOL_TIMEOUTS = {
     subfinder: 60000,
     whatweb: 30000,
     gau: 60000,
-    katana: 90000,
+    katana: 180000,
     httpx: 30000,
-    nuclei: 180000,
+    nuclei: 300000,
+    commix: 300000,
 };
 
 /**

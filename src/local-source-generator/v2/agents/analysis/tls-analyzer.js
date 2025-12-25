@@ -70,11 +70,19 @@ export class TLSAnalyzer extends BaseAgent {
      * Run sslyze scan
      */
     async runSslyze(target, port = 443) {
-        const cmd = `sslyze ${target}:${port} --json_out=/dev/stdout`;
+        const { promises: fsp } = await import('node:fs');
+        const os = await import('node:os');
+        const path = await import('node:path');
+
+        const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'sslyze-'));
+        const outFile = path.join(tmpDir, 'sslyze.json');
+
+        const cmd = `sslyze ${target}:${port} --json_out=${outFile}`;
         const result = await runTool(cmd, { timeout: 120000 });
 
         try {
-            return JSON.parse(result.stdout);
+            const content = await fsp.readFile(outFile, 'utf-8');
+            return JSON.parse(content);
         } catch {
             return null;
         }

@@ -276,7 +276,7 @@ export class ContentDiscoveryAgent extends BaseAgent {
         // Build command
         const command = selectedTool === 'feroxbuster'
             ? this.buildFeroxbusterCommand({ target, wordlist: resolvedWordlist, extensions, threads, recursionDepth })
-            : this.buildFfufCommand({ target, wordlist, extensions, threads });
+            : this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads });
 
         ctx.recordToolInvocation();
         const result = await runTool(command, { timeout: 300000 });

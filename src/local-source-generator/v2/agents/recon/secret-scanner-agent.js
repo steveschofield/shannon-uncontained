@@ -222,6 +222,14 @@ export class SecretScannerAgent extends BaseAgent {
     async run(ctx, inputs) {
         const { sourceDir, tool = 'auto', scanJs = true } = inputs;
 
+        if (!sourceDir) {
+            return {
+                secrets: [],
+                tool: 'skipped_no_source',
+                summary: { total: 0, error: 'No sourceDir provided for secret scan' }
+            };
+        }
+
         // Detect tool
         let selectedTool = tool;
         if (tool === 'auto') {

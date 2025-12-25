@@ -35,9 +35,13 @@ const DEFAULT_ROUTING = {
  */
 export class LLMClient {
     constructor(options = {}) {
+        const provider = options.provider || process.env.LLM_PROVIDER || 'openai';
+        const envBase = options.baseUrl || process.env.LLM_BASE_URL;
+        const defaultBase = this.resolveDefaultBase(provider);
+
         this.options = {
-            provider: process.env.LLM_PROVIDER || 'openai',
-            baseUrl: process.env.LLM_BASE_URL,
+            provider,
+            baseUrl: this.normalizeBaseUrl(envBase || defaultBase, provider),
             apiKey: process.env.LLM_API_KEY || process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY,
             defaultModel: process.env.LLM_MODEL || 'gpt-4o',
             ...options,
@@ -230,6 +234,27 @@ Respond ONLY with the JSON, no other text or markdown.`;
                 total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
             },
         };
+    }
+
+    /**
+     * Normalize base URL for provider (ensure /v1 for OpenAI-compatible APIs like Ollama)
+     */
+    normalizeBaseUrl(baseUrl, provider) {
+        if (!baseUrl) return undefined;
+        // If the URL already ends with /v1 (or has path beyond), leave it
+        const needsVersion = provider.toLowerCase() !== 'anthropic' && !/\/v1\b/.test(baseUrl);
+        return needsVersion ? `${baseUrl.replace(/\/+$/, '')}/v1` : baseUrl.replace(/\/+$/, '');
+    }
+
+    /**
+     * Provider-specific default base URLs
+     */
+    resolveDefaultBase(provider) {
+        const p = provider.toLowerCase();
+        if (p === 'ollama') return 'http://localhost:11434/v1';
+        if (p === 'openai') return 'https://api.openai.com/v1';
+        // For others, leave undefined so caller must set
+        return undefined;
     }
 
     /**
