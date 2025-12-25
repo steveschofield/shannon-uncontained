@@ -3,6 +3,7 @@
 # Shannon Uncontained - Python tool installer (pipx)
 # Installs common Python-based pentest tools into isolated environments via pipx.
 # Safe for macOS and Linux; avoids pyenv/venv activation issues.
+# adding some text.
 
 set -euo pipefail
 
