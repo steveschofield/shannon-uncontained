@@ -219,6 +219,32 @@ src/local-source-generator/v2/
 ### Overview
 Corrected the pipeline summary in `local-source-generator.mjs` to report the actual number of evidence events using `total_events` from the EvidenceGraph stats. Previously, it attempted to sum a non-existent `by_type` map and always printed 0.
 
+---
+
+## feat(lsg-v2): Register EnhancedNucleiScanAgent (2025-12-25)
+
+### Overview
+Exposed and registered the enhanced Nuclei integration for exploitation. This adds the `EnhancedNucleiScanAgent` to the exploitation agents index, making it available to the orchestrator alongside the standard Nuclei agent.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/exploitation/index.js` — Imported and exported `EnhancedNucleiScanAgent`; registered it in `registerExploitationAgents`.
+
+### Rationale
+The enhanced agent already exists (`enhanced-nuclei-scan-agent.js`) and offers broader template coverage and categorization. Registering and exporting it enables pipelines to leverage its capabilities without custom wiring. No README changes required.
+
+---
+
+## feat(lsg-v2): Register PassiveSecurityAgent (2025-12-25)
+
+### Overview
+Added the PassiveSecurityAgent to the analysis agents index so passive response analysis runs as part of the analysis phase without issuing new network requests.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/analysis/index.js` — Imported and exported `PassiveSecurityAgent`; registered it right after `AuthFlowDetector` to run early.
+
+### Rationale
+The passive agent already exists and inspects previously collected responses for secrets, debug info, technology disclosure, and information leaks. Registering it integrates passive checks into black-box analysis flows. No README updates needed.
+
 ### Modified Files
 - `local-source-generator.mjs` — Uses `stats.evidence_stats?.total_events ?? 0` for the evidence count.
 
