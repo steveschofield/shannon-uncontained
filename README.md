@@ -14,6 +14,16 @@
 
 ---
 
+## ⚠️ Disclaimer
+
+**This tool is intended for EDUCATIONAL and AUTHORIZED security testing purposes ONLY.**
+
+* Do NOT use against systems without explicit written permission
+* The authors are NOT responsible for misuse of this extension
+* Use ONLY on systems you own or have authorization to test
+* Recommended for local testing against vulnerable apps like OWASP Juice Shop or DVWA
+* **USE AT YOUR OWN RISK - NO WARRANTY PROVIDED**
+
 ## What Is This, Exactly?
 
 Shannon-Uncontained is a **penetration testing orchestration framework** that treats security reconnaissance not as a checklist of tools, but as an exercise in **epistemic systems design**. We refuse to contain our observations in the stale categories of "finding" or "non-finding." Reality, as Hitchens might have noted, does not respect such convenient binaries.
@@ -42,12 +52,12 @@ This is not science. This is **cargo cult security**.
 
 We adopt the epistemic framework of [Evidence-Based Subjective Logic](./EQBSL-Primer.md), extended into tensor space with explicit operator semantics. Every claim in our world model carries:
 
-| Component | Symbol | Meaning |
-|-----------|--------|---------|
-| **Belief** | `b` | Confidence the claim is true |
-| **Disbelief** | `d` | Confidence the claim is false |
-| **Uncertainty** | `u` | Lack of evidence either way |
-| **Base Rate** | `a` | Prior probability in similar contexts |
+| Component             | Symbol | Meaning                               |
+| --------------------- | ------ | ------------------------------------- |
+| **Belief**      | `b`  | Confidence the claim is true          |
+| **Disbelief**   | `d`  | Confidence the claim is false         |
+| **Uncertainty** | `u`  | Lack of evidence either way           |
+| **Base Rate**   | `a`  | Prior probability in similar contexts |
 
 With the constraint: `b + d + u = 1`
 
@@ -112,11 +122,11 @@ cp .env.example .env
 
 ### Graph View Modes
 
-| Mode | Description |
-|------|-------------|
-| `topology` | Infrastructure network: subdomains → path categories → ports |
-| `evidence` | Agent provenance: which agent discovered what evidence |
-| `provenance` | EBSL-native: source → event_type → target with tensor edges |
+| Mode           | Description                                                    |
+| -------------- | -------------------------------------------------------------- |
+| `topology`   | Infrastructure network: subdomains → path categories → ports |
+| `evidence`   | Agent provenance: which agent discovered what evidence         |
+| `provenance` | EBSL-native: source → event_type → target with tensor edges  |
 
 ---
 
@@ -127,10 +137,10 @@ Shannon requires an LLM provider to perform analysis and generate code. We suppo
 ### Quick Setup
 
 1. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
-
 2. Choose and configure **one** of the providers below.
 
 ### Cloud Providers (Require API Key)
@@ -233,6 +243,7 @@ OPENAI_API_KEY=your-key-here
 ```
 
 This works with:
+
 - Azure OpenAI endpoints
 - Self-hosted inference servers (vLLM, TGI)
 - Corporate proxies
@@ -307,6 +318,7 @@ Every claim carries a tensor: `(b, d, u, a)`
 ### 4. Visualization
 
 The knowledge graph renders edges styled by their epistemic state:
+
 - **Color**: Cyan (high belief) → Yellow (uncertain) → Red (low belief)
 - **Width**: Thicker edges = higher expectation
 - **Opacity**: More opaque = less uncertainty
@@ -383,6 +395,7 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://127.0.0.1:3000 \
 ```
 
 Notes
+
 - `--agents` is a comma-separated allowlist; all other agents are skipped.
 - `--exclude-agents` is a comma-separated denylist.
 - `--no-resume` prevents the orchestrator from skipping already-completed agents in an existing workspace.
@@ -408,6 +421,7 @@ Shannon now records structured traces, events, and metrics during pipeline execu
 Tracing is enabled for `shannon run`, `shannon generate`, and `shannon model synthesize`. Each agent run is wrapped in a trace; a session ID ties related logs together. No flags required.
 
 Recorded span details:
+
 - Tool executions: start/end, duration, success, command
 - LLM calls: model, tokens used, duration
 - HTTP probes: method, URL, status, duration (GroundTruthAgent)
@@ -417,10 +431,12 @@ Recorded span details:
 ### Metasploit Integration
 
 Metasploit is optional. If installed, LSGv2 can run two agents:
+
 - MetasploitRecon (auxiliary/scanners) during recon:analysis
 - MetasploitExploit (exploits) during exploitation
 
 Setup
+
 - Install Metasploit (macOS): `brew install metasploit`
 - Install Metasploit (Ubuntu/Debian): Rapid7 installer (see DEPENDENCIES.md)
 - Start RPC daemon (SSL expected by default):
@@ -428,15 +444,18 @@ Setup
   - Manually (SSL ON by default; omit -S): `msfrpcd -U msf -P msf -a 127.0.0.1 -p 55553 -f -n`
 
 Run with Metasploit enabled
+
 - By default, Metasploit is enabled if detected. To ensure a clean run:
   - `LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port -o ./shannon-results-$(date +%Y%m%d-%H%M%S) -v`
 - If you changed RPC defaults, pass them explicitly:
   - `--msf-host 127.0.0.1 --msf-port 55553 --msf-user msf --msf-pass msf`
 
 Disable Metasploit (optional)
+
 - Add `--no-msf` to skip both agents.
 
 Notes
+
 - Preflight checks for `msfrpcd` and `msfconsole` availability.
 - The default client expects SSL on RPC; do NOT pass `-S` (that disables SSL).
 - Prefer a fresh output directory to avoid resume skipping previously completed agents.
@@ -448,12 +467,14 @@ Notes
 Goal: give developers a one-command scan in every build, with fast, deterministic results, clear fail conditions, and evidence-rich reports — all without Docker.
 
 What we will build
+
 - Developer scan mode alongside black-box recon.
 - SAST/SCA/Secrets/IaC/Container scanners wrapped as agents.
 - Unified evidence/claims storage in the world model; enhanced report + SARIF output.
 - CI policy gates with thresholds and PR feedback.
 
 Phased plan (MVP)
+
 1) Add CLI scan command (dev mode)
    - `shannon scan --repo . [--report markdown|sarif|json] [--fail-on high]`
    - Zero-network by default; no Docker.
@@ -471,16 +492,19 @@ Phased plan (MVP)
    - If app can start in CI, run a short httpx/katana/whatweb + focused nuclei pass against localhost.
 
 Current coverage mapping
+
 - Recon/Enumeration/Exploitation: already implemented via LSG v2 agents and stages (see orchestrator pipeline).
 - Reporting: basic artifacts + enhanced report generator exist; will be exposed via `shannon report`.
 - Post-exploitation/lateral movement: not in scope for CI; remains manual or separate operational mode.
 
 Developer experience (target)
+
 - Local: `shannon scan --repo . --report markdown --fail-on high`
 - CI: use provided workflow; publishes SARIF, uploads report, and fails per policy.
 - Debug: use `--debug-tools` to record per-tool logs under `<workspace>/tool-logs`.
 
 Notes
+
 - JS/TS are prioritized first; Python/Go to follow.
 - Policy files: `.shannon.yml` (thresholds, paths), `.shannon-ignore` (time-boxed suppressions).
 
@@ -536,8 +560,8 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://127.0.0.1:3000 \
 ```
 
 Notes
-- If both `--top-ports` and `--ports` are provided, `--top-ports` takes precedence in NetReconAgent.
 
+- If both `--top-ports` and `--ports` are provided, `--top-ports` takes precedence in NetReconAgent.
 
 ## EQBSL In Practice
 
@@ -569,21 +593,24 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ## Roadmap
 
 ### v0.1 ✅ (Foundation)
-- [x] World Model with EQBSL tensors
-- [x] Evidence Graph (append-only)
-- [x] CLI with `generate`, `model show/graph/export-html`
-- [x] Three graph view modes (topology, evidence, provenance)
+
+- [X] World Model with EQBSL tensors
+- [X] Evidence Graph (append-only)
+- [X] CLI with `generate`, `model show/graph/export-html`
+- [X] Three graph view modes (topology, evidence, provenance)
 
 ### v0.2 ✅ (Current)
-- [x] Full pentest pipeline with agent orchestration
-- [x] LLM-integrated analysis agents
-- [x] Claim propagation with transitive discounting
-- [x] Ground-truth validation for endpoint verification
-- [x] **12 new LSGv2 agents** (exploitation, recon, blue team)
-- [x] OWASP ASVS compliance mapping (14 chapters)
-- [x] Enhanced reports with EBSL confidence scores
+
+- [X] Full pentest pipeline with agent orchestration
+- [X] LLM-integrated analysis agents
+- [X] Claim propagation with transitive discounting
+- [X] Ground-truth validation for endpoint verification
+- [X] **12 new LSGv2 agents** (exploitation, recon, blue team)
+- [X] OWASP ASVS compliance mapping (14 chapters)
+- [X] Enhanced reports with EBSL confidence scores
 
 ### v1.0 (Future)
+
 - [ ] ZK proofs for evidence provenance
 - [ ] Adversarial simulation mode
 - [ ] Integration with external vulnerability databases
