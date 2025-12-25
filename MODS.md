@@ -4,6 +4,19 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## chore(tooling): Restore install-all-tools script (2025-12-25)
+
+### Overview
+Re-added the missing `scripts/install-all-tools.sh` installer for all preflight tooling on macOS and Debian-like systems.
+
+### Modified Files
+- `scripts/install-all-tools.sh` — Restored executable installer (apt installs `golang-go`; Go installs use correct gitleaks path; trufflehog falls back to pip if Go install fails).
+
+### Rationale
+Script was absent from `scripts/`; restoring it keeps the one-shot installer available.
+
+---
+
 ## fix(llm): Normalize Ollama/OpenAI base URLs (2025-12-25)
 
 ### Overview
