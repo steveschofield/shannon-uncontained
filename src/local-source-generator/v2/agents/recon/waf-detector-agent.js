@@ -125,7 +125,7 @@ export class WAFDetector extends BaseAgent {
         const outFile = path.join(tmpDir, 'wafw00f.json');
 
         const cmd = `wafw00f "${target}" -o ${outFile} -f json`;
-        const result = await runTool(cmd, { timeout: 60000 });
+        const result = await runTool(cmd, { timeout: 60000, context: ctx });
 
         try {
             const content = await fsp.readFile(outFile, 'utf-8');

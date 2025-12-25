@@ -349,6 +349,7 @@ Return ONLY the fixed code, no explanations.`;
             const response = await this.llm.generate(prompt, {
                 capability: LLM_CAPABILITIES.SYNTHESIZE_CODE_PATCH,
                 maxTokens: 4000,
+                context: ctx,
             });
 
             if (response.success) {

@@ -78,7 +78,7 @@ export class TLSAnalyzer extends BaseAgent {
         const outFile = path.join(tmpDir, 'sslyze.json');
 
         const cmd = `sslyze ${target}:${port} --json_out=${outFile}`;
-        const result = await runTool(cmd, { timeout: 120000 });
+        const result = await runTool(cmd, { timeout: 120000, context: ctx });
 
         try {
             const content = await fsp.readFile(outFile, 'utf-8');

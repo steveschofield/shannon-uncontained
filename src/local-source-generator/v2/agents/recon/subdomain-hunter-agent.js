@@ -66,6 +66,7 @@ export class SubdomainHunterAgent extends BaseAgent {
             const subfinderCmd = `subfinder -d ${domain} -silent ${flags}`;
             const result = await runToolWithRetry(subfinderCmd, {
                 timeout: getToolTimeout('subfinder'),
+                context: ctx,
             });
 
             if (result.success) {

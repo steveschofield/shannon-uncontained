@@ -279,7 +279,7 @@ export class ContentDiscoveryAgent extends BaseAgent {
             : this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads });
 
         ctx.recordToolInvocation();
-        const result = await runTool(command, { timeout: 300000 });
+        const result = await runTool(command, { timeout: 300000, context: ctx });
 
         // Parse output
         const discovered = selectedTool === 'feroxbuster'

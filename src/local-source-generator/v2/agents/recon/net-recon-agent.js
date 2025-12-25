@@ -124,6 +124,7 @@ export class NetReconAgent extends BaseAgent {
         // Run nmap (Full NSE support required)
         let result = await runToolWithRetry(command, {
             timeout: getToolTimeout('nmap'),
+            context: ctx,
         });
 
         if (result.success) {

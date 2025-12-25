@@ -246,6 +246,7 @@ Return only valid GraphQL SDL, no explanations.`;
 
         const response = await this.llm.generate(prompt, {
             capability: LLM_CAPABILITIES.SCHEMA_COMPLETION,
+            context: ctx,
         });
 
         if (response.success) {

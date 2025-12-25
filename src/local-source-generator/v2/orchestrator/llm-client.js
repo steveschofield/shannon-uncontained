@@ -62,10 +62,18 @@ export class LLMClient {
             schema = null,
             maxTokens = 4096,
             temperature = 0.3,
+            context = null,
         } = options;
 
         const route = this.routing[capability] || { tier: 'smart' };
         const model = options.model || this.selectModel(route);
+        let span = null;
+        const start = Date.now();
+        try {
+            if (context && typeof context.startSpan === 'function') {
+                span = context.startSpan('llm_call', { model, capability });
+            }
+        } catch {}
 
         try {
             const response = await this.callAPI(prompt, {
@@ -75,18 +83,50 @@ export class LLMClient {
                 schema,
             });
 
-            return {
+            const result = {
                 success: true,
                 content: response.content,
                 tokens_used: response.usage?.total_tokens || 0,
                 model,
             };
+            try {
+                if (context && typeof context.logEvent === 'function') {
+                    context.logEvent({
+                        type: 'llm_call',
+                        model,
+                        inputTokens: 0,
+                        outputTokens: result.tokens_used || 0,
+                        duration: Date.now() - start,
+                    });
+                    if (typeof context.recordTokens === 'function') {
+                        context.recordTokens(result.tokens_used || 0);
+                    }
+                }
+                if (span && context) {
+                    context.endSpan(span, 'success', { tokens_used: result.tokens_used });
+                }
+            } catch {}
+            return result;
         } catch (error) {
-            return {
+            const result = {
                 success: false,
                 error: error.message,
                 model,
             };
+            try {
+                if (context && typeof context.logEvent === 'function') {
+                    context.logEvent({
+                        type: 'llm_call',
+                        model,
+                        error: error.message,
+                        duration: Date.now() - start,
+                    });
+                }
+                if (span && context) {
+                    context.endSpan(span, 'error', { error: error.message });
+                }
+            } catch {}
+            return result;
         }
     }
 
@@ -108,6 +148,7 @@ Respond ONLY with the JSON, no other text or markdown.`;
         const result = await this.generate(fullPrompt, {
             ...options,
             temperature: 0.2, // Lower temperature for structured output
+            context: options.context,
         });
 
         if (!result.success) {

@@ -142,7 +142,8 @@ export class DataFlowMapper extends BaseAgent {
 
                 const response = await this.llm.generateStructured(prompt, this.getOutputSchema(), {
                     capability: LLM_CAPABILITIES.CODE_ANALYSIS, // Use smarter model
-                    temperature: 0.1
+                    temperature: 0.1,
+                    context: ctx,
                 });
 
                 if (response.success && response.data) {

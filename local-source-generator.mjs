@@ -15,6 +15,7 @@ import { fs, path, which } from 'zx';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import 'dotenv/config'; // Ensure env vars are loaded even if run directly
+import UnifiedLogger from './src/logging/unified-logger.js';
 
 // Silence zx globally to prevent command output spam
 $.quiet = true;
@@ -87,6 +88,11 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
         streamDeltas: true,
     });
 
+    // Initialize unified logger after workspace/sourceDir creation
+    const sessionId = `${new Date().toISOString().replace(/[-:.TZ]/g, '')}-${Math.random().toString(36).slice(2, 8)}`;
+    const logger = new UnifiedLogger(sessionId, sourceDir);
+    orchestrator.logger = logger;
+
     // Simple progress - no multibar (avoids terminal newline issues)
     const completedAgents = new Set();
 
@@ -100,6 +106,7 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
         if (options.verbose && !options.quiet) {
             console.log(chalk.gray(`  ▶ ${agent}`));
         }
+        logger.startTrace(agent);
     });
 
     // Agent Complete
@@ -110,6 +117,7 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
             console.log(`  ${icon} ${agent}${status}`);
         }
         completedAgents.add(agent);
+        logger.endTrace(agent, result.success ? 'success' : 'error');
     });
 
     orchestrator.on('stage:complete', ({ stage, errors }) => {
@@ -189,6 +197,7 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
         }
         process.exit(1);
     } finally {
+        try { logger.close(); } catch {}
         // process.exit(0); // Let node exit naturally or force if needed
         setTimeout(() => process.exit(0), 100);
     }

@@ -70,6 +70,7 @@ export class TechFingerprinterAgent extends BaseAgent {
             const whatwebCmd = `whatweb -a 3 --log-json=- ${target}`;
             const result = await runToolWithRetry(whatwebCmd, {
                 timeout: getToolTimeout('whatweb'),
+                context: ctx,
             });
 
             // Some WhatWeb builds return non-zero even when output is valid.
@@ -103,6 +104,7 @@ export class TechFingerprinterAgent extends BaseAgent {
             const httpxCmd = `echo "${target}" | httpx -silent -json -tech-detect`;
             const result = await runToolWithRetry(httpxCmd, {
                 timeout: getToolTimeout('httpx'),
+                context: ctx,
             });
 
             if (result.success) {

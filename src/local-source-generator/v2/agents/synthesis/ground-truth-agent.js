@@ -166,7 +166,7 @@ export class GroundTruthAgent extends BaseAgent {
         }));
 
         // Probe endpoints
-        const probeResults = await probeEndpoints(endpoints, { concurrency, delay });
+        const probeResults = await probeEndpoints(endpoints, { concurrency, delay, ctx });
 
         // Track network requests for budgeting
         for (let i = 0; i < probeResults.length; i++) {

@@ -196,6 +196,7 @@ Return only valid JavaScript test code, using Jest and Supertest syntax.`;
 
         const response = await this.llm.generate(prompt, {
             capability: LLM_CAPABILITIES.TEST_GENERATION,
+            context: ctx,
         });
 
         if (response.success) {
