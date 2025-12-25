@@ -10,7 +10,7 @@ import { AuthFlowDetector } from './auth-flow-detector.js'; // NEW - BLACKBOX AU
 import { DataFlowMapper } from './data-flow-mapper.js';
 import { VulnHypothesizer } from './vuln-hypothesizer.js';
 import { BusinessLogicAgent } from './business-logic-agent.js';
-import { SecurityHeaderAnalyzer } from '../../../analyzers/SecurityHeaderAnalyzer.js';
+import { SecurityHeaderAnalyzer } from './security-header-analyzer.js';
 import { TLSAnalyzer } from './tls-analyzer.js';
 
 export {
