@@ -1,0 +1,199 @@
+{
+  "version": "1.0.0",
+  "exported_at": "2025-12-25T17:55:29.026Z",
+  "evidence_graph": {
+    "version": "1.0.0",
+    "exported_at": "2025-12-25T17:55:29.026Z",
+    "events": [
+      {
+        "source": "nmap",
+        "event_type": "port_scan",
+        "target": "192.168.1.130",
+        "payload": {
+          "port": 22,
+          "protocol": "tcp",
+          "state": "open",
+          "service": "ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.14 (Ubuntu Linux; protocol 2.0)"
+        },
+        "blob_refs": [],
+        "timestamp": "2025-12-25T17:52:21.410Z",
+        "id": "a0f19c9c1c50d414"
+      },
+      {
+        "source": "CrawlerAgent",
+        "event_type": "tool_timeout",
+        "target": "http://192.168.1.130:3000",
+        "payload": {
+          "tool": "katana",
+          "error": "Command failed: katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl\n"
+        },
+        "blob_refs": [],
+        "timestamp": "2025-12-25T17:55:14.978Z",
+        "id": "b031ac31ba7b495d"
+      },
+      {
+        "source": "gau",
+        "event_type": "endpoint_discovered",
+        "target": "http://192.168.1.130:3000",
+        "payload": {
+          "url": "http://192.168.1.130/robots.txt",
+          "path": "/robots.txt",
+          "method": "GET",
+          "params": [],
+          "discovery_method": "historical"
+        },
+        "blob_refs": [],
+        "timestamp": "2025-12-25T17:55:29.002Z",
+        "id": "cbbe234b701cb89d"
+      }
+    ],
+    "blobs": []
+  },
+  "ledger": {
+    "version": "1.0.0",
+    "config": {
+      "K": 2,
+      "defaultBaseRate": 0.5,
+      "dimensions": [
+        "active_probe_success",
+        "active_probe_fail",
+        "crawl_observed",
+        "crawl_inferred",
+        "js_ast_direct",
+        "js_ast_heuristic",
+        "openapi_fragment",
+        "graphql_introspection",
+        "har_observed_shape",
+        "historical_url_hit",
+        "tool_error",
+        "timeout",
+        "contradiction_count"
+      ],
+      "w_plus": {
+        "active_probe_success": 1,
+        "crawl_observed": 0.9,
+        "crawl_inferred": 0.5,
+        "js_ast_direct": 0.8,
+        "js_ast_heuristic": 0.4,
+        "openapi_fragment": 1,
+        "graphql_introspection": 1,
+        "har_observed_shape": 0.9,
+        "historical_url_hit": 0.6
+      },
+      "w_minus": {
+        "active_probe_fail": 1,
+        "tool_error": 0.5,
+        "timeout": 0.3,
+        "contradiction_count": 0.8
+      }
+    },
+    "claims": [
+      {
+        "id": "claim:discovery_summary:http://192.168.1.130:3000:endpoint_count=1,form_count=0,js_file_count=0",
+        "claim_type": "discovery_summary",
+        "subject": "http://192.168.1.130:3000",
+        "predicate": {
+          "endpoint_count": 1,
+          "form_count": 0,
+          "js_file_count": 0
+        },
+        "evidence_vector": {},
+        "evidence_refs": [],
+        "opinion": {
+          "b": 0,
+          "d": 0,
+          "u": 1,
+          "a": 0.9
+        },
+        "expected_probability": 0.9,
+        "created_at": "2025-12-25T17:55:29.006Z",
+        "updated_at": "2025-12-25T17:55:29.006Z"
+      }
+    ],
+    "source_reputations": {},
+    "exported_at": "2025-12-25T17:55:29.026Z"
+  },
+  "manifest": {
+    "version": "1.0.0",
+    "exported_at": "2025-12-25T17:55:29.026Z",
+    "entries": [],
+    "summary": {
+      "total": 0,
+      "parse": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "lint": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "typecheck": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "build": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "runtime": {
+        "booted": 0,
+        "failed": 0,
+        "pending": 0
+      }
+    }
+  },
+  "target_model": {
+    "version": "1.0.0",
+    "derivation_version": 6,
+    "exported_at": "2025-12-25T17:55:29.026Z",
+    "entities": [
+      {
+        "id": "endpoint:GET:/robots.txt",
+        "entity_type": "endpoint",
+        "attributes": {
+          "method": "GET",
+          "path": "/robots.txt",
+          "params": [],
+          "evidence_refs": [
+            "cbbe234b701cb89d"
+          ]
+        },
+        "claim_refs": [],
+        "created_at": "2025-12-25T17:55:29.025Z"
+      }
+    ],
+    "edges": []
+  },
+  "execution_log": [
+    {
+      "agent": "NetReconAgent",
+      "timestamp": "2025-12-25T17:52:21.424Z",
+      "success": true,
+      "summary": {
+        "duration_ms": 6489,
+        "network_requests": 0,
+        "tokens_used": 0,
+        "tool_invocations": 1,
+        "events_emitted": 3,
+        "claims_emitted": 0
+      }
+    },
+    {
+      "agent": "CrawlerAgent",
+      "timestamp": "2025-12-25T17:55:29.023Z",
+      "success": true,
+      "summary": {
+        "duration_ms": 194083,
+        "network_requests": 0,
+        "tokens_used": 0,
+        "tool_invocations": 2,
+        "events_emitted": 2,
+        "claims_emitted": 1
+      }
+    }
+  ]
+}

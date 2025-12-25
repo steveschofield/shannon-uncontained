@@ -13,3 +13,4 @@
 {"timestamp":"2025-12-25T17:55:14.977Z","sessionId":"20251225175214915-0xi8c3","traceId":"6d4d13b07a590bbb8f0443340d7ed6e0","type":"tool_end","tool":"katana","duration":180009,"success":false}
 {"timestamp":"2025-12-25T17:55:14.988Z","sessionId":"20251225175214915-0xi8c3","traceId":"6d4d13b07a590bbb8f0443340d7ed6e0","type":"tool_start","tool":"gau","command":"gau --subs 192.168.1.130","cwd":"/home/kali/code/shannon-uncontained"}
 {"timestamp":"2025-12-25T17:55:28.998Z","sessionId":"20251225175214915-0xi8c3","traceId":"6d4d13b07a590bbb8f0443340d7ed6e0","type":"tool_end","tool":"gau","duration":14010,"success":true}
+{"timestamp":"2025-12-25T17:55:29.023Z","sessionId":"20251225175214915-0xi8c3","traceId":"6d4d13b07a590bbb8f0443340d7ed6e0","type":"trace_end","agentName":"CrawlerAgent","duration":194102,"status":"success"}
