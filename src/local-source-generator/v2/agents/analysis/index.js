@@ -12,6 +12,7 @@ import { VulnHypothesizer } from './vuln-hypothesizer.js';
 import { BusinessLogicAgent } from './business-logic-agent.js';
 import { SecurityHeaderAnalyzer } from './security-header-analyzer.js';
 import { TLSAnalyzer } from './tls-analyzer.js';
+import { PassiveSecurityAgent } from './passive-security-agent.js';
 
 export {
     ArchitectInferAgent,
@@ -21,7 +22,8 @@ export {
     VulnHypothesizer,
     BusinessLogicAgent,
     SecurityHeaderAnalyzer,
-    TLSAnalyzer
+    TLSAnalyzer,
+    PassiveSecurityAgent,
 };
 
 /**
@@ -31,6 +33,9 @@ export {
 export function registerAnalysisAgents(orchestrator) {
     // CRITICAL: Run AuthFlowDetector early for blackbox mode
     orchestrator.registerAgent(new AuthFlowDetector());  // NEW - Run after recon, before vuln analysis
+    
+    // Passive analysis of collected responses (no new requests)
+    orchestrator.registerAgent(new PassiveSecurityAgent());
     
     orchestrator.registerAgent(new ArchitectInferAgent());
     orchestrator.registerAgent(new AuthFlowAnalyzer());
