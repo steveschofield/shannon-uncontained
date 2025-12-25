@@ -4,6 +4,7 @@ import { path, fs } from 'zx';
 import { displaySplashScreen } from '../ui.js';
 import { createLSGv2 } from '../../local-source-generator/v2/index.js';
 import { checkToolAvailability, handleMissingTools } from '../../tool-checker.js';
+import UnifiedLogger from '../../logging/unified-logger.js';
 
 export async function runCommand(target, options) {
     // 1. Display Info
@@ -31,12 +32,13 @@ export async function runCommand(target, options) {
         return;
     }
 
+    let logger;
     try {
         // 4. Initialize LSG v2 Orchestrator
         console.log(chalk.blue(`\nInitializing Orchestrator in ${workspace}...`));
 
         // Pass CLI options to Orchestrator config
-        const { orchestrator } = createLSGv2({
+        const orchestrator = createLSGv2({
             workspace,
             mode: options.mode,
             budget: {
@@ -50,6 +52,12 @@ export async function runCommand(target, options) {
             streamDeltas: true
         });
 
+        // Initialize unified logger after session creation
+        const sessionId = `${new Date().toISOString().replace(/[-:.TZ]/g, '')}-${Math.random().toString(36).slice(2, 8)}`;
+        logger = new UnifiedLogger(sessionId, workspace);
+        // Attach logger to orchestrator for deep spans
+        orchestrator.logger = logger;
+
         // 5. Execute Pipeline
         // Map 'run' command options to pipeline inputs
         const runOptions = {
@@ -61,6 +69,7 @@ export async function runCommand(target, options) {
         // Attach event listeners for CLI feedback
         orchestrator.on('agent:start', ({ agent }) => {
             console.log(chalk.blue(`\n▶️  Starting agent: ${agent}`));
+            logger.startTrace(agent);
         });
 
         orchestrator.on('agent:complete', ({ agent, result }) => {
@@ -69,6 +78,7 @@ export async function runCommand(target, options) {
             } else {
                 console.log(chalk.red(`❌ Agent ${agent} failed: ${result.error}`));
             }
+            logger.endTrace(agent, result.success ? 'success' : 'error');
         });
 
         orchestrator.on('agent:skip', ({ agent, reason }) => {
@@ -97,6 +107,7 @@ export async function runCommand(target, options) {
         console.error(chalk.red(`\n❌ Fatal Error: ${error.message}`));
         if (global.SHANNON_VERBOSE) console.error(error.stack);
         process.exit(1);
+    } finally {
+        try { if (logger && typeof logger.close === 'function') logger.close(); } catch {}
     }
 }
-

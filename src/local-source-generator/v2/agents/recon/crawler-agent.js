@@ -70,6 +70,7 @@ export class CrawlerAgent extends BaseAgent {
             const katanaCmd = `katana -u ${target} -d ${depth} -jc -silent -jsonl`;
             const katanaResult = await runToolWithRetry(katanaCmd, {
                 timeout: getToolTimeout('katana'),
+                context: ctx,
             });
 
             if (katanaResult.success) {
@@ -116,6 +117,7 @@ export class CrawlerAgent extends BaseAgent {
                 const gauCmd = `gau --subs ${hostname}`;
                 const gauResult = await runToolWithRetry(gauCmd, {
                     timeout: getToolTimeout('gau'),
+                    context: ctx,
                 });
 
                 if (gauResult.success) {

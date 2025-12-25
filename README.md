@@ -396,6 +396,21 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port -o ./shannon-
 ```
 
 - Logs path: `<workspace>/tool-logs/` (created automatically)
+
+### Unified Logging and Tracing
+
+Shannon now records structured traces, events, and metrics during pipeline execution:
+
+- Traces: `<workspace>/deliverables/logs/traces/*.json`
+- Events (NDJSON): `<workspace>/deliverables/logs/events/events.ndjson`
+- Metrics: `<workspace>/deliverables/logs/metrics/`
+
+Tracing is enabled for `shannon run`, `shannon generate`, and `shannon model synthesize`. Each agent run is wrapped in a trace; a session ID ties related logs together. No flags required.
+
+Recorded span details:
+- Tool executions: start/end, duration, success, command
+- LLM calls: model, tokens used, duration
+- HTTP probes: method, URL, status, duration (GroundTruthAgent)
 - Truncation: first 200 lines per stream (override with `LSG_DEBUG_MAX_LINES`)
 - Disable by omitting `--debug-tools`
 

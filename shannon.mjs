@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 import { runCommand } from './src/cli/commands/RunCommand.js';
 import { evidenceCommand } from './src/cli/commands/EvidenceCommand.js';
 import { modelCommand } from './src/cli/commands/ModelCommand.js';
+import UnifiedLogger from './src/logging/unified-logger.js';
 
 dotenv.config();
 
@@ -184,6 +185,7 @@ program
     console.log(chalk.gray(`Workspace: ${workspace}`));
     console.log(chalk.gray(`Framework: ${options.framework}`));
 
+    let logger;
     try {
       const { fs, path } = await import('zx');
 
@@ -201,14 +203,24 @@ program
       const { createLSGv2 } = await import('./src/local-source-generator/v2/index.js');
       const orchestrator = createLSGv2({ mode: 'live' });
 
+      // Initialize unified logger after session creation
+      const sessionId = `${new Date().toISOString().replace(/[-:.TZ]/g, '')}-${Math.random().toString(36).slice(2, 8)}`;
+      logger = new UnifiedLogger(sessionId, workspace);
+      orchestrator.logger = logger;
+
       // Add event listeners for debugging
       orchestrator.on('synthesis:model-ready', (data) => {
         console.log(chalk.gray(`  Endpoints: ${data.endpoints}`));
         console.log(chalk.gray(`  Entities: ${data.total_entities}`));
       });
+      orchestrator.on('synthesis:agent-start', ({ agent }) => {
+        logger.startTrace(agent);
+      });
+
       orchestrator.on('synthesis:agent-complete', (data) => {
         const icon = data.success ? '✅' : '⚠️';
         console.log(chalk.gray(`  ${icon} ${data.agent}`));
+        logger.endTrace(data.agent, data.success ? 'success' : 'error');
       });
 
       // Run synthesis
@@ -237,6 +249,8 @@ program
     } catch (error) {
       console.error(chalk.red(`\n❌ Synthesis failed: ${error.message}`));
       process.exit(1);
+    } finally {
+      try { if (logger && typeof logger.close === 'function') logger.close(); } catch {}
     }
   });
 

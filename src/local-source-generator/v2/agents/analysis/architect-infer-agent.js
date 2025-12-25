@@ -102,6 +102,7 @@ export class ArchitectInferAgent extends BaseAgent {
 
         const response = await this.llm.generateStructured(prompt, this.getOutputSchema(), {
             capability: LLM_CAPABILITIES.INFER_ARCHITECTURE,
+            context: ctx,
         });
 
         if (response.success && response.data) {

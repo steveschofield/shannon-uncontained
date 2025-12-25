@@ -89,15 +89,21 @@ export class Orchestrator extends EventEmitter {
      * @param {object} budget - Budget overrides
      * @returns {AgentContext} Context
      */
-    createContext(budget = {}) {
-        return new AgentContext({
+    createContext(budget = {}, agentName = null) {
+        const traceForAgent = (this.logger && typeof this.logger.getActiveTraceForAgent === 'function' && agentName)
+            ? this.logger.getActiveTraceForAgent(agentName)
+            : (this.logger?.currentTrace || null);
+        const ctx = new AgentContext({
             evidenceGraph: this.evidenceGraph,
             targetModel: this.targetModel,
             ledger: this.ledger,
             manifest: this.manifest,
             config: this.options,
             budget,
+            logger: this.logger || null,
+            trace: traceForAgent,
         });
+        return ctx;
     }
 
     /**
@@ -136,7 +142,7 @@ export class Orchestrator extends EventEmitter {
         }
 
         // Create context and execute
-        const ctx = this.createContext(options.budget || agent.default_budget);
+        const ctx = this.createContext(options.budget || agent.default_budget, agentName);
 
         const startTime = Date.now();
         let result;
@@ -628,7 +634,7 @@ export class Orchestrator extends EventEmitter {
             }
 
             try {
-                const ctx = this.createContext(agent.default_budget);
+                const ctx = this.createContext(agent.default_budget, agentName);
 
                 // Extract target from meta or evidence
                 let target = worldModelData.meta?.target;
@@ -651,6 +657,9 @@ export class Orchestrator extends EventEmitter {
                         target = `https://${path.basename(outputDir)}`;
                     }
                 }
+
+                // Emit start event for synthesis agent
+                this.emit('synthesis:agent-start', { agent: agentName });
 
                 const result = await agent.execute(ctx, {
                     target,

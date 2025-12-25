@@ -4,6 +4,41 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(logging): Integrate UnifiedLogger into CLI flows (2025-12-25)
+
+### Overview
+Added first-class unified logging (traces, events, metrics) to the primary CLI workflows. Each agent execution is now wrapped in a trace, with events captured to NDJSON and metrics summarized under the workspace.
+
+### Modified Files
+- `shannon.mjs` — Imports `UnifiedLogger`; creates a session logger for `model synthesize`; starts traces on `synthesis:agent-start` and ends on `synthesis:agent-complete`; closes the logger at the end.
+- `src/cli/commands/RunCommand.js` — Imports `UnifiedLogger`; creates a session logger for `run`; starts traces on `agent:start` and ends on `agent:complete`; ensures logger closes in a `finally` block. Also fixes orchestrator creation to use the `createLSGv2` return value directly.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Emits `synthesis:agent-start` before executing synthesis agents to enable proper trace starts.
+- `local-source-generator.mjs` — Imports `UnifiedLogger`; creates a session logger for `generate`; starts traces on `agent:start` and ends on `agent:complete`; closes the logger in `finally`.
+- `README.md` — Documents unified logging outputs and paths; notes that `generate` is traced as well; lists per-span details recorded.
+
+### Deep Instrumentation
+- `AgentContext` — Adds `logger`, `trace`, `startSpan/endSpan`, and `logEvent` helpers for downstream components.
+- `Orchestrator.createContext` — Injects the agent-specific active trace into `AgentContext` so tools/LLM attach spans to the correct trace during parallel execution.
+- `tool-runner.js` — When `options.context` is provided, creates a `tool_execution` span and emits `tool_start/tool_end` events.
+- `llm-client.js` — Accepts `options.context`; wraps completions in `llm_call` span and emits `llm_call` events with tokens and duration.
+- `endpoint-prober.js` — Accepts `ctx`; wraps probes in `http_request` spans and emits structured events.
+- Agents updated to pass `context: ctx` to tool and LLM calls: Crawler, TechFingerprinter, SubdomainHunter, NetRecon, ContentDiscovery, SecretScanner, WAFDetector, TLSAnalyzer, Nuclei, SQLmap, XSS Validator, CMDi, ArchitectInfer, AuthFlowAnalyzer, VulnHypothesizer, DataFlowMapper, TestGen, SchemaGen, SourceGen (repair), Remediation.
+
+### Concurrency-Safe Tracing
+- `src/logging/unified-logger.js` — Now manages multiple active traces concurrently using internal maps. Adds `getActiveTraceForAgent` and upgrades `endTrace` to accept `(traceIdOrAgentName, status)` while keeping backward compatibility. `logEvent` respects explicit `event.traceId` to avoid cross-trace logging.
+- CLI listeners now end traces using the agent name: `logger.endTrace(agent, status)` for `run`, `generate`, and `synthesize` flows.
+
+### Output Locations
+- Traces: `<workspace>/deliverables/logs/traces/*.json`
+- Events (NDJSON): `<workspace>/deliverables/logs/events/events.ndjson`
+- Metrics: `<workspace>/deliverables/logs/metrics/`
+
+### Notes
+- Session ID is generated per invocation; logger initialized with the workspace path.
+- Synthesis loop previously lacked a start event; added `synthesis:agent-start` emission to align with trace lifecycle.
+
+---
+
 ## chore(tooling): Restore install-all-tools script (2025-12-25)
 
 ### Overview

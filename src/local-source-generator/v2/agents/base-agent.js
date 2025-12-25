@@ -24,6 +24,8 @@ export class AgentContext extends EventEmitter {
     manifest,
     config = {},
     budget = {},
+    logger = null,
+    trace = null,
   }) {
     super();
     this.evidenceGraph = evidenceGraph;
@@ -45,6 +47,10 @@ export class AgentContext extends EventEmitter {
     this.toolInvocations = 0;
     this.emittedEvents = [];
     this.emittedClaims = [];
+
+    // Observability
+    this.logger = logger;
+    this.trace = trace; // TraceContext for current agent
   }
 
   /**
@@ -79,6 +85,9 @@ export class AgentContext extends EventEmitter {
    */
   recordNetworkRequest() {
     this.networkRequests++;
+    if (this.logger) {
+      // No-op here; specific HTTP events log richer data elsewhere
+    }
   }
 
   /**
@@ -152,6 +161,36 @@ export class AgentContext extends EventEmitter {
   log(msg) {
     // Silenced - would break MultiBar UI
     // Use this.emit('log', msg) if logging is needed
+  }
+
+  /**
+   * Start a span on the current trace
+   */
+  startSpan(name, attributes = {}) {
+    if (this.trace && typeof this.trace.startSpan === 'function') {
+      return this.trace.startSpan(name, attributes);
+    }
+    return null;
+  }
+
+  /**
+   * End a span if started
+   */
+  endSpan(span, status = 'success', result = null) {
+    if (span && this.trace && typeof this.trace.endSpan === 'function') {
+      this.trace.endSpan(span, status, result);
+    }
+  }
+
+  /**
+   * Emit a structured log event via UnifiedLogger if available
+   */
+  logEvent(event) {
+    if (this.logger && typeof this.logger.logEvent === 'function') {
+      const e = { ...event };
+      if (this.trace && !e.traceId) e.traceId = this.trace.traceId;
+      this.logger.logEvent(e);
+    }
   }
 }
 

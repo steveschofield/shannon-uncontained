@@ -171,6 +171,7 @@ export class VulnHypothesizer extends BaseAgent {
 
         const response = await this.llm.generateStructured(prompt, this.getOutputSchema(), {
             capability: LLM_CAPABILITIES.EXTRACT_CLAIMS,
+            context: ctx,
         });
 
         if (response.success && response.data) {

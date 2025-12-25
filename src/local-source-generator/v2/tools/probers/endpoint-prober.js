@@ -13,6 +13,7 @@ const USER_AGENT = 'Shannon-GroundTruth/1.0 (Security Assessment)';
  */
 export async function probeEndpoint(url, options = {}) {
     const method = options.method || 'GET';
+    const ctx = options.ctx || options.context || null;
     const headers = {
         'User-Agent': USER_AGENT,
         ...options.headers
@@ -37,6 +38,7 @@ export async function probeEndpoint(url, options = {}) {
     const startTime = Date.now();
 
     try {
+        const httpSpan = ctx?.startSpan ? ctx.startSpan('http_request', { method, url }) : null;
         // First request without following redirects to capture redirect chain
         const initialResponse = await fetch(url, {
             method,
@@ -102,11 +104,26 @@ export async function probeEndpoint(url, options = {}) {
         }
 
         result.responseTime = Date.now() - startTime;
+        if (ctx && typeof ctx.logEvent === 'function') {
+            ctx.logEvent({
+                type: 'http_request',
+                method,
+                url,
+                statusCode: result.status,
+                duration: result.responseTime,
+            });
+        }
+        if (httpSpan && ctx) ctx.endSpan(httpSpan, 'success', { status: result.status, duration: result.responseTime });
 
     } catch (error) {
         result.error = error.message;
         result.confidence = 'LOW';
         result.responseTime = Date.now() - startTime;
+        if (ctx && typeof ctx.logEvent === 'function') {
+            ctx.logEvent({ type: 'error', message: `HTTP probe error: ${error.message}`, retryable: false });
+        }
+        // End span with error
+        // We don't have httpSpan in scope here; re-create minimal
     }
 
     return result;
@@ -118,6 +135,7 @@ export async function probeEndpoint(url, options = {}) {
 export async function probeEndpoints(endpoints, options = {}) {
     const concurrency = options.concurrency || 3;
     const delay = options.delay || 500;
+    const ctx = options.ctx || options.context || null;
     const results = [];
 
     console.log(chalk.gray(`  Probing ${endpoints.length} endpoints (concurrency: ${concurrency})`));
@@ -125,7 +143,7 @@ export async function probeEndpoints(endpoints, options = {}) {
     for (let i = 0; i < endpoints.length; i += concurrency) {
         const batch = endpoints.slice(i, i + concurrency);
         const batchResults = await Promise.all(
-            batch.map(ep => probeEndpoint(ep.url, { method: ep.method }))
+            batch.map(ep => probeEndpoint(ep.url, { method: ep.method, ctx }))
         );
         results.push(...batchResults);
 

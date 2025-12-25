@@ -96,7 +96,7 @@ export class SecretScannerAgent extends BaseAgent {
      */
     async scanWithTrufflehog(sourceDir) {
         const cmd = `trufflehog filesystem "${sourceDir}" --json --no-update`;
-        const result = await runTool(cmd, { timeout: 180000 });
+        const result = await runTool(cmd, { timeout: 180000, context: ctx });
 
         const secrets = [];
         const lines = (result.stdout || '').split('\n').filter(l => l.trim());
@@ -123,7 +123,7 @@ export class SecretScannerAgent extends BaseAgent {
      */
     async scanWithGitleaks(sourceDir) {
         const cmd = `gitleaks detect --source "${sourceDir}" --report-format json --report-path /dev/stdout --no-git`;
-        const result = await runTool(cmd, { timeout: 180000 });
+        const result = await runTool(cmd, { timeout: 180000, context: ctx });
 
         const secrets = [];
 

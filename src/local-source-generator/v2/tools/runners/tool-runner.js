@@ -80,10 +80,20 @@ export async function runTool(command, options = {}) {
         debug = process.env.LSG_DEBUG_TOOLS === '1',
         debugLogDir = process.env.LSG_DEBUG_LOG_DIR || null,
         debugMaxLines = parseInt(process.env.LSG_DEBUG_MAX_LINES || '200', 10),
+        context = null,
     } = options;
 
     const toolName = command.split(' ')[0];
     const startTime = Date.now();
+    let span = null;
+    try {
+        if (context && typeof context.startSpan === 'function') {
+            span = context.startSpan('tool_execution', { tool: toolName, command, cwd });
+        }
+        if (context && typeof context.logEvent === 'function') {
+            context.logEvent({ type: 'tool_start', tool: toolName, command, cwd });
+        }
+    } catch {}
 
     try {
         const { stdout, stderr } = await execAsync(command, {
@@ -103,6 +113,14 @@ export async function runTool(command, options = {}) {
         if (debug && debugLogDir) {
             await writeDebugLog({ command, cwd, result, debugLogDir, maxLines: debugMaxLines });
         }
+        try {
+            if (context && typeof context.logEvent === 'function') {
+                context.logEvent({ type: 'tool_end', tool: toolName, duration: result.duration, success: true });
+            }
+            if (span && context) {
+                context.endSpan(span, 'success', { duration: result.duration });
+            }
+        } catch {}
         return result;
     } catch (err) {
         const result = new ToolResult({
@@ -118,6 +136,14 @@ export async function runTool(command, options = {}) {
         if (debug && debugLogDir) {
             await writeDebugLog({ command, cwd, result, debugLogDir, maxLines: debugMaxLines });
         }
+        try {
+            if (context && typeof context.logEvent === 'function') {
+                context.logEvent({ type: 'tool_end', tool: toolName, duration: result.duration, success: false });
+            }
+            if (span && context) {
+                context.endSpan(span, 'error', { duration: result.duration, error: result.error, exitCode: result.exitCode });
+            }
+        } catch {}
         return result;
     }
 }

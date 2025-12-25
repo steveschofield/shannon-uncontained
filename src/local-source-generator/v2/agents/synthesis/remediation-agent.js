@@ -69,7 +69,8 @@ JSON with fields:
 
         const response = await this.llm.generateStructured(prompt, this.getOutputSchema(), {
             capability: LLM_CAPABILITIES.CODE_GENERATION,
-            temperature: 0.1
+            temperature: 0.1,
+            context: ctx,
         });
 
         if (response.success && response.data) {
