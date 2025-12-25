@@ -4,6 +4,7 @@ settings.json
 .python-version
 deployments*
 node_modules/*
+mcp-server/node_modules/*
 .vscode/*
 !.vscode/settings.json
 .env

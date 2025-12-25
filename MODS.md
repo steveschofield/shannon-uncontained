@@ -4,6 +4,19 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(lsg-v2): Point SecurityHeaderAnalyzer to local agent (2025-12-25)
+
+### Overview
+Fixed the analysis agents index to import the LSGv2 `SecurityHeaderAnalyzer` agent implementation so runs no longer fail with a missing module error.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/analysis/index.js` — Import now targets `./security-header-analyzer.js` (the agent class) instead of a non-existent path.
+
+### Rationale
+LSG generate runs crashed because the index referenced `src/local-source-generator/analyzers/SecurityHeaderAnalyzer.js`, which does not exist in this fork. The correct agent lives alongside the index.
+
+---
+
 ## feat(logging): Integrate UnifiedLogger into CLI flows (2025-12-25)
 
 ### Overview
