@@ -5,12 +5,7 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
 
 LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://192.168.1.130:3000 -o ./shannon-results-$(date +%s) -v --debug-tools  
 
-export LLM_PROVIDER=ollama
-export LLM_BASE_URL=http://192.168.1.69:11434/v1
-export LLM_MODEL=llama3.1:8b          # fallback default
-export LLM_FAST_MODEL=llama3.1:8b     # used for classify_fast
-export LLM_SMART_MODEL=llama3.1:8b    # used for smart routing
-export LLM_CODE_MODEL=llama3.1:8b     # used for code/synthesis
+v
 
 LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
   --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
@@ -24,5 +19,3 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
   --output ./shannon-results-$(date +%s) \
   --debug-tools
 
-
-./shannon-results-$(date +%s) -v --debug-tools
