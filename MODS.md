@@ -131,6 +131,19 @@ Added an opt-in flag/env to log LLM POST request metadata (provider, URL, model,
 
 ---
 
+## fix(lsg-v2): Preserve per-agent config when merging rate-limit profiles (2025-12-26)
+
+### Overview
+Fixed agent config merging so `agent_config` from YAML/JSON isn’t dropped when combined with rate-limit profiles.
+
+### Modified Files
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Normalizes agent config to `{ agents: ... }` before `mergeConfig`.
+
+### Rationale
+Without normalization, per-agent overrides (e.g., ContentDiscoveryAgent throttles) were ignored.
+
+---
+
 ## feat(recon): Throttle ContentDiscoveryAgent ffuf requests (2025-12-26)
 
 ### Overview
