@@ -1,0 +1,28 @@
+{
+  "traceId": "29aee81cd69762058a50cd1c728a34d8",
+  "sessionId": "20251226015235729-eu0bmj",
+  "agentName": "WAFDetector",
+  "startTime": 1766713957128,
+  "endTime": 1766713957567,
+  "duration": 439,
+  "spans": [
+    {
+      "spanId": "36681fe595e7e0cd",
+      "traceId": "29aee81cd69762058a50cd1c728a34d8",
+      "name": "tool_execution",
+      "startTime": 1766713957209,
+      "attributes": {
+        "tool": "wafw00f",
+        "command": "wafw00f \"http://192.168.1.130:3000\" -o /tmp/wafw00f-lbHCpB/wafw00f.json -f json",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766713957460,
+      "duration": 251,
+      "result": {
+        "duration": 250
+      }
+    }
+  ]
+}
