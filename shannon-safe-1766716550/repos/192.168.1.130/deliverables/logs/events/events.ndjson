@@ -19,3 +19,5 @@
 {"timestamp":"2025-12-26T02:35:59.842Z","sessionId":"20251226023551449-167322","traceId":"e3bd1323bcd72f28ff22db40be5a41e5","type":"tool_end","tool":"whatweb","duration":1024,"success":true}
 {"timestamp":"2025-12-26T02:35:59.890Z","sessionId":"20251226023551449-167322","traceId":"e3bd1323bcd72f28ff22db40be5a41e5","type":"tool_start","tool":"echo","command":"echo \"https://192.168.1.130:3000\" | httpx -silent -json -tech-detect","cwd":"/home/kali/code/shannon-uncontained"}
 {"timestamp":"2025-12-26T02:36:00.301Z","sessionId":"20251226023551449-167322","traceId":"e3bd1323bcd72f28ff22db40be5a41e5","type":"tool_end","tool":"echo","duration":411,"success":true}
+{"timestamp":"2025-12-26T02:36:00.313Z","sessionId":"20251226023551449-167322","traceId":"e3bd1323bcd72f28ff22db40be5a41e5","type":"trace_end","agentName":"TechFingerprinterAgent","duration":1620,"status":"success"}
+{"timestamp":"2025-12-26T02:36:00.314Z","sessionId":"20251226023551449-167322","traceId":"160c16f4a09bc0ae8ff40f284d6de52d","type":"trace_start","agentName":"BrowserCrawlerAgent"}
