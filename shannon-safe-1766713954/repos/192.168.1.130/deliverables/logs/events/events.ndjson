@@ -27,3 +27,9 @@
 {"timestamp":"2025-12-26T01:55:40.819Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"tool_end","tool":"katana","duration":180006,"success":false}
 {"timestamp":"2025-12-26T01:55:40.834Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"tool_start","tool":"gau","command":"gau --subs 192.168.1.130","cwd":"/home/kali/code/shannon-uncontained"}
 {"timestamp":"2025-12-26T01:56:40.848Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"tool_end","tool":"gau","duration":60009,"success":false}
+{"timestamp":"2025-12-26T01:56:40.878Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"trace_end","agentName":"CrawlerAgent","duration":240101,"status":"success"}
+{"timestamp":"2025-12-26T01:56:40.883Z","sessionId":"20251226015235729-eu0bmj","traceId":"0e5d78b9c0cc86558d343afb952120bb","type":"trace_start","agentName":"JSHarvesterAgent"}
+{"timestamp":"2025-12-26T01:56:40.884Z","sessionId":"20251226015235729-eu0bmj","traceId":"67c43a2cba27f50e64b65db26b8e8331","type":"trace_start","agentName":"APIDiscovererAgent"}
+{"timestamp":"2025-12-26T01:56:40.884Z","sessionId":"20251226015235729-eu0bmj","traceId":"5a18738b0be860897fba72e55c44f548","type":"trace_start","agentName":"ContentDiscoveryAgent"}
+{"timestamp":"2025-12-26T01:56:40.884Z","sessionId":"20251226015235729-eu0bmj","traceId":"8d8c22aab2b0a699f1011d9593e434c0","type":"trace_start","agentName":"CORSProbeAgent"}
+{"timestamp":"2025-12-26T01:56:40.884Z","sessionId":"20251226015235729-eu0bmj","traceId":"a26cf6ef5868958f7c6f20442e62f098","type":"trace_start","agentName":"SecretScannerAgent"}
