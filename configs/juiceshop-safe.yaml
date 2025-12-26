@@ -3,7 +3,9 @@ target: http://192.168.1.130:3000
 profile: conservative
 
 pipeline:
-  max_concurrency: 2
+  max_concurrency: 1
+  health_monitoring: true  # Disable auto-adjustment
+  auto_adjust: false        # Disable auto-adjustment
 
 # Exclude ALL heavy agents
 agents:
