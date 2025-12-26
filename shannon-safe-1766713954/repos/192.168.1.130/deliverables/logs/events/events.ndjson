@@ -23,3 +23,7 @@
 {"timestamp":"2025-12-26T01:52:42.411Z","sessionId":"20251226015235729-eu0bmj","traceId":"bc2bd023991793c906466d5a5806d5d0","type":"trace_start","agentName":"BrowserCrawlerAgent"}
 {"timestamp":"2025-12-26T01:52:42.701Z","sessionId":"20251226015235729-eu0bmj","traceId":"bc2bd023991793c906466d5a5806d5d0","type":"trace_end","agentName":"BrowserCrawlerAgent","duration":290,"status":"success"}
 {"timestamp":"2025-12-26T01:52:43.632Z","sessionId":"20251226015235729-eu0bmj","traceId":"c2422d1f4fcb3148ede7a8d3b2511b0c","type":"tool_end","tool":"nmap","duration":6467,"success":true}
+{"timestamp":"2025-12-26T01:52:43.649Z","sessionId":"20251226015235729-eu0bmj","traceId":"c2422d1f4fcb3148ede7a8d3b2511b0c","type":"trace_end","agentName":"NetReconAgent","duration":6519,"status":"success"}
+{"timestamp":"2025-12-26T01:55:40.819Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"tool_end","tool":"katana","duration":180006,"success":false}
+{"timestamp":"2025-12-26T01:55:40.834Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"tool_start","tool":"gau","command":"gau --subs 192.168.1.130","cwd":"/home/kali/code/shannon-uncontained"}
+{"timestamp":"2025-12-26T01:56:40.848Z","sessionId":"20251226015235729-eu0bmj","traceId":"71ec46d6c84d567ed1a77f0f0a1bf2af","type":"tool_end","tool":"gau","duration":60009,"success":false}
