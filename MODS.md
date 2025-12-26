@@ -4,6 +4,22 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(lsg-v2): Add agent config flag and include EnhancedNuclei in default pipeline (2025-12-25)
+
+### Overview
+Added a `--config` JSON flag for `shannon generate` to pass per-agent options (e.g., Nuclei depth) and inserted `EnhancedNucleiScanAgent` into the default exploitation stage.
+
+### Modified Files
+- `shannon.mjs` — Added `--config <file>` option; loads JSON and forwards it to the generator.
+- `local-source-generator.mjs` — Passes `agentConfig` through to the orchestrator.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Applies per-agent config before execution; default pipeline now includes `EnhancedNucleiScanAgent`.
+- `README.md` — Documented `--config` usage with an example.
+
+### Rationale
+Deployment docs referenced per-agent JSON config and Enhanced Nuclei, but the CLI/pipeline didn’t support the flag or run the enhanced agent by default.
+
+---
+
 ## feat(lsg-v2): Register BusinessLogicFuzzer (2025-12-25)
 
 ### Overview

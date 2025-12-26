@@ -129,8 +129,24 @@ program
   .option('--no-resume', 'Do not skip previously completed agents even if a workspace exists')
   .option('--top-ports <n>', 'For NetReconAgent: use nmap --top-ports N', parseInt)
   .option('--ports <spec>', 'For NetReconAgent: port list/range (e.g., 80,443,1-1024)')
+  .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .action(async (target, options) => {
     const { generateLocalSource } = await import('./local-source-generator.mjs');
+    let agentConfig;
+
+    if (options.config) {
+      try {
+        const { readFile } = await import('fs/promises');
+        const { resolve } = await import('path');
+        const configPath = resolve(options.config);
+        const raw = await readFile(configPath, 'utf-8');
+        agentConfig = JSON.parse(raw);
+        console.log(chalk.gray(`Loaded agent config: ${configPath}`));
+      } catch (err) {
+        console.error(chalk.red(`\n❌ Failed to load config file: ${err.message}`));
+        process.exit(1);
+      }
+    }
 
     console.log(chalk.cyan.bold('🔍 LOCAL SOURCE GENERATOR'));
     console.log(chalk.gray(`Target: ${target}`));
@@ -162,7 +178,8 @@ program
         debugTools: !!options.debugTools,
         includeAgents,
         excludeAgents,
-        resume: options.resume === false || options.noResume ? false : true
+        resume: options.resume === false || options.noResume ? false : true,
+        agentConfig
       });
       console.log(chalk.green(`\n✅ Local source generated at: ${result}`));
     } catch (error) {

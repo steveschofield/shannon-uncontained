@@ -151,16 +151,17 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
         const result = await orchestrator.runFullPipeline(webUrl, sourceDir, {
             framework: options.framework || 'express',
             msfrpcConfig, // Pass to all agents in inputs
-            excludeAgents: [
-                ...(options.noMsf ? ['MetasploitRecon', 'MetasploitExploit'] : []),
-                ...finalExclude,
-            ],
-            resume: options.resume !== false,
-            // Pass through NetRecon options if provided
-            topPorts: options.topPorts,
-            ports: options.ports,
-            quiet: !options.verbose // Silence agents unless verbose
-        });
+        excludeAgents: [
+            ...(options.noMsf ? ['MetasploitRecon', 'MetasploitExploit'] : []),
+            ...finalExclude,
+        ],
+        resume: options.resume !== false,
+        agentConfig: options.agentConfig,
+        // Pass through NetRecon options if provided
+        topPorts: options.topPorts,
+        ports: options.ports,
+        quiet: !options.verbose // Silence agents unless verbose
+    });
 
 
 
