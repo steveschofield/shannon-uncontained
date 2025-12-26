@@ -3,3 +3,4 @@
 {"timestamp":"2025-12-26T02:37:54.800Z","sessionId":"20251226023754731-005gya","traceId":"f8e1ed77e2f5c06a5dcf39d357f0671f","type":"tool_start","tool":"subfinder","command":"subfinder -d 192.168.1.130 -silent ","cwd":"/home/kali/code/shannon-uncontained"}
 {"timestamp":"2025-12-26T02:37:54.855Z","sessionId":"20251226023754731-005gya","traceId":"3ccbf747d492b4c6bc4d2d02a2edc6cc","type":"trace_end","agentName":"SitemapAgent","duration":87,"status":"success"}
 {"timestamp":"2025-12-26T02:37:54.855Z","sessionId":"20251226023754731-005gya","traceId":"fdfd5216f766aef4623b1d5ad2942327","type":"trace_start","agentName":"OpenAPIDiscoveryAgent"}
+{"timestamp":"2025-12-26T02:37:55.043Z","sessionId":"20251226023754731-005gya","traceId":"fdfd5216f766aef4623b1d5ad2942327","type":"trace_end","agentName":"OpenAPIDiscoveryAgent","duration":188,"status":"success"}
