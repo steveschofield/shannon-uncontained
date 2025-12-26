@@ -1,0 +1,28 @@
+{
+  "traceId": "5a18738b0be860897fba72e55c44f548",
+  "sessionId": "20251226015235729-eu0bmj",
+  "agentName": "ContentDiscoveryAgent",
+  "startTime": 1766714200884,
+  "endTime": 1766714381345,
+  "duration": 180461,
+  "spans": [
+    {
+      "spanId": "1dbd0727cd9418db",
+      "traceId": "5a18738b0be860897fba72e55c44f548",
+      "name": "tool_execution",
+      "startTime": 1766714200945,
+      "attributes": {
+        "tool": "ffuf",
+        "command": "ffuf -u \"http://192.168.1.130:3000/FUZZ\" -w \"/usr/share/wordlists/dirb/common.txt\" -t 50 -e .php,.bak,.old,.txt,.conf,.json,.xml,.env -o /dev/stdout -of json -s -mc 200,201,204,301,302,307,401,403",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766714381330,
+      "duration": 180385,
+      "result": {
+        "duration": 180382
+      }
+    }
+  ]
+}

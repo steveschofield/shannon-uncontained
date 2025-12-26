@@ -11,3 +11,18 @@ export LLM_MODEL=llama3.1:8b          # fallback default
 export LLM_FAST_MODEL=llama3.1:8b     # used for classify_fast
 export LLM_SMART_MODEL=llama3.1:8b    # used for smart routing
 export LLM_CODE_MODEL=llama3.1:8b     # used for code/synthesis
+
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
+  --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
+  --profile conservative \
+  --output ./conservative-run \
+  --debug-tools
+
+
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
+  --profile normal \
+  --output ./shannon-results-$(date +%s) \
+  --debug-tools
+
+
+./shannon-results-$(date +%s) -v --debug-tools
