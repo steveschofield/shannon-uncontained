@@ -38,6 +38,147 @@ Integrated performance fixes from deployments/perf-fixes:
 ### Rationale
 Prevents noisy concurrency adjustments, fixes a runtime reference error in WAF detection, and ensures browser crawl degrades gracefully instead of failing silently.
 
+<<<<<<< HEAD
+=======
+---
+
+## chore(git): Add safe rebase sync script (2025-12-26)
+
+### Overview
+Added a helper script to reconcile diverged branches cleanly: stashes changes, rebases local branch onto upstream (or origin), pushes to origin, and restores stashed work.
+
+### Files Added
+- `scripts/git-sync.sh` — `./scripts/git-sync.sh [--branch <name>] [--from <remote>] [--push <remote>] [--force]`
+
+### Usage
+```bash
+chmod +x scripts/git-sync.sh
+./scripts/git-sync.sh                 # auto-detects upstream/origin and syncs current branch
+./scripts/git-sync.sh --branch main   # sync specific branch
+./scripts/git-sync.sh --force         # uses --force-with-lease on push if needed
+```
+
+### Notes
+- Sets `pull.rebase=true` for this repo to avoid divergent pull prompts.
+- Uses `--force-with-lease` only when explicitly passed via `--force`.
+
+---
+
+## chore(git): Add pre-push tests hook + VS Code rebase setting (2025-12-26)
+
+### Overview
+Added a pre-push Git hook to run tests before pushing and a repo VS Code setting to rebase on pull.
+
+### Files Added
+- `.githooks/pre-push` — Runs `npm test` if present, falls back to Node test runner; skip with `SKIP_TESTS=1`.
+- `.vscode/settings.json` — Sets `git.rebaseWhenPull: true` repo-wide.
+- `scripts/install-git-hooks.sh` — Installs hooks via `git config core.hooksPath .githooks`.
+
+### Usage
+```bash
+chmod +x scripts/install-git-hooks.sh
+./scripts/install-git-hooks.sh
+```
+
+Set `SKIP_TESTS=1` to bypass tests for emergency pushes.
+
+---
+
+## ci: Add GitHub Actions Node test workflow (2025-12-26)
+
+### Overview
+Added a minimal CI workflow to run the Node test suite on pushes and pull requests to `main`.
+
+### Files Added
+- `.github/workflows/node-ci.yml` — Uses Node 18, runs `npm ci` and `npm test`.
+
+### Rationale
+Ensures consistent test execution in CI to complement local pre-push tests and keep `main` green.
+
+---
+
+## chore(vscode): Add tasks + extension recommendations (2025-12-26)
+
+### Overview
+Added VS Code tasks for one-click sync and test runs, and recommended Git extensions.
+
+### Files Added
+- `.vscode/tasks.json` — “Git: Sync (Rebase + Push)”, “Git: Install Hooks”, and “Test: Run” tasks.
+- `.vscode/extensions.json` — Recommends GitLens and Git Graph.
+
+### Rationale
+Provides a simple, discoverable UI path in VS Code for syncing and testing without memorizing Git commands.
+
+---
+
+## chore(vscode): Status bar Sync button + keybindings (2025-12-26)
+
+### Overview
+Added a status bar "Sync" button (via recommended extension) and workspace keybindings to run the sync task quickly.
+
+### Files Modified
+- `.vscode/extensions.json` — Recommends `usernamehw.statusbar-commands`.
+- `.vscode/settings.json` — Configures status bar button to run the sync task.
+- `.vscode/keybindings.json` — Adds `Cmd+Alt+S` (`Ctrl+Alt+S` on Linux/Windows) to run the sync task.
+- `README.md` — Notes about status bar button and shortcuts.
+
+---
+
+## chore(git): Pre-push auto-install dependencies (2025-12-26)
+
+### Overview
+Updated the pre-push hook to automatically run `npm ci` (fallback to `npm install`) when `node_modules/` is missing, so tests can run on fresh clones without manual setup.
+
+### Modified Files
+- `.githooks/pre-push` — Detects missing `node_modules` and installs dependencies before executing tests.
+
+### Rationale
+Reduces friction: first push after cloning no longer fails due to missing dependencies.
+
+## chore(dev): Add Makefile convenience targets (2025-12-26)
+
+### Overview
+Added a top-level Makefile with convenience targets to simplify common Git and test workflows.
+
+### Files Added
+- `Makefile` — Targets: `push` (safe rebase + push), `sync` (alias), `hooks` (install hooks), `test`, and `ci`.
+
+### Usage
+```bash
+make push   # stash → rebase (upstream/origin) → push → unstash
+make test   # run tests
+make hooks  # install repo git hooks
+```
+
+---
+
+## docs(contrib): Add simple Git workflow docs (2025-12-26)
+
+### Overview
+Documented the simplified push workflow in the main README and GitBook, including VS Code tasks and hooks setup.
+
+### Files Modified
+- `README.md` — New “Contributing” section with push steps, VS Code tasks, and commit format.
+
+### Files Added
+- `docs/gitbook/contributing.md` — How to contribute guide mirroring the simplified workflow.
+- `docs/gitbook/SUMMARY.md` — Enabled the Contributing page (removed “planned” tag).
+
+---
+
+## chore(vscode): Status bar Sync button + keybindings (2025-12-26)
+
+### Overview
+Added a status bar "Sync" button (via recommended extension) and workspace keybindings to run the sync task quickly.
+
+### Files Modified
+- `.vscode/extensions.json` — Recommends `usernamehw.statusbar-commands`.
+- `.vscode/settings.json` — Configures status bar button to run the sync task.
+- `.vscode/keybindings.json` — Adds `Cmd+Alt+S` (`Ctrl+Alt+S` on Linux/Windows) to run the sync task.
+- `README.md` — Notes about status bar button and shortcuts.
+
+
+>>>>>>> a8dbfff (chore(git): auto-install deps in pre-push hook)
 ## feat(lsg-v2): Add agent config flag and include EnhancedNuclei in default pipeline (2025-12-25)
 
 ### Overview
