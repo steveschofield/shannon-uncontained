@@ -598,6 +598,75 @@ chmod +x scripts/install-python-tools.sh
 ./scripts/install-python-tools.sh
 ```
 
+---
+
+## Contributing
+
+### Simple Push Workflow
+
+Use your normal flow, then a single command to push safely:
+
+1) Stage and commit
+
+```bash
+git add -A
+git commit -m "feat(lsg-v2): your change"
+```
+
+2) Push (auto rebase + tests)
+
+```bash
+# Option A: Makefile
+make push
+
+# Option B: NPM script
+npm run push
+```
+
+This stashes uncommitted changes, rebases onto upstream/origin main as needed, runs tests (pre-push hook), pushes, and unstashes.
+
+If tests must be skipped (emergency only):
+
+```bash
+SKIP_TESTS=1 npm run push
+```
+
+### VS Code One‑Click
+
+- Command Palette → “Tasks: Run Task” → “Git: Sync (Rebase + Push)”
+- NPM Scripts view → run “push”
+- Pull/Sync uses rebase by default (repo setting)
+
+Status bar button
+
+- Install the recommended extension “Status Bar Commands”
+- Click the “Sync” button (cloud icon) in the status bar to run the sync task
+
+Keyboard shortcut
+
+- macOS: Cmd+Alt+S runs the sync task
+- Windows/Linux: Ctrl+Alt+S runs the sync task
+
+### First‑Time Setup
+
+Hooks install automatically on `npm install` (via the `prepare` script). To install manually:
+
+```bash
+./scripts/install-git-hooks.sh
+```
+
+### Commit Message Format
+
+Enforced by a commit-msg hook (bypass with `SKIP_COMMIT_LINT=1` if needed):
+
+```
+type(scope): Short description
+
+Types: feat, fix, docs, refactor, test, chore
+Example: feat(lsg-v2): Register APISchemaGenerator
+```
+
+
 This avoids pyenv shim “command not found” errors (e.g., wafw00f/sslyze/trufflehog) when running the framework.
 
 ---
