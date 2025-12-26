@@ -105,6 +105,15 @@ modelCmd
     await modelCommand('export-html', null, options);
   });
 
+modelCmd
+  .command('export-review')
+  .description('Export an offline HTML review page for world-model + metrics')
+  .option('--workspace <dir>', 'Workspace directory', '.')
+  .option('-o, --output <file>', 'Output file path')
+  .action(async (options) => {
+    await modelCommand('export-review', null, options);
+  });
+
 // GENERATE COMMAND (Local Source Generator)
 program
   .command('generate')
@@ -132,6 +141,7 @@ program
   .option('--enable-exploitation', 'Enable active exploitation phase (nuclei/sqlmap/xss/cmdi)')
   .option('--profile <name>', 'Rate limit profile: stealth, conservative, normal, aggressive', 'normal')
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
+  .option('--export-review-html', 'Also export model-review.html into the run workspace')
   .action(async (target, options) => {
     const { generateLocalSource } = await import('./local-source-generator.mjs');
     const { extname, resolve } = await import('path');
@@ -139,6 +149,7 @@ program
     let healthCheckConfig;
     let configData;
     let enableExploitation = options.enableExploitation ?? false;
+    let exportReviewHtml = options.exportReviewHtml ?? false;
 
     if (options.config) {
       try {
@@ -174,6 +185,10 @@ program
       if (typeof configEnableExploitation === 'boolean') {
         enableExploitation = configEnableExploitation;
       }
+      const configExportReviewHtml = configData.export_review_html ?? configData.exportReviewHtml;
+      if (typeof configExportReviewHtml === 'boolean') {
+        exportReviewHtml = configExportReviewHtml;
+      }
 
       // Extract per-agent config (supports agent_config or raw map without reserved keys)
       if (configData.agent_config) {
@@ -181,7 +196,18 @@ program
       } else if (configData.agentConfig) {
         agentConfig = configData.agentConfig;
       } else {
-        const reserved = new Set(['target', 'profile', 'pipeline', 'agents', 'health_check', 'healthCheck', 'enable_exploitation', 'enableExploitation']);
+        const reserved = new Set([
+          'target',
+          'profile',
+          'pipeline',
+          'agents',
+          'health_check',
+          'healthCheck',
+          'enable_exploitation',
+          'enableExploitation',
+          'export_review_html',
+          'exportReviewHtml',
+        ]);
         const candidateKeys = Object.keys(configData).filter(k => !reserved.has(k));
         if (candidateKeys.length > 0) {
           agentConfig = {};
@@ -198,6 +224,7 @@ program
     console.log(chalk.gray(`AI Synthesis: ${options.ai !== false ? 'enabled' : 'disabled'}`));
     console.log(chalk.gray(`Rate Limit Profile: ${options.profile}`));
     console.log(chalk.gray(`Exploitation: ${enableExploitation ? 'enabled (opt-in)' : 'disabled (default)'}`));
+    console.log(chalk.gray(`Export Review HTML: ${exportReviewHtml ? 'yes' : 'no'}`));
 
     try {
       // Parse agent filters
@@ -228,7 +255,8 @@ program
         agentConfig,
         healthCheck: healthCheckConfig,
         profile: options.profile,
-        enableExploitation
+        enableExploitation,
+        exportReviewHtml
       });
       console.log(chalk.green(`\n✅ Local source generated at: ${result}`));
     } catch (error) {

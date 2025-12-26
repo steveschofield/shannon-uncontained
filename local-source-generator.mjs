@@ -16,6 +16,7 @@ import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import 'dotenv/config'; // Ensure env vars are loaded even if run directly
 import UnifiedLogger from './src/logging/unified-logger.js';
+import { modelCommand } from './src/cli/commands/ModelCommand.js';
 
 // Silence zx globally to prevent command output spam
 $.quiet = true;
@@ -189,6 +190,19 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
             ports: options.ports,
             quiet: !options.verbose // Silence agents unless verbose
         });
+
+        if (options.exportReviewHtml) {
+            try {
+                await modelCommand('export-review', null, {
+                    workspace: sourceDir,
+                    output: path.join(sourceDir, 'model-review.html'),
+                });
+            } catch (e) {
+                if (!options.quiet) {
+                    console.log(chalk.yellow(`⚠️  Failed to export review HTML: ${e.message}`));
+                }
+            }
+        }
 
 
 
