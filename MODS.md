@@ -4,6 +4,22 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(lsg-v2): Target health monitoring (2025-12-26)
+
+### Overview
+Added target health monitoring to stop the pipeline when the target goes down, driven by config-provided health check settings.
+
+### Modified Files
+- `src/local-source-generator/v2/utils/target-health-monitor.js` — New utility polling target health with thresholds and stats.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Initializes the target health monitor per run, checks health before each agent, and stops the pipeline when the target is down.
+- `shannon.mjs` — Extracts `health_check` from JSON/YAML configs and forwards to the generator.
+- `README.md` — Shows `health_check` options in the config example.
+
+### Rationale
+Deployment health monitoring guidance was unused; wiring it prevents long runs against dead targets and provides clear stop conditions.
+
+---
+
 ## docs(config): Rate limiting guide + README section (2025-12-26)
 
 ### Overview

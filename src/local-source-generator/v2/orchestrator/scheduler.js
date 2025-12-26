@@ -19,6 +19,7 @@ import { AgentContext, AgentRegistry } from '../agents/base-agent.js';
 import { PipelineHealthMonitor } from './health-monitor.js';
 import { GlobalRateLimiter } from '../../../utils/global-rate-limiter.js';
 import { getRecommendedProfile, mergeConfig } from '../../../config/rate-limit-config.js';
+import { TargetHealthMonitor } from '../utils/target-health-monitor.js';
 
 /**
  * Execution modes
@@ -71,6 +72,10 @@ export class Orchestrator extends EventEmitter {
             maxConcurrency: options.parallel || 5,
             windowSizeMs: 60000
         });
+        this.targetHealthMonitor = null;
+        this.stopOnTargetDown = true;
+        this.waitForRecovery = false;
+        this.healthCheckConfig = {};
         // Execution state
         this.cache = new Map(); // idempotencyKey -> result
         this.executionLog = [];
@@ -121,6 +126,59 @@ export class Orchestrator extends EventEmitter {
     }
 
     /**
+    * Initialize target health monitoring
+    */
+    async initializeTargetHealthMonitoring(target, options = {}) {
+        const enabled = options.enabled !== false;
+        if (!enabled || !target) return;
+
+        this.stopOnTargetDown = options.stopOnDown !== false;
+        this.waitForRecovery = options.waitForRecovery === true;
+        this.healthCheckConfig = options;
+
+        this.targetHealthMonitor = new TargetHealthMonitor(target, {
+            maxConsecutiveFailures: options.maxFailures ?? 3,
+            checkInterval: options.interval ?? 30000,
+            timeout: options.timeout ?? 10000,
+            waitForRecovery: options.waitForRecovery === true,
+            recoveryTimeout: options.recoveryTimeout ?? 180000,
+        });
+
+        const initialHealthy = await this.targetHealthMonitor.checkHealth();
+        if (!initialHealthy) {
+            if (this.waitForRecovery) {
+                const recovered = await this.targetHealthMonitor.waitForRecovery();
+                if (!recovered && this.stopOnTargetDown) {
+                    throw new Error(`Target ${target} is not reachable`);
+                }
+            } else if (this.stopOnTargetDown) {
+                throw new Error(`Target ${target} is not reachable`);
+            }
+        }
+
+        this.targetHealthMonitor.startMonitoring();
+        this.emit('target:health-start', { target, options });
+    }
+
+    /**
+     * Check target health status and optionally abort pipeline
+     */
+    ensureTargetHealthy() {
+        if (!this.targetHealthMonitor) return;
+        if (this.targetHealthMonitor.isAlive) return;
+
+        this.emit('target:down', {
+            target: this.targetHealthMonitor.target,
+            stats: this.targetHealthMonitor.getStats(),
+        });
+
+        if (this.stopOnTargetDown) {
+            this.abort();
+            throw new Error('Target down - stopping pipeline');
+        }
+    }
+
+    /**
      * Execute a single agent
      * @param {string} agentName - Agent name
      * @param {object} inputs - Agent inputs
@@ -132,6 +190,9 @@ export class Orchestrator extends EventEmitter {
         if (!agent) {
             return { success: false, error: `Agent not found: ${agentName}` };
         }
+
+        // Stop if target is marked down
+        this.ensureTargetHealthy();
 
         // Check cache
         const cacheKey = agent.idempotencyKey(inputs, this.options);
@@ -453,6 +514,9 @@ export class Orchestrator extends EventEmitter {
 
         const pipeline = Orchestrator.defineLSGPipeline();
 
+        // Initialize target health monitoring (non-fatal if disabled)
+        await this.initializeTargetHealthMonitoring(target, options.healthCheck || {});
+
         this.emit('pipeline:init', { target, outputDir, stages: pipeline.length });
 
         // RESUMABILITY: Load existing state if available
@@ -557,6 +621,10 @@ export class Orchestrator extends EventEmitter {
             // Save execution log
             const logFile = path.join(outputDir, 'execution-log.json');
             await fs.writeJSON(logFile, this.executionLog, { spaces: 2 });
+        }
+
+        if (this.targetHealthMonitor) {
+            this.targetHealthMonitor.stopMonitoring();
         }
 
         return {
@@ -725,6 +793,9 @@ export class Orchestrator extends EventEmitter {
      */
     abort() {
         this.aborted = true;
+        if (this.targetHealthMonitor) {
+            this.targetHealthMonitor.stopMonitoring();
+        }
         this.emit('pipeline:abort-requested');
     }
 
