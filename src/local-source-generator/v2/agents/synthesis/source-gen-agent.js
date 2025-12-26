@@ -349,6 +349,7 @@ Return ONLY the fixed code, no explanations.`;
             const response = await this.llm.generate(prompt, {
                 capability: LLM_CAPABILITIES.SYNTHESIZE_CODE_PATCH,
                 maxTokens: 4000,
+                logRequest: true, // Log outbound LLM POST during repair
                 context: ctx,
             });
 

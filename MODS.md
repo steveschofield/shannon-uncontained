@@ -19,6 +19,20 @@ Aligns with deployment guidance: keep active exploitation opt-in to avoid accide
 
 ---
 
+## chore(llm): Log LLM POST metadata for SourceGen repairs (2025-12-26)
+
+### Overview
+When SourceGenAgent calls the LLM for repair, log the outbound POST metadata (provider, URL, model, capability, body preview/length) to aid debugging.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/synthesis/source-gen-agent.js` — Enables request logging on LLM repair calls.
+- `src/local-source-generator/v2/orchestrator/llm-client.js` — Supports `logRequest` to emit POST details (via ctx.logEvent or console).
+
+### Rationale
+Provides visibility into LLM calls during SourceGen repair loops.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview

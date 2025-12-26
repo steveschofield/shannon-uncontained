@@ -63,6 +63,7 @@ export class LLMClient {
             maxTokens = 4096,
             temperature = 0.3,
             context = null,
+            logRequest = false,
         } = options;
 
         const route = this.routing[capability] || { tier: 'smart' };
@@ -81,6 +82,9 @@ export class LLMClient {
                 maxTokens,
                 temperature,
                 schema,
+                capability,
+                logRequest,
+                context,
             });
 
             const result = {
@@ -206,16 +210,16 @@ Respond ONLY with the JSON, no other text or markdown.`;
      * @returns {Promise<object>} API response
      */
     async callAPI(prompt, options) {
-        const { model, maxTokens, temperature } = options;
+        const { model, maxTokens, temperature, capability, logRequest, context } = options;
 
         // Determine provider from model name or config
         const isAnthropic = model.toLowerCase().includes('claude');
         const isOpenAI = !isAnthropic;
 
         if (isAnthropic) {
-            return this.callAnthropic(prompt, { model, maxTokens, temperature });
+            return this.callAnthropic(prompt, { model, maxTokens, temperature, capability, logRequest, context });
         } else {
-            return this.callOpenAI(prompt, { model, maxTokens, temperature });
+            return this.callOpenAI(prompt, { model, maxTokens, temperature, capability, logRequest, context });
         }
     }
 
@@ -224,6 +228,24 @@ Respond ONLY with the JSON, no other text or markdown.`;
      */
     async callOpenAI(prompt, options) {
         const baseUrl = this.options.baseUrl || 'https://api.openai.com/v1';
+        if (options.logRequest) {
+            const preview = prompt.slice(0, 200);
+            const logPayload = {
+                type: 'llm_http_request',
+                provider: 'openai',
+                url: `${baseUrl}/chat/completions`,
+                model: options.model,
+                capability: options.capability,
+                method: 'POST',
+                bodyPreview: preview,
+                bodyLength: prompt.length,
+            };
+            if (options.context?.logEvent) {
+                options.context.logEvent(logPayload);
+            } else {
+                console.log('[LLM] POST', logPayload.url, logPayload);
+            }
+        }
 
         const response = await this.fetchWithRetry(`${baseUrl}/chat/completions`, {
             method: 'POST',
@@ -252,6 +274,24 @@ Respond ONLY with the JSON, no other text or markdown.`;
      */
     async callAnthropic(prompt, options) {
         const baseUrl = this.options.baseUrl || 'https://api.anthropic.com/v1';
+        if (options.logRequest) {
+            const preview = prompt.slice(0, 200);
+            const logPayload = {
+                type: 'llm_http_request',
+                provider: 'anthropic',
+                url: `${baseUrl}/messages`,
+                model: options.model,
+                capability: options.capability,
+                method: 'POST',
+                bodyPreview: preview,
+                bodyLength: prompt.length,
+            };
+            if (options.context?.logEvent) {
+                options.context.logEvent(logPayload);
+            } else {
+                console.log('[LLM] POST', logPayload.url, logPayload);
+            }
+        }
 
         const response = await this.fetchWithRetry(`${baseUrl}/messages`, {
             method: 'POST',
