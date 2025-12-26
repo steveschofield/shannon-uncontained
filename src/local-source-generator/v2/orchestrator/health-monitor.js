@@ -17,6 +17,12 @@ export class PipelineHealthMonitor {
         this.errorThreshold = 0.10; // 10% error rate
         this.blockThreshold = 0.05; // 5% block rate
         this.latencyThresholdMs = 2000; // 2s average latency
+
+        // Perf fix: cooldown + recovery state to avoid log spam and oscillation
+        this.lastAdjustment = 0;
+        this.adjustmentCooldownMs = options.adjustmentCooldownMs || 5000; // minimum 5s between adjustments
+        this.warnedAtMinimum = false;
+        this.recoveryThreshold = 0.05; // recover when error rate drops below 5%
     }
 
     /**
@@ -98,22 +104,44 @@ export class PipelineHealthMonitor {
      * @returns {number} New concurrency limit
      */
     adjustConcurrency() {
+        const now = Date.now();
+        // Cooldown window: don't adjust too frequently
+        if (now - this.lastAdjustment < this.adjustmentCooldownMs) {
+            return this.concurrency;
+        }
+
         const action = this.getRecommendation();
 
         switch (action) {
             case 'EMERGENCY_BACKOFF':
                 this.concurrency = 1; // Drop to minimum immediately
                 console.log(`⚠️  Pipeline Health: BLOCKING DETECTED! Backing off to concurrency ${this.concurrency}`);
+                this.warnedAtMinimum = true; // prevent repeated warnings until recovery
+                this.lastAdjustment = now;
                 break;
             case 'DECREASE':
-                this.concurrency = Math.max(this.minConcurrency, this.concurrency - 1);
-                console.log(`📉 Pipeline Health: Errors/Latency high. Decreasing concurrency to ${this.concurrency}`);
+                if (this.concurrency <= this.minConcurrency) {
+                    if (!this.warnedAtMinimum) {
+                        console.warn('⚠️  Pipeline at minimum concurrency - performance may be degraded');
+                        this.warnedAtMinimum = true;
+                    }
+                } else {
+                    this.concurrency = Math.max(this.minConcurrency, this.concurrency - 1);
+                    console.log(`📉 Pipeline Health: Errors/Latency high. Decreasing concurrency to ${this.concurrency}`);
+                    this.warnedAtMinimum = false;
+                }
+                this.lastAdjustment = now;
                 break;
             case 'INCREASE':
                 if (this.concurrency < this.maxConcurrency) {
-                    this.concurrency += 1; // Slow ramp up
-                    // Only log occasionally to avoid spam
-                    // console.log(`📈 Pipeline Health: Healthy. increasing concurrency to ${this.concurrency}`);
+                    // Only increase when truly healthy (below recovery threshold and low latency)
+                    const m = this.getMetrics();
+                    if (m.errorRate < this.recoveryThreshold && m.avgLatency < this.latencyThresholdMs) {
+                        this.concurrency += 1; // Slow ramp up
+                        console.log(`📈 Pipeline Health: Improving - increasing concurrency to ${this.concurrency}`);
+                        this.warnedAtMinimum = false;
+                        this.lastAdjustment = now;
+                    }
                 }
                 break;
             case 'HOLD':

@@ -69,14 +69,37 @@ export class BrowserCrawlerAgent extends BaseAgent {
         const cortex = new Cortex();
         await cortex.init();
 
-        // Check if Playwright is available
+        // Check if Playwright (or Puppeteer) is available
         let playwright;
         try {
             playwright = await import('playwright');
         } catch (e) {
-            this.setStatus('Playwright not installed - skipping browser crawl');
-            results.errors.push('Playwright not installed. Run: npm install playwright');
-            return results;
+            try {
+                // Fallback to Puppeteer when Playwright is missing
+                const puppeteer = await import('puppeteer');
+                // Launch via Puppeteer for a minimal crawl
+                this.setStatus('Playwright not installed; attempting Puppeteer fallback');
+                const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-dev-shm-usage'] });
+                const page = await browser.newPage();
+                await page.goto(target, { waitUntil: 'domcontentloaded', timeout });
+                results.pages_crawled++;
+                // Extract a small set of links (shallow)
+                const links = await page.evaluate(() => Array.from(document.querySelectorAll('a[href]')).map(a => a.href));
+                await browser.close();
+                // Emit a summary event indicating fallback mode
+                ctx.emitEvidence({
+                    source: this.name,
+                    event_type: 'browser_crawl',
+                    target,
+                    payload: { pages_crawled: results.pages_crawled, endpoints_discovered: 0, xhr_count: 0, mode: 'puppeteer-fallback' },
+                });
+                return results;
+            } catch (e2) {
+                this.setStatus('Browser automation not available - skipping browser crawl');
+                results.errors.push('Install Playwright: npm install playwright && npx playwright install chromium');
+                results.errors.push('Or install Puppeteer: npm install puppeteer');
+                return results;
+            }
         }
 
         this.setStatus('Launching stealth browser...');
