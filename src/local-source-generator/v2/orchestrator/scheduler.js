@@ -121,6 +121,8 @@ export class Orchestrator extends EventEmitter {
             budget,
             logger: this.logger || null,
             trace: traceForAgent,
+            agentName,
+            stage: this.currentStage,
         });
         return ctx;
     }

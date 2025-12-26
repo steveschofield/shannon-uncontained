@@ -1,21 +1,15 @@
-LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
-  --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
-  --config '{"EnhancedNucleiScanAgent": {"depth": "fast"}}' \
-  --output ./fast-scan
+shannon-results-20251226-092148/repos/192.168.1.130
 
-LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://192.168.1.130:3000 -o ./shannon-results-$(date +%s) -v --debug-tools  
-
-v
-
-LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
-  --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
-  --profile conservative \
-  --output ./conservative-run \
-  --debug-tools
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://192.168.1.130:3000 \
+  --config ./configs/juiceshop.yaml \
+  --output ./shannon-results-$(date +%Y%m%d-%H%M%S) \
+  --debug-tools \
+  --export-review-html
 
 
-LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
-  --profile normal \
-  --output ./shannon-results-$(date +%s) \
-  --debug-tools
-
+LLM_FAST_MODEL=llama3.1:8b
+LLM_PROVIDER=ollama
+LLM_BASE_URL=http://192.168.1.69:11434/v1
+LLM_SMART_MODEL=llama3.1:8b
+LLM_CODE_MODEL=llama3.1:8b
+LLM_MODEL=llama3.1:8b

@@ -518,7 +518,7 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port -o ./shannon-
 - Logs path: `<workspace>/tool-logs/` (created automatically)
 - Optional: `LSG_DEBUG_MAX_LINES=500` (default: 200)
 - Optional: `LSG_DEBUG_SAVE_OUTPUT=1` to write full `.stdout.txt`/`.stderr.txt` files when output is truncated
-- Tool logs include `timeout_ms`, `timedOut`, `signal`, and per-attempt metadata for retries
+- Tool logs include `timeout_ms`, `timedOut`, `signal`, per-attempt metadata for retries, and (when available) `agent`/`stage`
 
 ### Export Review HTML
 
@@ -544,6 +544,7 @@ Recorded span details:
 
 - Tool executions: start/end, duration, success, command
 - LLM calls: model, tokens used, duration
+- LLM request metadata (optional): enable with `--log-llm-requests` or `LSG_LOG_LLM_REQUESTS=1`
 - HTTP probes: method, URL, status, duration (GroundTruthAgent)
 - Truncation: first 200 lines per stream (override with `LSG_DEBUG_MAX_LINES`)
 - Disable by omitting `--debug-tools`

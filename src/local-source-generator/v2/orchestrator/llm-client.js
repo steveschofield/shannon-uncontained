@@ -63,7 +63,7 @@ export class LLMClient {
             maxTokens = 4096,
             temperature = 0.3,
             context = null,
-            logRequest = false,
+            logRequest = process.env.LSG_LOG_LLM_REQUESTS === '1',
         } = options;
 
         const route = this.routing[capability] || { tier: 'smart' };
@@ -239,6 +239,8 @@ Respond ONLY with the JSON, no other text or markdown.`;
                 method: 'POST',
                 bodyPreview: preview,
                 bodyLength: prompt.length,
+                maxTokens: options.maxTokens,
+                temperature: options.temperature,
             };
             if (options.context?.logEvent) {
                 options.context.logEvent(logPayload);
@@ -285,6 +287,7 @@ Respond ONLY with the JSON, no other text or markdown.`;
                 method: 'POST',
                 bodyPreview: preview,
                 bodyLength: prompt.length,
+                maxTokens: options.maxTokens,
             };
             if (options.context?.logEvent) {
                 options.context.logEvent(logPayload);

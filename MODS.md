@@ -106,6 +106,31 @@ Improved `--debug-tools` output for timeouts (like katana) by recording timeout 
 
 ---
 
+## feat(tooling): Tag tool logs with agent/stage (2025-12-26)
+
+### Overview
+Tool debug logs now include the agent and pipeline stage (when available), enabling easy grouping of tool failures by agent/stage.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/base-agent.js` — Adds `agentName` and `stage` to AgentContext.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Propagates agent/stage into AgentContext.
+- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Writes `agent`/`stage` in tool logs and tool events.
+- `README.md` — Documented the added fields.
+
+---
+
+## feat(logging): Log LLM POST request metadata (2025-12-26)
+
+### Overview
+Added an opt-in flag/env to log LLM POST request metadata (provider, URL, model, capability, prompt preview/length) into events.ndjson for easier debugging.
+
+### Modified Files
+- `src/local-source-generator/v2/orchestrator/llm-client.js` — Honors `LSG_LOG_LLM_REQUESTS=1` and logs request metadata.
+- `shannon.mjs` — Added `--log-llm-requests` and config key `log_llm_requests`.
+- `README.md` — Documented the logging option.
+
+---
+
 ## feat(recon): Throttle ContentDiscoveryAgent ffuf requests (2025-12-26)
 
 ### Overview
