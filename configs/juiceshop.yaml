@@ -43,3 +43,10 @@ rules:
     - description: "Focus on user profile updates"
       type: path
       url_path: "/api/v2/user-profile"
+
+agent_config:
+  ContentDiscoveryAgent:
+    threads: 5
+    rateLimit: 5
+    delay: "0.3-0.7"
+
