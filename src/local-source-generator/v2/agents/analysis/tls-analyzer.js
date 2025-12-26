@@ -69,7 +69,7 @@ export class TLSAnalyzer extends BaseAgent {
     /**
      * Run sslyze scan
      */
-    async runSslyze(target, port = 443) {
+    async runSslyze(ctx, target, port = 443) {
         const { promises: fsp } = await import('node:fs');
         const os = await import('node:os');
         const path = await import('node:path');
@@ -78,7 +78,7 @@ export class TLSAnalyzer extends BaseAgent {
         const outFile = path.join(tmpDir, 'sslyze.json');
 
         const cmd = `sslyze ${target}:${port} --json_out=${outFile}`;
-        const result = await runTool(cmd, { timeout: 120000, context: ctx });
+        await runTool(cmd, { timeout: 120000, context: ctx });
 
         try {
             const content = await fsp.readFile(outFile, 'utf-8');
@@ -303,10 +303,19 @@ export class TLSAnalyzer extends BaseAgent {
         // Try sslyze first
         if (await isToolAvailable('sslyze')) {
             ctx.recordToolInvocation();
-            const sslyzeResult = await this.runSslyze(hostname, port);
-            if (sslyzeResult) {
-                analysis = this.parseSslyzeResults(sslyzeResult);
-                tool = 'sslyze';
+            try {
+                const sslyzeResult = await this.runSslyze(ctx, hostname, port);
+                if (sslyzeResult) {
+                    analysis = this.parseSslyzeResults(sslyzeResult);
+                    tool = 'sslyze';
+                }
+            } catch (error) {
+                ctx.logEvent?.({
+                    type: 'agent_error',
+                    agent: this.name,
+                    phase: 'sslyze',
+                    error: error.message,
+                });
             }
         }
 
@@ -316,13 +325,13 @@ export class TLSAnalyzer extends BaseAgent {
             const manualResult = await this.manualTLSCheck(hostname, port);
 
             if (manualResult.error) {
-                return {
+                ctx.logEvent?.({
+                    type: 'agent_error',
+                    agent: this.name,
+                    phase: 'manual_tls',
                     error: manualResult.error,
-                    certificate: {},
-                    protocols: {},
-                    vulnerabilities: [],
-                    score: 0
-                };
+                });
+                throw new Error(`TLS check failed: ${manualResult.error}`);
             }
 
             analysis = {

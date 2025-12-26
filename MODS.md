@@ -33,6 +33,21 @@ Provides visibility into LLM calls during SourceGen repair loops.
 
 ---
 
+## fix(lsg-v2): Propagate TLS/CMDi agent errors (2025-12-26)
+
+### Overview
+Fixed `TLSAnalyzer` and `CommandInjectionAgent` to pass `ctx` into tool runners and emit structured error events, preventing silent failures and improving debuggability.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/analysis/tls-analyzer.js` — Passes `ctx` into `runSslyze`, logs tool failures, and throws on manual TLS connection errors.
+- `src/local-source-generator/v2/agents/exploitation/cmdi-agent.js` — Passes `ctx` into `runCommix`, logs tool failures, and falls back to manual probing when possible.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Records error messages into `execution-log.json` for failed agents.
+
+### Rationale
+These agents referenced an undefined `ctx` inside helper methods, breaking tool logging/spans and causing unhelpful failures.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview

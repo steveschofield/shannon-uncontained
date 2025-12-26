@@ -265,6 +265,7 @@ export class Orchestrator extends EventEmitter {
             agent: agentName,
             timestamp: new Date().toISOString(),
             success: result.success,
+            error: result.success ? undefined : (result.error || null),
             summary: result.summary,
         });
 
