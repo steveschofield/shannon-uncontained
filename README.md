@@ -399,6 +399,25 @@ Notes
 - `--agents` is a comma-separated allowlist; all other agents are skipped.
 - `--exclude-agents` is a comma-separated denylist.
 - `--no-resume` prevents the orchestrator from skipping already-completed agents in an existing workspace.
+- `--config <file>` passes per-agent options from a JSON file (see below).
+
+### Agent Configuration via JSON
+
+Provide per-agent options in a JSON file and point `--config` to it.
+
+```bash
+cat > agent-config.json <<'EOF'
+{
+  "EnhancedNucleiScanAgent": { "depth": "fast" },
+  "NetReconAgent": { "topPorts": 100 }
+}
+EOF
+
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
+  --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
+  --config ./agent-config.json \
+  --output ./fast-scan
+```
 
 ### Tool Debug Logs
 

@@ -85,6 +85,18 @@ export class Orchestrator extends EventEmitter {
     }
 
     /**
+     * Merge agent-specific configuration into inputs for a given agent
+     * without mutating the base inputs object.
+     */
+    applyAgentConfig(inputs, agentName) {
+        const config = inputs?.agentConfig?.[agentName];
+        if (!config) return inputs;
+
+        const { agentConfig, ...rest } = inputs;
+        return { ...rest, ...config, agentConfig };
+    }
+
+    /**
      * Create execution context for an agent
      * @param {object} budget - Budget overrides
      * @returns {AgentContext} Context
@@ -261,7 +273,8 @@ export class Orchestrator extends EventEmitter {
                 // 2. Fill slots if healthy and available
                 while (active.size < limit && queue.length > 0) {
                     const agentName = queue.shift();
-                    const promise = this.executeAgent(agentName, inputs)
+                    const agentInputs = this.applyAgentConfig(inputs, agentName);
+                    const promise = this.executeAgent(agentName, agentInputs)
                         .then(result => {
                             results[agentName] = result;
                             if (!result.success) {
@@ -292,7 +305,8 @@ export class Orchestrator extends EventEmitter {
                 if (this.aborted) break;
 
                 try {
-                    const result = await this.executeAgent(agentName, inputs);
+                    const agentInputs = this.applyAgentConfig(inputs, agentName);
+                    const result = await this.executeAgent(agentName, agentInputs);
                     results[agentName] = result;
                     if (!result.success) {
                         errors.push({ agent: agentName, error: result.error });
@@ -402,6 +416,7 @@ export class Orchestrator extends EventEmitter {
             // Phase 3: Exploitation/Validation
             new PipelineStage('exploitation', [
                 'NucleiScanAgent',
+                'EnhancedNucleiScanAgent',
                 'SQLmapAgent',
                 'XSSValidatorAgent',
                 'CommandInjectionAgent',
