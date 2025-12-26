@@ -13,16 +13,6 @@ export LLM_SMART_MODEL=llama3.1:8b
 export LLM_CODE_MODEL=llama3.1:8b
 export LLM_MODEL=llama3.1:8b
 
-
-
-Yes—here are the exact paths for that run:
-
-
-
-Yes—here are the exact paths for that run:
-
-
-
 Yes—here are the exact paths for that run:
 
 Tool debug logs (full command + stdout/stderr snippets):
