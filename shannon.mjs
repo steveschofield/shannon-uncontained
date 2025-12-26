@@ -133,16 +133,30 @@ program
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .action(async (target, options) => {
     const { generateLocalSource } = await import('./local-source-generator.mjs');
+    const { extname, resolve } = await import('path');
     let agentConfig;
 
     if (options.config) {
       try {
         const { readFile } = await import('fs/promises');
-        const { resolve } = await import('path');
         const configPath = resolve(options.config);
         const raw = await readFile(configPath, 'utf-8');
-        agentConfig = JSON.parse(raw);
-        console.log(chalk.gray(`Loaded agent config: ${configPath}`));
+        const ext = extname(configPath).toLowerCase();
+
+        // Prefer parser based on extension; fall back to YAML if JSON parse fails
+        if (ext === '.yaml' || ext === '.yml') {
+          const yaml = await import('js-yaml');
+          agentConfig = yaml.load(raw);
+        } else {
+          try {
+            agentConfig = JSON.parse(raw);
+          } catch {
+            const yaml = await import('js-yaml');
+            agentConfig = yaml.load(raw);
+          }
+        }
+
+        console.log(chalk.gray(`Loaded agent config: ${configPath} (${ext || 'auto'})`));
       } catch (err) {
         console.error(chalk.red(`\n❌ Failed to load config file: ${err.message}`));
         process.exit(1);
