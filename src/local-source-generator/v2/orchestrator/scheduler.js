@@ -510,7 +510,11 @@ export class Orchestrator extends EventEmitter {
      */
     async runFullPipeline(target, outputDir, options = {}) {
         const profileName = options.profile || getRecommendedProfile(target || '');
-        const mergedConfig = mergeConfig(profileName, options.agentConfig || {});
+        const customConfig = options.agentConfig || {};
+        const normalizedCustomConfig = (customConfig && !customConfig.global && !customConfig.agents)
+            ? { agents: customConfig }
+            : customConfig;
+        const mergedConfig = mergeConfig(profileName, normalizedCustomConfig);
 
         // Initialize global rate limiter once per run
         GlobalRateLimiter.getInstance(mergedConfig.global);
