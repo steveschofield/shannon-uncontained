@@ -13,6 +13,7 @@ import { BusinessLogicAgent } from './business-logic-agent.js';
 import { SecurityHeaderAnalyzer } from './security-header-analyzer.js';
 import { TLSAnalyzer } from './tls-analyzer.js';
 import { PassiveSecurityAgent } from './passive-security-agent.js';
+import { APISchemaGenerator } from './api-schema-generator.js';
 
 export {
     ArchitectInferAgent,
@@ -24,6 +25,7 @@ export {
     SecurityHeaderAnalyzer,
     TLSAnalyzer,
     PassiveSecurityAgent,
+    APISchemaGenerator,
 };
 
 /**
@@ -36,6 +38,9 @@ export function registerAnalysisAgents(orchestrator) {
     
     // Passive analysis of collected responses (no new requests)
     orchestrator.registerAgent(new PassiveSecurityAgent());
+    
+    // Generate API schema from discovered endpoints/responses
+    orchestrator.registerAgent(new APISchemaGenerator());
     
     orchestrator.registerAgent(new ArchitectInferAgent());
     orchestrator.registerAgent(new AuthFlowAnalyzer());

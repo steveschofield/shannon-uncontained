@@ -4,6 +4,17 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(lsg-v2): Register BusinessLogicFuzzer (2025-12-25)
+
+### Overview
+Added the BusinessLogicFuzzer to the vuln-analysis agents index to exercise business logic flaws (discount abuse, price manipulation, workflow bypasses, race conditions) that traditional scanners miss.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/vuln-analysis/index.js` — Imported and exported `BusinessLogicFuzzer`; registered it after core injection/XSS agents.
+
+### Rationale
+The agent already exists and is crucial for blackbox testing of application workflows. Registering it integrates these checks into the default vulnerability analysis phase. No README changes needed.
+
 ## fix(lsg-v2): Point SecurityHeaderAnalyzer to local agent (2025-12-25)
 
 ### Overview
@@ -680,3 +691,27 @@ Renamed fork to "Shannon Uncontained" with new README and documentation.
 - **`LSG-TODO.md`** — Hitchens-esque roadmap with phase structure
 
 ---
+
+## feat(lsg-v2): Register APISchemaGenerator (2025-12-25)
+
+### Overview
+Added the APISchemaGenerator to the analysis agents index to infer an API schema from discovered endpoints and captured responses in blackbox mode.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/analysis/index.js` — Imported and exported `APISchemaGenerator`; registered it after `PassiveSecurityAgent` to run early in analysis.
+
+### Rationale
+The generator agent already exists and provides automatic schema inference feeding downstream analyzers. Wiring it into the default analysis registration exposes the capability without custom setup. No README changes required.
+
+---
+
+## feat(lsg-v2): Add CSRF/SSRF/GraphQL vuln agents (2025-12-25)
+
+### Overview
+Wired three additional vuln-analysis agents into the default index: CSRFDetector, SSRFDetector, and GraphQLTester.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/vuln-analysis/index.js` — Imported/exported the three agents and registered them in `registerVulnAnalysisAgents` after core injection/XSS/business-logic agents.
+
+### Rationale
+These agents already exist and extend coverage to CSRF, SSRF, and GraphQL-specific issues. Registering them aligns the default pipeline with documented capabilities. No README updates needed.
