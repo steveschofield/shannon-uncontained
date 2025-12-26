@@ -1,0 +1,48 @@
+{
+  "traceId": "cf77cf9ba88ed1bb2a86c7cec9d4cd23",
+  "sessionId": "20251226222207226-xgv81z",
+  "agentName": "CrawlerAgent",
+  "startTime": 1766787732366,
+  "endTime": 1766787964204,
+  "duration": 231838,
+  "spans": [
+    {
+      "spanId": "ace2657d1bbe0fa5",
+      "traceId": "cf77cf9ba88ed1bb2a86c7cec9d4cd23",
+      "name": "tool_execution",
+      "startTime": 1766787732393,
+      "attributes": {
+        "tool": "katana",
+        "command": "katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766787912403,
+      "duration": 180010,
+      "result": {
+        "duration": 180006,
+        "error": "Command failed: katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl\n",
+        "exitCode": 1
+      }
+    },
+    {
+      "spanId": "0596a5cfc324cb55",
+      "traceId": "cf77cf9ba88ed1bb2a86c7cec9d4cd23",
+      "name": "tool_execution",
+      "startTime": 1766787912416,
+      "attributes": {
+        "tool": "gau",
+        "command": "gau --subs 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766787964185,
+      "duration": 51769,
+      "result": {
+        "duration": 51766
+      }
+    }
+  ]
+}
