@@ -129,6 +129,7 @@ program
   .option('--no-resume', 'Do not skip previously completed agents even if a workspace exists')
   .option('--top-ports <n>', 'For NetReconAgent: use nmap --top-ports N', parseInt)
   .option('--ports <spec>', 'For NetReconAgent: port list/range (e.g., 80,443,1-1024)')
+  .option('--profile <name>', 'Rate limit profile: stealth, conservative, normal, aggressive', 'normal')
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .action(async (target, options) => {
     const { generateLocalSource } = await import('./local-source-generator.mjs');
@@ -152,6 +153,7 @@ program
     console.log(chalk.gray(`Target: ${target}`));
     console.log(chalk.gray(`Output: ${options.output}`));
     console.log(chalk.gray(`AI Synthesis: ${options.ai !== false ? 'enabled' : 'disabled'}`));
+    console.log(chalk.gray(`Rate Limit Profile: ${options.profile}`));
 
     try {
       // Parse agent filters
@@ -179,7 +181,8 @@ program
         includeAgents,
         excludeAgents,
         resume: options.resume === false || options.noResume ? false : true,
-        agentConfig
+        agentConfig,
+        profile: options.profile
       });
       console.log(chalk.green(`\n✅ Local source generated at: ${result}`));
     } catch (error) {

@@ -17,6 +17,8 @@ import { ArtifactManifest } from '../worldmodel/artifact-manifest.js';
 import { EpistemicLedger } from '../epistemics/ledger.js';
 import { AgentContext, AgentRegistry } from '../agents/base-agent.js';
 import { PipelineHealthMonitor } from './health-monitor.js';
+import { GlobalRateLimiter } from '../../../utils/global-rate-limiter.js';
+import { getRecommendedProfile, mergeConfig } from '../../../config/rate-limit-config.js';
 
 /**
  * Execution modes
@@ -443,6 +445,12 @@ export class Orchestrator extends EventEmitter {
      * @returns {Promise<object>} Pipeline result
      */
     async runFullPipeline(target, outputDir, options = {}) {
+        const profileName = options.profile || getRecommendedProfile(target || '');
+        const mergedConfig = mergeConfig(profileName, options.agentConfig || {});
+
+        // Initialize global rate limiter once per run
+        GlobalRateLimiter.getInstance(mergedConfig.global);
+
         const pipeline = Orchestrator.defineLSGPipeline();
 
         this.emit('pipeline:init', { target, outputDir, stages: pipeline.length });
@@ -500,7 +508,9 @@ export class Orchestrator extends EventEmitter {
             target,
             outputDir,
             framework: options.framework || 'express',
-            ...options // Pass through all options including msfrpcConfig
+            ...options, // Pass through all options including msfrpcConfig
+            agentConfig: mergedConfig.agents,
+            rateLimitProfile: profileName,
         };
 
         // Resumability part 2:
