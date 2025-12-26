@@ -1,15 +1,35 @@
-shannon-results-20251226-092148/repos/192.168.1.130
-
 LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://192.168.1.130:3000 \
   --config ./configs/juiceshop.yaml \
   --output ./shannon-results-$(date +%Y%m%d-%H%M%S) \
   --debug-tools \
+  --enable-exploitation \
   --export-review-html
 
+export LSG_DEBUG_SAVE_OUTPUT=1
+export LLM_FAST_MODEL=llama3.1:8b
+export LLM_PROVIDER=ollama
+export LLM_BASE_URL=http://192.168.1.69:11434/v1
+export LLM_SMART_MODEL=llama3.1:8b
+export LLM_CODE_MODEL=llama3.1:8b
+export LLM_MODEL=llama3.1:8b
 
-LLM_FAST_MODEL=llama3.1:8b
-LLM_PROVIDER=ollama
-LLM_BASE_URL=http://192.168.1.69:11434/v1
-LLM_SMART_MODEL=llama3.1:8b
-LLM_CODE_MODEL=llama3.1:8b
-LLM_MODEL=llama3.1:8b
+
+
+Yes—here are the exact paths for that run:
+
+
+
+Yes—here are the exact paths for that run:
+
+
+
+Yes—here are the exact paths for that run:
+
+Tool debug logs (full command + stdout/stderr snippets):
+shannon-results-20251226-125628/repos/192.168.1.130/tool-logs/
+
+Unified events log (tool_start/tool_end, LLM events, etc.):
+events.ndjson
+
+Trace summaries (timing only, no commands):
+shannon-results-20251226-125628/repos/192.168.1.130/deliverables/logs/traces/
