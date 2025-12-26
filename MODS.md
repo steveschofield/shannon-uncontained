@@ -142,6 +142,16 @@ Added configurable ffuf throttling (`threads`, `rateLimit`, `delay`) and profile
 
 ---
 
+## fix(synthesis): Add @eslint/js to generated Express package.json (2025-12-26)
+
+### Overview
+Ensure generated Express projects include `@eslint/js` so `eslint.config.js` can load without module errors.
+
+### Modified Files
+- `src/local-source-generator/v2/synthesis/scaffold-packs/express-scaffold.js` — Added `@eslint/js` to devDependencies.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview
