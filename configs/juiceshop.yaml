@@ -46,7 +46,7 @@ rules:
 
 agent_config:
   ContentDiscoveryAgent:
-    threads: 5
-    rateLimit: 5
+    threads: 3
+    rateLimit: 3
     delay: "0.3-0.7"
 
