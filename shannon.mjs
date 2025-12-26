@@ -129,6 +129,7 @@ program
   .option('--no-resume', 'Do not skip previously completed agents even if a workspace exists')
   .option('--top-ports <n>', 'For NetReconAgent: use nmap --top-ports N', parseInt)
   .option('--ports <spec>', 'For NetReconAgent: port list/range (e.g., 80,443,1-1024)')
+  .option('--enable-exploitation', 'Enable active exploitation phase (nuclei/sqlmap/xss/cmdi)')
   .option('--profile <name>', 'Rate limit profile: stealth, conservative, normal, aggressive', 'normal')
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .action(async (target, options) => {
@@ -137,6 +138,7 @@ program
     let agentConfig;
     let healthCheckConfig;
     let configData;
+    let enableExploitation = options.enableExploitation ?? false;
 
     if (options.config) {
       try {
@@ -168,6 +170,10 @@ program
     if (configData && typeof configData === 'object') {
       // Extract health check config if present
       healthCheckConfig = configData.health_check || configData.healthCheck;
+      const configEnableExploitation = configData.enable_exploitation ?? configData.enableExploitation;
+      if (typeof configEnableExploitation === 'boolean') {
+        enableExploitation = configEnableExploitation;
+      }
 
       // Extract per-agent config (supports agent_config or raw map without reserved keys)
       if (configData.agent_config) {
@@ -175,7 +181,7 @@ program
       } else if (configData.agentConfig) {
         agentConfig = configData.agentConfig;
       } else {
-        const reserved = new Set(['target', 'profile', 'pipeline', 'agents', 'health_check', 'healthCheck']);
+        const reserved = new Set(['target', 'profile', 'pipeline', 'agents', 'health_check', 'healthCheck', 'enable_exploitation', 'enableExploitation']);
         const candidateKeys = Object.keys(configData).filter(k => !reserved.has(k));
         if (candidateKeys.length > 0) {
           agentConfig = {};
@@ -191,6 +197,7 @@ program
     console.log(chalk.gray(`Output: ${options.output}`));
     console.log(chalk.gray(`AI Synthesis: ${options.ai !== false ? 'enabled' : 'disabled'}`));
     console.log(chalk.gray(`Rate Limit Profile: ${options.profile}`));
+    console.log(chalk.gray(`Exploitation: ${enableExploitation ? 'enabled (opt-in)' : 'disabled (default)'}`));
 
     try {
       // Parse agent filters
@@ -220,7 +227,8 @@ program
         resume: options.resume === false || options.noResume ? false : true,
         agentConfig,
         healthCheck: healthCheckConfig,
-        profile: options.profile
+        profile: options.profile,
+        enableExploitation
       });
       console.log(chalk.green(`\n✅ Local source generated at: ${result}`));
     } catch (error) {

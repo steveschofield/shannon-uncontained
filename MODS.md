@@ -4,6 +4,21 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(cli): Opt-in exploitation flag (2025-12-26)
+
+### Overview
+Added an `--enable-exploitation` flag to `shannon generate`, defaulting exploitation agents off unless explicitly enabled or set in config. Excludes exploitation agents by default, with a clear warning.
+
+### Modified Files
+- `shannon.mjs` — New CLI flag, supports config-driven `enable_exploitation`, passes through to generator and logs state.
+- `local-source-generator.mjs` — Excludes exploitation agents unless enabled; honors explicit include lists; forwards flag downstream.
+- `README.md` — Added exploitation control section with example commands.
+
+### Rationale
+Aligns with deployment guidance: keep active exploitation opt-in to avoid accidental aggressive scans, while still allowing explicit enablement.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview

@@ -138,6 +138,31 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
 
         // Compute final exclude list based on include/exclude agent filters
         let finalExclude = Array.isArray(options.excludeAgents) ? [...options.excludeAgents] : [];
+
+        // Disable exploitation agents unless explicitly enabled
+        if (!options.enableExploitation) {
+            const exploitationAgents = [
+                'NucleiScanAgent',
+                'EnhancedNucleiScanAgent',
+                'SQLmapAgent',
+                'XSSValidatorAgent',
+                'CommandInjectionAgent',
+                'MetasploitExploit'
+            ];
+
+            const includeSet = Array.isArray(options.includeAgents) ? new Set(options.includeAgents) : null;
+            for (const agent of exploitationAgents) {
+                if (includeSet && includeSet.has(agent)) continue;
+                if (!finalExclude.includes(agent)) {
+                    finalExclude.push(agent);
+                }
+            }
+
+            if (!options.quiet) {
+                console.log(chalk.yellow('⚠️  Exploitation phase disabled (use --enable-exploitation to enable)'));
+            }
+        }
+
         if (Array.isArray(options.includeAgents) && options.includeAgents.length > 0) {
             const includeSet = new Set(options.includeAgents);
             const allAgents = orchestrator.registry.list();
@@ -158,6 +183,7 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
             resume: options.resume !== false,
             agentConfig: options.agentConfig,
             profile: options.profile,
+            enableExploitation: options.enableExploitation,
             // Pass through NetRecon options if provided
             topPorts: options.topPorts,
             ports: options.ports,
