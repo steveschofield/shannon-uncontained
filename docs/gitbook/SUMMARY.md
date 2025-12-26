@@ -84,7 +84,7 @@
 
 ## Contributing
 
-* [How to Contribute](contributing.md) (planned)
+* [How to Contribute](contributing.md)
 * [Development Setup](development/setup.md) (planned)
 * [Testing](development/testing.md) (planned)
 * [Code Style](development/code-style.md) (planned)
