@@ -431,6 +431,21 @@ Notes
 - `--profile` selects a rate limit profile (`stealth`, `conservative`, `normal`, `aggressive`).
 - `--config <file>` passes per-agent options from a JSON or YAML file (see below).
 
+### Exploitation Control (Opt-in)
+
+Exploitation agents are disabled by default. Enable them explicitly with `--enable-exploitation` or via config `enable_exploitation: true`.
+
+```bash
+# Safe (recon/analysis only)
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
+  --output ./shannon-results-$(date +%Y%m%d-%H%M%S)
+
+# Full chain with exploitation
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
+  --enable-exploitation \
+  --output ./shannon-results-$(date +%Y%m%d-%H%M%S)
+```
+
 ### Agent Configuration via JSON
 
 Provide per-agent options in a JSON file and point `--config` to it.
