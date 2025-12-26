@@ -14,21 +14,4 @@ export LLM_SMART_MODEL=llama3.1:8b
 export LLM_CODE_MODEL=llama3.1:8b
 export LLM_MODEL=llama3.1:8b
 
-LSG_DEBUG_SAVE_OUTPUT=1
-export LLM_FAST_MODEL=llama3.1:8b
-export LLM_PROVIDER=ollama
-export LLM_BASE_URL=http://192.168.1.69:11434/v1
-export LLM_SMART_MODEL=llama3.1:8b
-export LLM_CODE_MODEL=llama3.1:8b
-export LLM_MODEL=llama3.1:8b
 
-Yes—here are the exact paths for that run:
-
-Tool debug logs (full command + stdout/stderr snippets):
-shannon-results-20251226-125628/repos/192.168.1.130/tool-logs/
-
-Unified events log (tool_start/tool_end, LLM events, etc.):
-events.ndjson
-
-Trace summaries (timing only, no commands):
-shannon-results-20251226-125628/repos/192.168.1.130/deliverables/logs/traces/
