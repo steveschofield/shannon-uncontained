@@ -2,6 +2,9 @@
 target: http://192.168.1.130:3000
 profile: conservative
 
+pipeline:
+  max_concurrency: 1
+
 # Exclude ALL heavy agents
 agents:
   exclude:
@@ -36,3 +39,5 @@ agent_config:
   
   SecretScannerAgent:
     max_files: 10
+
+  Max
