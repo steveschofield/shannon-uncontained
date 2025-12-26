@@ -8,13 +8,12 @@ pipeline:
   auto_adjust: false        # Disable auto-adjustment
 
 # Exclude ALL heavy agents
-agents:
-  exclude:
-   # - EnhancedNucleiScanAgent    # Nuclei is too aggressive
-    - BrowserCrawlerAgent         # Browser automation heavy
-    - ContentDiscoveryAgent       # ffuf is slow and heavy
-    - CrawlerAgent                # Katana might be crashing it
-    - MetasploitRecon             # Metasploit heavy
+exclude-agents:
+  - EnhancedNucleiScanAgent
+  - BrowserCrawlerAgent
+  - ContentDiscoveryAgent
+  - CrawlerAgent
+  - MetasploitRecon     # Metasploit heavy
 
 # Keep only lightweight agents
 agent_config:
