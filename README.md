@@ -457,6 +457,12 @@ EnhancedNucleiScanAgent:
   depth: fast
 NetReconAgent:
   topPorts: 100
+health_check:
+  enabled: true
+  interval: 30000
+  stop_on_down: true
+  max_failures: 3
+  timeout: 10000
 EOF
 
 LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \

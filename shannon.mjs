@@ -135,6 +135,8 @@ program
     const { generateLocalSource } = await import('./local-source-generator.mjs');
     const { extname, resolve } = await import('path');
     let agentConfig;
+    let healthCheckConfig;
+    let configData;
 
     if (options.config) {
       try {
@@ -146,13 +148,13 @@ program
         // Prefer parser based on extension; fall back to YAML if JSON parse fails
         if (ext === '.yaml' || ext === '.yml') {
           const yaml = await import('js-yaml');
-          agentConfig = yaml.load(raw);
+          configData = yaml.load(raw);
         } else {
           try {
-            agentConfig = JSON.parse(raw);
+            configData = JSON.parse(raw);
           } catch {
             const yaml = await import('js-yaml');
-            agentConfig = yaml.load(raw);
+            configData = yaml.load(raw);
           }
         }
 
@@ -160,6 +162,27 @@ program
       } catch (err) {
         console.error(chalk.red(`\n❌ Failed to load config file: ${err.message}`));
         process.exit(1);
+      }
+    }
+
+    if (configData && typeof configData === 'object') {
+      // Extract health check config if present
+      healthCheckConfig = configData.health_check || configData.healthCheck;
+
+      // Extract per-agent config (supports agent_config or raw map without reserved keys)
+      if (configData.agent_config) {
+        agentConfig = configData.agent_config;
+      } else if (configData.agentConfig) {
+        agentConfig = configData.agentConfig;
+      } else {
+        const reserved = new Set(['target', 'profile', 'pipeline', 'agents', 'health_check', 'healthCheck']);
+        const candidateKeys = Object.keys(configData).filter(k => !reserved.has(k));
+        if (candidateKeys.length > 0) {
+          agentConfig = {};
+          for (const key of candidateKeys) {
+            agentConfig[key] = configData[key];
+          }
+        }
       }
     }
 
@@ -196,6 +219,7 @@ program
         excludeAgents,
         resume: options.resume === false || options.noResume ? false : true,
         agentConfig,
+        healthCheck: healthCheckConfig,
         profile: options.profile
       });
       console.log(chalk.green(`\n✅ Local source generated at: ${result}`));
