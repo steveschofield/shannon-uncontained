@@ -21,3 +21,5 @@
 {"timestamp":"2025-12-26T01:52:42.383Z","sessionId":"20251226015235729-eu0bmj","traceId":"b99948d7578da4100becbf77a231daff","type":"tool_end","tool":"echo","duration":865,"success":true}
 {"timestamp":"2025-12-26T01:52:42.410Z","sessionId":"20251226015235729-eu0bmj","traceId":"b99948d7578da4100becbf77a231daff","type":"trace_end","agentName":"TechFingerprinterAgent","duration":4842,"status":"success"}
 {"timestamp":"2025-12-26T01:52:42.411Z","sessionId":"20251226015235729-eu0bmj","traceId":"bc2bd023991793c906466d5a5806d5d0","type":"trace_start","agentName":"BrowserCrawlerAgent"}
+{"timestamp":"2025-12-26T01:52:42.701Z","sessionId":"20251226015235729-eu0bmj","traceId":"bc2bd023991793c906466d5a5806d5d0","type":"trace_end","agentName":"BrowserCrawlerAgent","duration":290,"status":"success"}
+{"timestamp":"2025-12-26T01:52:43.632Z","sessionId":"20251226015235729-eu0bmj","traceId":"c2422d1f4fcb3148ede7a8d3b2511b0c","type":"tool_end","tool":"nmap","duration":6467,"success":true}
