@@ -48,7 +48,8 @@ export const EXPRESS_SCAFFOLD = {
     "nodemon": "^3.0.2",
     "jest": "^29.7.0",
     "supertest": "^6.3.3",
-    "globals": "^15.0.0"
+    "globals": "^15.0.0",
+    "@eslint/js": "^9.39.2"
   },
   "lsg_generated": true,
   "lsg_version": "2.0.0"
