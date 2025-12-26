@@ -36,6 +36,22 @@ Deployment docs referenced per-agent JSON config and Enhanced Nuclei, but the CL
 
 ---
 
+## feat(lsg-v2): Add rate-limit profile flag and initialize limiter (2025-12-25)
+
+### Overview
+Added `--profile` to `shannon generate` to choose rate-limit profiles (stealth, conservative, normal, aggressive), initialize the global rate limiter per run, and merge profile agent configs into execution inputs.
+
+### Modified Files
+- `shannon.mjs` — Added `--profile` option and surfaced selected profile in CLI output.
+- `local-source-generator.mjs` — Passes `profile` through to the orchestrator.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Initializes `GlobalRateLimiter` using merged profile config, merges per-agent limits, and keeps profile on inputs.
+- `README.md` — Documented `--profile` usage with a conservative example.
+
+### Rationale
+Rate-limiting deployment docs referenced profiles; the CLI now exposes a simple flag to align runtime behavior with those presets.
+
+---
+
 ## feat(lsg-v2): Register BusinessLogicFuzzer (2025-12-25)
 
 ### Overview
