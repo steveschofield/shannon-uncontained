@@ -292,10 +292,30 @@ export class TLSAnalyzer extends BaseAgent {
 
         // Extract hostname from URL if needed
         let hostname = target;
+        let parsedUrl = null;
         try {
-            const url = new URL(target);
-            hostname = url.hostname;
+            parsedUrl = new URL(target);
+            hostname = parsedUrl.hostname;
         } catch { }
+
+        // Skip TLS checks for clearly non-TLS targets (e.g., http://...:3000)
+        if (parsedUrl && parsedUrl.protocol !== 'https:') {
+            const urlPort = parsedUrl.port ? parseInt(parsedUrl.port, 10) : null;
+            // If the URL is explicitly non-TLS (or clearly not on a typical TLS port), skip.
+            if (parsedUrl.protocol === 'http:' || (urlPort && urlPort !== 443 && urlPort !== 8443)) {
+                return {
+                    tool: 'skipped',
+                    certificate: {},
+                    protocols: {},
+                    ciphers: { accepted: [], rejected: [], weak: [] },
+                    vulnerabilities: [],
+                    score: 0,
+                    grade: 'N/A',
+                    skipped: true,
+                    reason: `Non-HTTPS URL (${parsedUrl.protocol}//)`,
+                };
+            }
+        }
 
         let analysis = null;
         let tool = 'manual';

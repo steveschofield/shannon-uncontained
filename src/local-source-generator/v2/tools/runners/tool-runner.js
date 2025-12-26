@@ -27,6 +27,8 @@ export class ToolResult {
         exitCode = 0,
         duration = 0,
         timedOut = false,
+        signal = null,
+        killed = false,
         error = null,
     }) {
         this.tool = tool;
@@ -36,6 +38,8 @@ export class ToolResult {
         this.exitCode = exitCode;
         this.duration = duration;
         this.timedOut = timedOut;
+        this.signal = signal;
+        this.killed = killed;
         this.error = error;
         this.timestamp = new Date().toISOString();
     }
@@ -81,6 +85,7 @@ export async function runTool(command, options = {}) {
         debugLogDir = process.env.LSG_DEBUG_LOG_DIR || null,
         debugMaxLines = parseInt(process.env.LSG_DEBUG_MAX_LINES || '200', 10),
         context = null,
+        meta = null,
     } = options;
 
     const toolName = command.split(' ')[0];
@@ -91,7 +96,7 @@ export async function runTool(command, options = {}) {
             span = context.startSpan('tool_execution', { tool: toolName, command, cwd });
         }
         if (context && typeof context.logEvent === 'function') {
-            context.logEvent({ type: 'tool_start', tool: toolName, command, cwd });
+            context.logEvent({ type: 'tool_start', tool: toolName, command, cwd, timeout_ms: timeout, meta: meta || undefined });
         }
     } catch {}
 
@@ -111,11 +116,11 @@ export async function runTool(command, options = {}) {
         });
 
         if (debug && debugLogDir) {
-            await writeDebugLog({ command, cwd, result, debugLogDir, maxLines: debugMaxLines });
+            await writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir, maxLines: debugMaxLines });
         }
         try {
             if (context && typeof context.logEvent === 'function') {
-                context.logEvent({ type: 'tool_end', tool: toolName, duration: result.duration, success: true });
+                context.logEvent({ type: 'tool_end', tool: toolName, duration: result.duration, success: true, exitCode: result.exitCode, meta: meta || undefined });
             }
             if (span && context) {
                 context.endSpan(span, 'success', { duration: result.duration });
@@ -131,14 +136,26 @@ export async function runTool(command, options = {}) {
             exitCode: err.code || 1,
             duration: Date.now() - startTime,
             timedOut: err.signal === 'SIGTERM',
+            signal: err.signal || null,
+            killed: !!err.killed,
             error: err.message,
         });
         if (debug && debugLogDir) {
-            await writeDebugLog({ command, cwd, result, debugLogDir, maxLines: debugMaxLines });
+            await writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir, maxLines: debugMaxLines });
         }
         try {
             if (context && typeof context.logEvent === 'function') {
-                context.logEvent({ type: 'tool_end', tool: toolName, duration: result.duration, success: false });
+                context.logEvent({
+                    type: 'tool_end',
+                    tool: toolName,
+                    duration: result.duration,
+                    success: false,
+                    exitCode: result.exitCode,
+                    timedOut: result.timedOut,
+                    signal: result.signal,
+                    error: result.error,
+                    meta: meta || undefined
+                });
             }
             if (span && context) {
                 context.endSpan(span, 'error', { duration: result.duration, error: result.error, exitCode: result.exitCode });
@@ -159,7 +176,11 @@ export async function runToolWithRetry(command, options = {}) {
 
     let lastResult;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        lastResult = await runTool(command, runOptions);
+        const meta = { ...(runOptions.meta || {}), attempt, maxRetries };
+        if (runOptions.context?.logEvent && attempt > 0) {
+            runOptions.context.logEvent({ type: 'tool_retry', tool: command.split(' ')[0], attempt, maxRetries });
+        }
+        lastResult = await runTool(command, { ...runOptions, meta });
 
         if (lastResult.success) {
             return lastResult;
@@ -204,24 +225,59 @@ export function getToolTimeout(toolName) {
 
 export default { runTool, runToolWithRetry, isToolAvailable, ToolResult };
 
-async function writeDebugLog({ command, cwd, result, debugLogDir, maxLines }) {
+async function writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir, maxLines }) {
     try {
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
         const base = `${ts}-${sanitizeName(result.tool || 'tool')}.log.json`;
         const file = path.join(debugLogDir, base);
 
-        const lines = (s) => (s || '').split('\n').slice(0, maxLines).join('\n');
+        const splitLines = (s) => String(s || '').split('\n');
+        const head = (s) => splitLines(s).slice(0, maxLines).join('\n');
+        const tail = (s) => splitLines(s).slice(Math.max(0, splitLines(s).length - maxLines)).join('\n');
+        const stdoutLines = splitLines(result.stdout).length;
+        const stderrLines = splitLines(result.stderr).length;
+
+        const saveFull = process.env.LSG_DEBUG_SAVE_OUTPUT === '1';
+        const shouldSaveStdout = saveFull && result.stdout && stdoutLines > maxLines;
+        const shouldSaveStderr = saveFull && result.stderr && stderrLines > maxLines;
+
+        let stdout_file = null;
+        let stderr_file = null;
+        if (shouldSaveStdout) {
+            stdout_file = file.replace(/\.log\.json$/, '.stdout.txt');
+            await fsp.writeFile(stdout_file, result.stdout, 'utf-8');
+        }
+        if (shouldSaveStderr) {
+            stderr_file = file.replace(/\.log\.json$/, '.stderr.txt');
+            await fsp.writeFile(stderr_file, result.stderr, 'utf-8');
+        }
+
         const payload = {
             timestamp: new Date().toISOString(),
             command,
             cwd,
+            timeout_ms: timeout,
+            meta: meta || undefined,
             tool: result.tool,
             success: result.success,
             exitCode: result.exitCode,
             duration_ms: result.duration,
             timedOut: result.timedOut,
-            stdout_head: lines(result.stdout),
-            stderr_head: lines(result.stderr),
+            signal: result.signal || null,
+            killed: result.killed || false,
+            error: result.error || null,
+            stdout_bytes: (result.stdout || '').length,
+            stderr_bytes: (result.stderr || '').length,
+            stdout_lines: stdoutLines,
+            stderr_lines: stderrLines,
+            stdout_head: head(result.stdout),
+            stderr_head: head(result.stderr),
+            stdout_tail: tail(result.stdout),
+            stderr_tail: tail(result.stderr),
+            stdout_file,
+            stderr_file,
+            max_lines: maxLines,
+            hint: 'Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated',
         };
         await fsp.mkdir(debugLogDir, { recursive: true });
         await fsp.writeFile(file, JSON.stringify(payload, null, 2), 'utf-8');
