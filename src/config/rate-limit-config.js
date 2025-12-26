@@ -82,6 +82,12 @@ export const RATE_LIMIT_PROFILES = {
                 maxParameters: 5,
                 requestDelay: 300,
             },
+            ContentDiscoveryAgent: {
+                // ffuf/feroxbuster can overwhelm fragile targets; keep conservative defaults
+                threads: 10,
+                rateLimit: 10,
+                delay: '0.2-0.5',
+            },
         },
     },
 
@@ -131,6 +137,11 @@ export const RATE_LIMIT_PROFILES = {
                 maxDepthTest: 30,
                 maxBatchSize: 50,
             },
+            ContentDiscoveryAgent: {
+                threads: 25,
+                rateLimit: 25,
+                delay: '0.1-0.3',
+            },
         },
     },
 
@@ -179,6 +190,11 @@ export const RATE_LIMIT_PROFILES = {
             GraphQLTester: {
                 maxDepthTest: 50,
                 maxBatchSize: 100,
+            },
+            ContentDiscoveryAgent: {
+                threads: 50,
+                rateLimit: 0,
+                delay: '',
             },
         },
     },

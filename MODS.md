@@ -106,6 +106,17 @@ Improved `--debug-tools` output for timeouts (like katana) by recording timeout 
 
 ---
 
+## feat(recon): Throttle ContentDiscoveryAgent ffuf requests (2025-12-26)
+
+### Overview
+Added configurable ffuf throttling (`threads`, `rateLimit`, `delay`) and profile-based defaults so ContentDiscoveryAgent can be enabled without overwhelming fragile targets.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/recon/content-discovery-agent.js` — Supports `rateLimit`/`delay` for ffuf and safer defaults by profile.
+- `src/config/rate-limit-config.js` — Adds `ContentDiscoveryAgent` presets for conservative/normal/aggressive profiles.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview

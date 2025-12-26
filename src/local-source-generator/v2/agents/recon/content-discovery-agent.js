@@ -31,7 +31,15 @@ export class ContentDiscoveryAgent extends BaseAgent {
                 threads: {
                     type: 'number',
                     default: 50,
-                    description: 'Number of concurrent requests'
+                    description: 'Number of concurrent requests (ffuf -t / feroxbuster -t)'
+                },
+                rateLimit: {
+                    type: 'number',
+                    description: 'Max requests/second (ffuf -rate). Omit to disable rate limiting.'
+                },
+                delay: {
+                    type: 'string',
+                    description: 'Request delay/range (ffuf -p), e.g. \"0.2\" or \"0.2-0.6\" seconds'
                 },
                 recursionDepth: {
                     type: 'number',
@@ -133,13 +141,19 @@ export class ContentDiscoveryAgent extends BaseAgent {
      * Build ffuf command
      */
     buildFfufCommand(inputs) {
-        const { target, wordlist, extensions, threads } = inputs;
+        const { target, wordlist, extensions, threads, rateLimit, delay } = inputs;
 
         // Ensure target has FUZZ keyword
         const fuzzTarget = target.endsWith('/') ? `${target}FUZZ` : `${target}/FUZZ`;
 
         let cmd = `ffuf -u "${fuzzTarget}" -w "${wordlist}"`;
         cmd += ` -t ${threads}`;
+        if (typeof rateLimit === 'number' && Number.isFinite(rateLimit) && rateLimit > 0) {
+            cmd += ` -rate ${rateLimit}`;
+        }
+        if (delay) {
+            cmd += ` -p "${delay}"`;
+        }
         cmd += ` -e ${extensions.map(e => `.${e}`).join(',')}`;
         cmd += ' -o /dev/stdout -of json';
         cmd += ' -s';  // Silent mode
@@ -226,10 +240,31 @@ export class ContentDiscoveryAgent extends BaseAgent {
             target,
             wordlist = '/usr/share/seclists/Discovery/Web-Content/common.txt',
             extensions = ['php', 'bak', 'old', 'txt', 'conf', 'json', 'xml', 'env'],
-            threads = 50,
+            threads: providedThreads,
+            rateLimit: providedRateLimit,
+            delay: providedDelay,
             recursionDepth = 2,
             tool = 'auto'
         } = inputs;
+
+        // Apply safer defaults based on selected profile if not explicitly set
+        const profile = inputs.rateLimitProfile || 'normal';
+        const profileDefaults = {
+            stealth: { threads: 5, rateLimit: 5, delay: '0.3-0.7' },
+            conservative: { threads: 10, rateLimit: 10, delay: '0.2-0.5' },
+            normal: { threads: 25, rateLimit: 25, delay: '0.1-0.3' },
+            aggressive: { threads: 50, rateLimit: 0, delay: '' },
+        };
+        const defaults = profileDefaults[profile] || profileDefaults.normal;
+        const threads = (typeof providedThreads === 'number' && Number.isFinite(providedThreads) && providedThreads > 0)
+            ? providedThreads
+            : defaults.threads;
+        const rateLimit = (typeof providedRateLimit === 'number' && Number.isFinite(providedRateLimit) && providedRateLimit >= 0)
+            ? providedRateLimit
+            : defaults.rateLimit;
+        const delay = (typeof providedDelay === 'string' && providedDelay.trim().length > 0)
+            ? providedDelay.trim()
+            : defaults.delay;
 
         // Resolve a usable wordlist path across OS layouts
         const { fs, path } = await import('zx');
@@ -276,7 +311,7 @@ export class ContentDiscoveryAgent extends BaseAgent {
         // Build command
         const command = selectedTool === 'feroxbuster'
             ? this.buildFeroxbusterCommand({ target, wordlist: resolvedWordlist, extensions, threads, recursionDepth })
-            : this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads });
+            : this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads, rateLimit, delay });
 
         ctx.recordToolInvocation();
         const result = await runTool(command, { timeout: 300000, context: ctx });

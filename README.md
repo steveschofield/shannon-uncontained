@@ -487,6 +487,16 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
   --output ./fast-scan
 ```
 
+To slow down `ContentDiscoveryAgent` (ffuf/feroxbuster), set per-agent throttles:
+
+```yaml
+agent_config:
+  ContentDiscoveryAgent:
+    threads: 10
+    rateLimit: 10
+    delay: "0.2-0.5"
+```
+
 Rate limiting profiles (from `src/config/rate-limit-config.js`):
 
 ```bash
