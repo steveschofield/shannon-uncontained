@@ -142,6 +142,7 @@ program
   .option('--profile <name>', 'Rate limit profile: stealth, conservative, normal, aggressive', 'normal')
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .option('--export-review-html', 'Also export model-review.html into the run workspace')
+  .option('--log-llm-requests', 'Log LLM POST metadata in events.ndjson')
   .action(async (target, options) => {
     const { generateLocalSource } = await import('./local-source-generator.mjs');
     const { extname, resolve } = await import('path');
@@ -150,6 +151,7 @@ program
     let configData;
     let enableExploitation = options.enableExploitation ?? false;
     let exportReviewHtml = options.exportReviewHtml ?? false;
+    let logLlmRequests = options.logLlmRequests ?? false;
 
     if (options.config) {
       try {
@@ -189,6 +191,10 @@ program
       if (typeof configExportReviewHtml === 'boolean') {
         exportReviewHtml = configExportReviewHtml;
       }
+      const configLogLlmRequests = configData.log_llm_requests ?? configData.logLlmRequests;
+      if (typeof configLogLlmRequests === 'boolean') {
+        logLlmRequests = configLogLlmRequests;
+      }
 
       // Extract per-agent config (supports agent_config or raw map without reserved keys)
       if (configData.agent_config) {
@@ -207,6 +213,8 @@ program
           'enableExploitation',
           'export_review_html',
           'exportReviewHtml',
+          'log_llm_requests',
+          'logLlmRequests',
         ]);
         const candidateKeys = Object.keys(configData).filter(k => !reserved.has(k));
         if (candidateKeys.length > 0) {
@@ -225,6 +233,11 @@ program
     console.log(chalk.gray(`Rate Limit Profile: ${options.profile}`));
     console.log(chalk.gray(`Exploitation: ${enableExploitation ? 'enabled (opt-in)' : 'disabled (default)'}`));
     console.log(chalk.gray(`Export Review HTML: ${exportReviewHtml ? 'yes' : 'no'}`));
+    console.log(chalk.gray(`Log LLM Requests: ${logLlmRequests ? 'yes' : 'no'}`));
+
+    if (logLlmRequests) {
+      process.env.LSG_LOG_LLM_REQUESTS = '1';
+    }
 
     try {
       // Parse agent filters

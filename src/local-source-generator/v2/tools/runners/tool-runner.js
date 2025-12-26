@@ -91,12 +91,23 @@ export async function runTool(command, options = {}) {
     const toolName = command.split(' ')[0];
     const startTime = Date.now();
     let span = null;
+    const agentName = context?.agentName || null;
+    const stage = context?.stage || null;
     try {
         if (context && typeof context.startSpan === 'function') {
             span = context.startSpan('tool_execution', { tool: toolName, command, cwd });
         }
         if (context && typeof context.logEvent === 'function') {
-            context.logEvent({ type: 'tool_start', tool: toolName, command, cwd, timeout_ms: timeout, meta: meta || undefined });
+            context.logEvent({
+                type: 'tool_start',
+                tool: toolName,
+                command,
+                cwd,
+                timeout_ms: timeout,
+                agent: agentName,
+                stage,
+                meta: meta || undefined,
+            });
         }
     } catch {}
 
@@ -116,11 +127,30 @@ export async function runTool(command, options = {}) {
         });
 
         if (debug && debugLogDir) {
-            await writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir, maxLines: debugMaxLines });
+            await writeDebugLog({
+                command,
+                cwd,
+                timeout,
+                meta,
+                agentName,
+                stage,
+                result,
+                debugLogDir,
+                maxLines: debugMaxLines
+            });
         }
         try {
             if (context && typeof context.logEvent === 'function') {
-                context.logEvent({ type: 'tool_end', tool: toolName, duration: result.duration, success: true, exitCode: result.exitCode, meta: meta || undefined });
+                context.logEvent({
+                    type: 'tool_end',
+                    tool: toolName,
+                    duration: result.duration,
+                    success: true,
+                    exitCode: result.exitCode,
+                    agent: agentName,
+                    stage,
+                    meta: meta || undefined
+                });
             }
             if (span && context) {
                 context.endSpan(span, 'success', { duration: result.duration });
@@ -141,7 +171,17 @@ export async function runTool(command, options = {}) {
             error: err.message,
         });
         if (debug && debugLogDir) {
-            await writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir, maxLines: debugMaxLines });
+            await writeDebugLog({
+                command,
+                cwd,
+                timeout,
+                meta,
+                agentName,
+                stage,
+                result,
+                debugLogDir,
+                maxLines: debugMaxLines
+            });
         }
         try {
             if (context && typeof context.logEvent === 'function') {
@@ -154,6 +194,8 @@ export async function runTool(command, options = {}) {
                     timedOut: result.timedOut,
                     signal: result.signal,
                     error: result.error,
+                    agent: agentName,
+                    stage,
                     meta: meta || undefined
                 });
             }
@@ -225,7 +267,7 @@ export function getToolTimeout(toolName) {
 
 export default { runTool, runToolWithRetry, isToolAvailable, ToolResult };
 
-async function writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir, maxLines }) {
+async function writeDebugLog({ command, cwd, timeout, meta, agentName, stage, result, debugLogDir, maxLines }) {
     try {
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
         const base = `${ts}-${sanitizeName(result.tool || 'tool')}.log.json`;
@@ -258,6 +300,8 @@ async function writeDebugLog({ command, cwd, timeout, meta, result, debugLogDir,
             cwd,
             timeout_ms: timeout,
             meta: meta || undefined,
+            agent: agentName || null,
+            stage: stage || null,
             tool: result.tool,
             success: result.success,
             exitCode: result.exitCode,

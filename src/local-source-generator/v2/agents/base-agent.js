@@ -26,6 +26,8 @@ export class AgentContext extends EventEmitter {
     budget = {},
     logger = null,
     trace = null,
+    agentName = null,
+    stage = null,
   }) {
     super();
     this.evidenceGraph = evidenceGraph;
@@ -51,6 +53,8 @@ export class AgentContext extends EventEmitter {
     // Observability
     this.logger = logger;
     this.trace = trace; // TraceContext for current agent
+    this.agentName = agentName;
+    this.stage = stage;
   }
 
   /**
