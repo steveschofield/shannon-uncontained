@@ -38,7 +38,9 @@ export class ValidationResult {
 const VALIDATORS = {
     javascript: {
         parse: async (filePath) => {
-            const result = await runTool(`node --check "${filePath}"`, { timeout: 10000 });
+            const { resolve } = await import('path');
+            const absFilePath = resolve(filePath);
+            const result = await runTool(`node --check "${absFilePath}"`, { timeout: 10000 });
             return new ValidationResult({
                 stage: 'parse',
                 passed: result.success,
@@ -56,7 +58,8 @@ const VALIDATORS = {
             // Extract project directory from file path (look for eslint.config.js)
             const { dirname, resolve } = await import('path');
             const { existsSync } = await import('fs');
-            let projectDir = dirname(resolve(filePath));
+            const absFilePath = resolve(filePath);
+            let projectDir = dirname(absFilePath);
             // Walk up to find eslint.config.js
             for (let i = 0; i < 5; i++) {
                 if (existsSync(resolve(projectDir, 'eslint.config.js'))) break;
@@ -65,7 +68,7 @@ const VALIDATORS = {
                 projectDir = parent;
             }
 
-            const result = await runTool(`npx eslint --format json "${filePath}"`, {
+            const result = await runTool(`npx eslint --format json "${absFilePath}"`, {
                 timeout: 30000,
                 cwd: projectDir
             });
@@ -74,7 +77,7 @@ const VALIDATORS = {
             let warnings = [];
 
             try {
-                const output = JSON.parse(result.stdout);
+                const output = JSON.parse(result.stdout || '[]');
                 for (const file of output) {
                     for (const msg of file.messages || []) {
                         if (msg.severity === 2) {
@@ -86,9 +89,9 @@ const VALIDATORS = {
                 }
             } catch {
                 // Non-JSON output
-                if (!result.success) {
-                    errors.push(result.stderr);
-                }
+                if (result.stderr) errors.push(result.stderr);
+                else if (result.stdout) errors.push(result.stdout);
+                else if (result.error) errors.push(result.error);
             }
 
             return new ValidationResult({
@@ -103,7 +106,9 @@ const VALIDATORS = {
 
     python: {
         parse: async (filePath) => {
-            const result = await runTool(`python3 -m py_compile "${filePath}"`, { timeout: 10000 });
+            const { resolve } = await import('path');
+            const absFilePath = resolve(filePath);
+            const result = await runTool(`python3 -m py_compile "${absFilePath}"`, { timeout: 10000 });
             return new ValidationResult({
                 stage: 'parse',
                 passed: result.success,
@@ -113,11 +118,13 @@ const VALIDATORS = {
         },
 
         lint: async (filePath) => {
+            const { resolve } = await import('path');
+            const absFilePath = resolve(filePath);
             // Try ruff first (faster), fall back to pylint
-            let result = await runTool(`ruff check "${filePath}" --output-format json`, { timeout: 30000 });
+            let result = await runTool(`ruff check "${absFilePath}" --output-format json`, { timeout: 30000 });
 
             if (!result.success && result.error?.includes('not found')) {
-                result = await runTool(`pylint --output-format=json "${filePath}"`, { timeout: 60000 });
+                result = await runTool(`pylint --output-format=json "${absFilePath}"`, { timeout: 60000 });
             }
 
             let errors = [];
@@ -151,7 +158,9 @@ const VALIDATORS = {
                 return new ValidationResult({ stage: 'typecheck', passed: true, warnings: ['Pyright not available'] });
             }
 
-            const result = await runTool(`pyright "${filePath}" --outputjson`, { timeout: 60000 });
+            const { resolve } = await import('path');
+            const absFilePath = resolve(filePath);
+            const result = await runTool(`pyright "${absFilePath}" --outputjson`, { timeout: 60000 });
 
             let errors = [];
             try {
@@ -176,7 +185,9 @@ const VALIDATORS = {
 
     typescript: {
         parse: async (filePath) => {
-            const result = await runTool(`npx tsc --noEmit "${filePath}"`, { timeout: 30000 });
+            const { resolve } = await import('path');
+            const absFilePath = resolve(filePath);
+            const result = await runTool(`npx tsc --noEmit "${absFilePath}"`, { timeout: 30000 });
             return new ValidationResult({
                 stage: 'parse',
                 passed: result.success,
@@ -186,7 +197,9 @@ const VALIDATORS = {
         },
 
         typecheck: async (filePath) => {
-            const result = await runTool(`npx tsc --noEmit "${filePath}"`, { timeout: 30000 });
+            const { resolve } = await import('path');
+            const absFilePath = resolve(filePath);
+            const result = await runTool(`npx tsc --noEmit "${absFilePath}"`, { timeout: 30000 });
 
             const errors = [];
             for (const line of result.stderr.split('\n')) {

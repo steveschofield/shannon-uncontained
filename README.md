@@ -506,6 +506,9 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port -o ./shannon-
 ```
 
 - Logs path: `<workspace>/tool-logs/` (created automatically)
+- Optional: `LSG_DEBUG_MAX_LINES=500` (default: 200)
+- Optional: `LSG_DEBUG_SAVE_OUTPUT=1` to write full `.stdout.txt`/`.stderr.txt` files when output is truncated
+- Tool logs include `timeout_ms`, `timedOut`, `signal`, and per-attempt metadata for retries
 
 ### Export Review HTML
 

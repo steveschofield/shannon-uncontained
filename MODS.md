@@ -72,6 +72,40 @@ Added `--export-review-html` to `shannon generate` to automatically write `model
 
 ---
 
+## fix(lsg-v2): Reduce noisy validator/tool failures (2025-12-26)
+
+### Overview
+Fixed a common validation failure mode where ESLint was invoked with a relative file path while using a different `cwd`, causing “No files matching the pattern …” errors. Also made TLS/CMDi agents skip gracefully when inputs indicate they can’t run.
+
+### Modified Files
+- `src/local-source-generator/v2/synthesis/validators/validation-harness.js` — Use absolute file paths for `node --check`, `npx eslint`, `py_compile`, `tsc`, etc.
+- `src/local-source-generator/v2/agents/exploitation/cmdi-agent.js` — Skip when no parameter is provided instead of running `commix` and failing.
+- `src/local-source-generator/v2/agents/analysis/tls-analyzer.js` — Skip on non-HTTPS targets (e.g., `http://...:3000`) instead of failing.
+
+---
+
+## feat(tooling): Expand tool debug logs (2025-12-26)
+
+### Overview
+Enhanced `--debug-tools` logs to include error messages, stdout/stderr tail, line/byte counts, and optional full stdout/stderr files for truncated output.
+
+### Modified Files
+- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Adds detailed fields and supports `LSG_DEBUG_SAVE_OUTPUT=1`.
+- `README.md` — Documented `LSG_DEBUG_SAVE_OUTPUT`.
+
+---
+
+## fix(tooling): Add timeout and retry metadata to tool logs (2025-12-26)
+
+### Overview
+Improved `--debug-tools` output for timeouts (like katana) by recording timeout duration, termination signal, and retry attempt metadata in debug logs and unified events.
+
+### Modified Files
+- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Adds `timeout_ms`, `signal`, `killed`, and `meta.attempt/maxRetries` to log payloads; emits `tool_retry` events.
+- `README.md` — Noted additional fields in tool logs.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview
