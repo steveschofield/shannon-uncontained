@@ -14,11 +14,19 @@
 import { ParameterDiscoveryAgent } from './parameter-discovery-agent.js';
 import { NoSQLInjectionAgent } from './nosql-injection-agent.js';
 import { DOMXSSAgent } from './dom-xss-agent.js';
+import { BusinessLogicFuzzer } from './business-logic-fuzzer.js';
+import { CSRFDetector } from './csrf-detector.js';
+import { SSRFDetector } from './ssrf-detector.js';
+import { GraphQLTester } from './graphql-tester.js';
 
 export {
     ParameterDiscoveryAgent,
     NoSQLInjectionAgent,
     DOMXSSAgent,
+    BusinessLogicFuzzer,
+    CSRFDetector,
+    SSRFDetector,
+    GraphQLTester,
 };
 
 /**
@@ -32,6 +40,10 @@ export function registerVulnAnalysisAgents(orchestrator) {
     // Then specialized vulnerability agents
     orchestrator.registerAgent(new NoSQLInjectionAgent());      // NEW - NoSQL injection
     orchestrator.registerAgent(new DOMXSSAgent());              // NEW - DOM XSS
+    orchestrator.registerAgent(new BusinessLogicFuzzer());      // NEW - Business logic flaws
+    orchestrator.registerAgent(new CSRFDetector());             // NEW - CSRF detection
+    orchestrator.registerAgent(new SSRFDetector());             // NEW - SSRF detection
+    orchestrator.registerAgent(new GraphQLTester());            // NEW - GraphQL tests
     
     // Existing agents would be registered here
     // orchestrator.registerAgent(new SQLInjectionAgent());
