@@ -8,12 +8,7 @@ pipeline:
   auto_adjust: false        # Disable auto-adjustment
 
 # Exclude ALL heavy agents
-exclude-agents:
-  - EnhancedNucleiScanAgent
-  - BrowserCrawlerAgent
-  - ContentDiscoveryAgent
-  - CrawlerAgent
-  - MetasploitRecon     # Metasploit heavy
+exclude_agents: "EnhancedNucleiScanAgent,BrowserCrawlerAgent,ContentDiscoveryAgent,CrawlerAgent,MetasploitRecon"
 
 # Keep only lightweight agents
 agent_config:
