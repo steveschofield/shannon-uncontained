@@ -10,7 +10,7 @@ pipeline:
 # Exclude ALL heavy agents
 agents:
   exclude:
-    - EnhancedNucleiScanAgent    # Nuclei is too aggressive
+   # - EnhancedNucleiScanAgent    # Nuclei is too aggressive
     - BrowserCrawlerAgent         # Browser automation heavy
     - ContentDiscoveryAgent       # ffuf is slow and heavy
     - CrawlerAgent                # Katana might be crashing it
