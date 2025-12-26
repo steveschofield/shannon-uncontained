@@ -26,6 +26,9 @@ export async function modelCommand(action, arg, options) {
         case 'export-html':
             await exportHtmlGraph(data, options);
             break;
+        case 'export-review':
+            await exportHtmlReview(data, options, workspace);
+            break;
         default:
             console.log(chalk.red(`Unknown action: ${action}`));
     }
@@ -202,6 +205,293 @@ async function exportHtmlGraph(data, options) {
     console.log(chalk.green(`\n✅ Interactive graph exported to: ${outputPath}`));
     console.log(chalk.gray(`   Nodes: ${nodes.length}, Links: ${links.length}`));
     console.log(chalk.gray(`   Open in browser: file://${path.resolve(outputPath)}`));
+}
+
+function normalizeWorldModel(data) {
+    // v2 state export: { evidence_graph, ledger, target_model, manifest, execution_log }
+    if (data && data.evidence_graph && data.target_model && data.ledger) {
+        const events = data.evidence_graph.events || [];
+        const claims = data.ledger.claims || [];
+        const entities = data.target_model.entities || [];
+        const edges = data.target_model.edges || [];
+        const manifestEntries = data.manifest?.entries || [];
+        const executionLog = data.execution_log || data.executionLog || [];
+        return { events, claims, entities, edges, manifestEntries, executionLog, format: 'v2' };
+    }
+
+    // legacy format (best-effort)
+    return {
+        events: data.evidence || [],
+        claims: data.claims || [],
+        entities: data.entities || [],
+        edges: data.relations || [],
+        manifestEntries: data.artifacts || [],
+        executionLog: data.execution_log || data.executionLog || [],
+        format: 'legacy',
+    };
+}
+
+async function exportHtmlReview(data, options, workspace) {
+    const outputPath = options.output || path.join(workspace || '.', 'model-review.html');
+
+    const { events, claims, entities, edges, manifestEntries, executionLog, format } = normalizeWorldModel(data);
+
+    const metricsPath = path.join(workspace || '.', 'deliverables', 'logs', 'metrics', 'metrics.json');
+    let metrics = null;
+    if (await fs.pathExists(metricsPath)) {
+        try {
+            metrics = await fs.readJSON(metricsPath);
+        } catch {
+            metrics = { error: 'Failed to parse metrics.json' };
+        }
+    }
+
+    const html = generateReviewHtml({
+        workspace,
+        format,
+        exportedAt: data.exported_at || data.exportedAt || null,
+        events,
+        claims,
+        entities,
+        edges,
+        manifestEntries,
+        executionLog,
+        metrics,
+    });
+
+    await fs.writeFile(outputPath, html);
+
+    console.log(chalk.green(`\n✅ Model review exported to: ${outputPath}`));
+    console.log(chalk.gray(`   Open in browser: file://${path.resolve(outputPath)}`));
+}
+
+function generateReviewHtml(payload) {
+    // Embed JSON for offline use (no fetch/CORS issues).
+    const json = JSON.stringify(payload).replace(/</g, '\\u003c');
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shannon Model Review</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0b0f14; color:#e6edf3; }
+    header { padding: 16px 18px; border-bottom: 1px solid #233041; background: #0b0f14; position: sticky; top: 0; z-index: 10; }
+    h1 { font-size: 16px; margin: 0 0 6px 0; }
+    .sub { font-size: 12px; color: #9fb0c0; display:flex; gap:14px; flex-wrap:wrap; }
+    .wrap { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 60px); }
+    nav { border-right: 1px solid #233041; padding: 12px; background:#0c121a; }
+    nav button { width: 100%; text-align: left; padding: 10px 10px; border-radius: 10px; border: 1px solid transparent; background: transparent; color:#e6edf3; cursor: pointer; }
+    nav button.active { background:#111a24; border-color:#233041; }
+    main { padding: 16px; }
+    .grid { display:grid; grid-template-columns: repeat(4, minmax(140px, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .card { border: 1px solid #233041; background:#0c121a; border-radius: 14px; padding: 12px; }
+    .k { font-size: 12px; color:#9fb0c0; }
+    .v { font-size: 18px; margin-top: 4px; }
+    .row { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; margin: 8px 0 12px; }
+    input[type="search"] { width: min(680px, 100%); padding: 10px 12px; border-radius: 12px; border: 1px solid #233041; background:#0b0f14; color:#e6edf3; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; border: 1px solid #233041; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid #233041; font-size: 12px; vertical-align: top; }
+    th { text-align: left; background: #0c121a; color:#cbd7e3; position: sticky; top: 0; z-index: 1; }
+    tr:hover td { background: #0f1722; }
+    code { color: #d2a8ff; }
+    .pill { display:inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid #233041; background:#0b0f14; color:#cbd7e3; font-size: 11px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+    .muted { color:#9fb0c0; }
+    .err { color:#ff7b72; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Shannon Model Review</h1>
+    <div class="sub">
+      <span>Workspace: <span class="mono">${escapeHtml(String(payload.workspace || ''))}</span></span>
+      <span>Format: <span class="pill">${escapeHtml(String(payload.format))}</span></span>
+      <span>Exported: <span class="mono">${escapeHtml(String(payload.exportedAt || 'unknown'))}</span></span>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav>
+      <button data-view="summary" class="active">Summary</button>
+      <button data-view="execution">Execution Log</button>
+      <button data-view="entities">Entities</button>
+      <button data-view="edges">Edges</button>
+      <button data-view="claims">Claims</button>
+      <button data-view="events">Evidence Events</button>
+      <button data-view="metrics">Metrics</button>
+      <button data-view="raw">Raw JSON</button>
+    </nav>
+    <main>
+      <div id="view"></div>
+    </main>
+  </div>
+
+  <script>
+    const DATA = ${json};
+
+    function esc(s){ return String(s ?? '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c])); }
+    function fmt(n){ return new Intl.NumberFormat().format(n); }
+
+    const viewEl = document.getElementById('view');
+    const buttons = Array.from(document.querySelectorAll('nav button'));
+    buttons.forEach(b => b.addEventListener('click', () => {
+      buttons.forEach(x => x.classList.toggle('active', x === b));
+      render(b.dataset.view);
+    }));
+
+    function summaryCards(){
+      const ok = (DATA.executionLog || []).filter(e => e && e.success === true).length;
+      const fail = (DATA.executionLog || []).filter(e => e && e.success === false).length;
+      return [
+        { k: 'Evidence events', v: (DATA.events || []).length },
+        { k: 'Claims', v: (DATA.claims || []).length },
+        { k: 'Entities', v: (DATA.entities || []).length },
+        { k: 'Edges', v: (DATA.edges || []).length },
+        { k: 'Manifest entries', v: (DATA.manifestEntries || []).length },
+        { k: 'Agents OK', v: ok },
+        { k: 'Agents failed', v: fail },
+        { k: 'Metrics present', v: DATA.metrics ? 'yes' : 'no' },
+      ];
+    }
+
+    function renderTable(rows, columns, opts = {}){
+      const id = opts.id || 't';
+      const search = opts.search !== false;
+      const placeholder = opts.placeholder || 'Filter...';
+
+      let html = '';
+      if (search) {
+        html += '<div class="row"><input id="'+id+'_q" type="search" placeholder="'+esc(placeholder)+'" /></div>';
+      }
+      html += '<div style="overflow:auto; max-height: calc(100vh - 190px);">';
+      html += '<table><thead><tr>' + columns.map(c => '<th>'+esc(c.label)+'</th>').join('') + '</tr></thead><tbody id="'+id+'_body"></tbody></table>';
+      html += '</div>';
+      viewEl.innerHTML = html;
+
+      const body = document.getElementById(id+'_body');
+      const q = search ? document.getElementById(id+'_q') : null;
+
+      const renderRows = (query) => {
+        const ql = String(query || '').toLowerCase().trim();
+        const filtered = ql ? rows.filter(r => JSON.stringify(r).toLowerCase().includes(ql)) : rows;
+        body.innerHTML = filtered.slice(0, 2000).map(r => {
+          return '<tr>' + columns.map(c => {
+            const val = c.get(r);
+            if (c.pre) return '<td class="mono"><pre>'+esc(val)+'</pre></td>';
+            return '<td>'+esc(val)+'</td>';
+          }).join('') + '</tr>';
+        }).join('');
+      };
+
+      if (q) {
+        q.addEventListener('input', () => renderRows(q.value));
+      }
+      renderRows('');
+    }
+
+    function render(view){
+      if (view === 'summary') {
+        const cards = summaryCards();
+        viewEl.innerHTML = '<div class="grid">' + cards.map(c => '<div class="card"><div class="k">'+esc(c.k)+'</div><div class="v">'+esc(typeof c.v === 'number' ? fmt(c.v) : c.v)+'</div></div>').join('') + '</div>' +
+          '<div class="card"><div class="k">Notes</div><div class="muted" style="margin-top:6px;">This page embeds the model + metrics for offline review. Tables cap at 2,000 rows for responsiveness.</div></div>';
+        return;
+      }
+
+      if (view === 'execution') {
+        const rows = (DATA.executionLog || []).map(e => ({
+          agent: e.agent,
+          timestamp: e.timestamp,
+          success: e.success,
+          error: e.error || '',
+          duration_ms: e.summary?.duration_ms ?? '',
+          tools: e.summary?.tool_invocations ?? '',
+          net: e.summary?.network_requests ?? '',
+        }));
+        renderTable(rows, [
+          { label: 'Agent', get: r => r.agent },
+          { label: 'Time', get: r => r.timestamp },
+          { label: 'Success', get: r => String(r.success) },
+          { label: 'Error', get: r => r.error },
+          { label: 'Duration (ms)', get: r => String(r.duration_ms) },
+          { label: 'Tools', get: r => String(r.tools) },
+          { label: 'Net', get: r => String(r.net) },
+        ], { id: 'exec', placeholder: 'Filter execution log...' });
+        return;
+      }
+
+      if (view === 'entities') {
+        renderTable(DATA.entities || [], [
+          { label: 'ID', get: r => r.id },
+          { label: 'Type', get: r => r.entity_type || r.type || '' },
+          { label: 'Attrs', get: r => JSON.stringify(r.attributes || {}, null, 2), pre: true },
+        ], { id: 'entities', placeholder: 'Filter entities...' });
+        return;
+      }
+
+      if (view === 'edges') {
+        renderTable(DATA.edges || [], [
+          { label: 'Source', get: r => r.source },
+          { label: 'Relationship', get: r => r.relationship || r.type || '' },
+          { label: 'Target', get: r => r.target },
+          { label: 'Claims', get: r => JSON.stringify(r.claim_refs || r.claim_refs || []), pre: false },
+        ], { id: 'edges', placeholder: 'Filter edges...' });
+        return;
+      }
+
+      if (view === 'claims') {
+        renderTable(DATA.claims || [], [
+          { label: 'ID', get: r => r.id || '' },
+          { label: 'Type', get: r => r.claim_type || r.type || '' },
+          { label: 'Subject', get: r => r.subject || '' },
+          { label: 'Predicate', get: r => JSON.stringify(r.predicate || {}, null, 2), pre: true },
+          { label: 'EBSL/EQBSL', get: r => JSON.stringify(r.eqbsl || r.opinion || {}, null, 2), pre: true },
+        ], { id: 'claims', placeholder: 'Filter claims...' });
+        return;
+      }
+
+      if (view === 'events') {
+        renderTable(DATA.events || [], [
+          { label: 'ID', get: r => r.id || '' },
+          { label: 'Type', get: r => r.event_type || r.type || '' },
+          { label: 'Source', get: r => r.source || r.source_agent || '' },
+          { label: 'Time', get: r => r.timestamp || '' },
+          { label: 'Payload', get: r => JSON.stringify(r.payload || r.content || r.data || {}, null, 2), pre: true },
+        ], { id: 'events', placeholder: 'Filter evidence events...' });
+        return;
+      }
+
+      if (view === 'metrics') {
+        const m = DATA.metrics;
+        if (!m) {
+          viewEl.innerHTML = '<div class="card"><div class="k">Metrics</div><div class="muted" style="margin-top:6px;">No metrics found at <span class="mono">deliverables/logs/metrics/metrics.json</span>.</div></div>';
+          return;
+        }
+        viewEl.innerHTML =
+          '<div class="card"><div class="k">Metrics JSON</div><div class="muted" style="margin-top:6px;">Raw metrics as produced by the run.</div></div>' +
+          '<div class="card" style="margin-top:12px;"><pre class="mono">'+esc(JSON.stringify(m, null, 2))+'</pre></div>';
+        return;
+      }
+
+      if (view === 'raw') {
+        viewEl.innerHTML = '<div class="card"><pre class="mono">'+esc(JSON.stringify(DATA, null, 2))+'</pre></div>';
+        return;
+      }
+
+      viewEl.innerHTML = '<div class="card"><div class="k">Unknown view</div><div class="muted">'+esc(view)+'</div></div>';
+    }
+
+    render('summary');
+  </script>
+</body>
+</html>`;
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
 // === GRAPH BUILDERS ===
@@ -1304,4 +1594,3 @@ function generateGraphHtml(nodes, links, data) {
 </body>
 </html>`;
 }
-

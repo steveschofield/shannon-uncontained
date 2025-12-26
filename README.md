@@ -400,6 +400,7 @@ shannon generate <target> [options]   # Recon-only, builds world model
 shannon model show --workspace <dir>           # ASCII visualization
 shannon model graph --workspace <dir>          # ASCII knowledge graph
 shannon model export-html --workspace <dir>    # Interactive D3.js graph
+shannon model export-review --workspace <dir>  # Offline HTML review (model + metrics)
 shannon model why <claim_id> --workspace <dir> # Explain a claim's evidence
 
 # Evidence commands
@@ -505,6 +506,16 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port -o ./shannon-
 ```
 
 - Logs path: `<workspace>/tool-logs/` (created automatically)
+
+### Export Review HTML
+
+Generate an offline `model-review.html` alongside `world-model.json` after `generate` completes:
+
+```bash
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port \
+  -o ./shannon-results-$(date +%Y%m%d-%H%M%S) \
+  --export-review-html
+```
 
 ### Unified Logging and Tracing
 

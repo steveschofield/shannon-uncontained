@@ -48,6 +48,30 @@ These agents referenced an undefined `ctx` inside helper methods, breaking tool 
 
 ---
 
+## feat(cli): Export offline model review HTML (2025-12-26)
+
+### Overview
+Added `shannon model export-review` to generate a single offline HTML page that embeds `world-model.json` plus `deliverables/logs/metrics/metrics.json` (when present) for easier review.
+
+### Modified Files
+- `shannon.mjs` — New `model export-review` subcommand.
+- `src/cli/commands/ModelCommand.js` — Added `export-review` action with tables for execution log, entities, edges, claims, evidence events, and metrics.
+- `README.md` — Documented the new command in the CLI reference.
+
+---
+
+## feat(cli): Export review HTML on generate (2025-12-26)
+
+### Overview
+Added `--export-review-html` to `shannon generate` to automatically write `model-review.html` into the run workspace alongside `world-model.json`.
+
+### Modified Files
+- `shannon.mjs` — New `--export-review-html` flag; supports config key `export_review_html: true`.
+- `local-source-generator.mjs` — Calls `model export-review` logic after pipeline completion when enabled.
+- `README.md` — Added a quick usage snippet.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview
