@@ -1,0 +1,3 @@
+{"timestamp":"2025-12-26T02:35:51.475Z","sessionId":"20251226023551449-167322","traceId":"bed7c55e73ef1f667454b9c602082499","type":"trace_start","agentName":"SubdomainHunterAgent"}
+{"timestamp":"2025-12-26T02:35:51.479Z","sessionId":"20251226023551449-167322","traceId":"d9b8245ae9cf91b142d595b2aadc549f","type":"trace_start","agentName":"SitemapAgent"}
+{"timestamp":"2025-12-26T02:35:51.512Z","sessionId":"20251226023551449-167322","traceId":"bed7c55e73ef1f667454b9c602082499","type":"tool_start","tool":"subfinder","command":"subfinder -d 192.168.1.130 -silent ","cwd":"/home/kali/code/shannon-uncontained"}
