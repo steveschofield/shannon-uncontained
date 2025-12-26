@@ -429,7 +429,7 @@ Notes
 - `--exclude-agents` is a comma-separated denylist.
 - `--no-resume` prevents the orchestrator from skipping already-completed agents in an existing workspace.
 - `--profile` selects a rate limit profile (`stealth`, `conservative`, `normal`, `aggressive`).
-- `--config <file>` passes per-agent options from a JSON file (see below).
+- `--config <file>` passes per-agent options from a JSON or YAML file (see below).
 
 ### Agent Configuration via JSON
 
@@ -446,6 +446,22 @@ EOF
 LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
   --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
   --config ./agent-config.json \
+  --output ./fast-scan
+```
+
+YAML is also accepted:
+
+```bash
+cat > agent-config.yaml <<'EOF'
+EnhancedNucleiScanAgent:
+  depth: fast
+NetReconAgent:
+  topPorts: 100
+EOF
+
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
+  --agents NetReconAgent,CrawlerAgent,EnhancedNucleiScanAgent,PassiveSecurityAgent \
+  --config ./agent-config.yaml \
   --output ./fast-scan
 ```
 

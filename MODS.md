@@ -211,6 +211,20 @@ Rate-limiting deployment docs referenced profiles; the CLI now exposes a simple 
 
 ---
 
+## feat(cli): Allow YAML for --config (2025-12-25)
+
+### Overview
+Extended the `--config` loader to accept YAML (in addition to JSON) for per-agent options, matching the deployment docs and example configs.
+
+### Modified Files
+- `shannon.mjs` — Detects YAML by extension or on JSON parse failure using `js-yaml`.
+- `README.md` — Documents YAML usage in the agent config examples.
+
+### Rationale
+Deployment examples use `.yaml` files; the CLI previously required JSON, causing parse errors.
+
+---
+
 ## feat(lsg-v2): Register BusinessLogicFuzzer (2025-12-25)
 
 ### Overview
