@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-12-26T01:52:37.459Z",
+  "command": "wafw00f \"http://192.168.1.130:3000\" -o /tmp/wafw00f-lbHCpB/wafw00f.json -f json",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "tool": "wafw00f",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 250,
+  "timedOut": false,
+  "stdout_head": "\n                \u001b[1;97m______\n               \u001b[1;97m/      \\\n              \u001b[1;97m(  W00f! )\n               \u001b[1;97m\\  ____/\n               \u001b[1;97m,,    \u001b[1;92m__            \u001b[1;93m404 Hack Not Found\n           \u001b[1;96m|`-.__   \u001b[1;92m/ /                     \u001b[1;91m __     __\n           \u001b[1;96m/\"  _/  \u001b[1;92m/_/                       \u001b[1;91m\\ \\   / /\n          \u001b[1;94m*===*    \u001b[1;92m/                          \u001b[1;91m\\ \\_/ /  \u001b[1;93m405 Not Allowed\n         \u001b[1;96m/     )__//                           \u001b[1;91m\\   /\n    \u001b[1;96m/|  /     /---`                        \u001b[1;93m403 Forbidden\n    \u001b[1;96m\\\\/`   \\ |                                 \u001b[1;91m/ _ \\\n    \u001b[1;96m`\\    /_\\\\_              \u001b[1;93m502 Bad Gateway  \u001b[1;91m/ / \\ \\  \u001b[1;93m500 Internal Error\n      \u001b[1;96m`_____``-`                             \u001b[1;91m/_/   \\_\\\\\n\n                        \u001b[1;96m~ WAFW00F : \u001b[1;94mv2.3.1 ~\u001b[1;97m\n        The Web Application Firewall Fingerprinting Toolkit\n    \u001b[0m\n[*] Checking http://192.168.1.130:3000\n[+] Generic Detection results:\n[-] No WAF detected by the generic detection\n[~] Number of requests: 7\n",
+  "stderr_head": ""
+}

@@ -5,3 +5,9 @@
 {"timestamp":"2025-12-26T01:52:36.002Z","sessionId":"20251226015235729-eu0bmj","traceId":"3d9cd5c4ac1864bf264e04f4c1e45c09","type":"trace_start","agentName":"OpenAPIDiscoveryAgent"}
 {"timestamp":"2025-12-26T01:52:36.592Z","sessionId":"20251226015235729-eu0bmj","traceId":"3d9cd5c4ac1864bf264e04f4c1e45c09","type":"trace_end","agentName":"OpenAPIDiscoveryAgent","duration":589,"status":"success"}
 {"timestamp":"2025-12-26T01:52:36.594Z","sessionId":"20251226015235729-eu0bmj","traceId":"9708c85e090c67741ea661d0e8c61da1","type":"tool_end","tool":"subfinder","duration":822,"success":true}
+{"timestamp":"2025-12-26T01:52:37.127Z","sessionId":"20251226015235729-eu0bmj","traceId":"9708c85e090c67741ea661d0e8c61da1","type":"trace_end","agentName":"SubdomainHunterAgent","duration":1395,"status":"success"}
+{"timestamp":"2025-12-26T01:52:37.128Z","sessionId":"20251226015235729-eu0bmj","traceId":"c2422d1f4fcb3148ede7a8d3b2511b0c","type":"trace_start","agentName":"NetReconAgent"}
+{"timestamp":"2025-12-26T01:52:37.128Z","sessionId":"20251226015235729-eu0bmj","traceId":"29aee81cd69762058a50cd1c728a34d8","type":"trace_start","agentName":"WAFDetector"}
+{"timestamp":"2025-12-26T01:52:37.163Z","sessionId":"20251226015235729-eu0bmj","traceId":"c2422d1f4fcb3148ede7a8d3b2511b0c","type":"tool_start","tool":"nmap","command":"nmap -sV -p 21,22,23,25,53,80,110,143,443,445,993,995,3306,3389,5432,8080,8443 --open 192.168.1.130","cwd":"/home/kali/code/shannon-uncontained"}
+{"timestamp":"2025-12-26T01:52:37.209Z","sessionId":"20251226015235729-eu0bmj","traceId":"29aee81cd69762058a50cd1c728a34d8","type":"tool_start","tool":"wafw00f","command":"wafw00f \"http://192.168.1.130:3000\" -o /tmp/wafw00f-lbHCpB/wafw00f.json -f json","cwd":"/home/kali/code/shannon-uncontained"}
+{"timestamp":"2025-12-26T01:52:37.460Z","sessionId":"20251226015235729-eu0bmj","traceId":"29aee81cd69762058a50cd1c728a34d8","type":"tool_end","tool":"wafw00f","duration":250,"success":true}
