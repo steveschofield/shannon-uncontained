@@ -20,6 +20,24 @@ Integrated the rate-limiting documentation from deployments into the repository 
 - Implementation already lives at `src/utils/global-rate-limiter.js` and `src/config/rate-limit-config.js`.
 - Profiles include per‑agent knobs that agents can consult to scale workload (e.g., request delays, limits).
 
+---
+
+## fix(perf): Pipeline health cooldown, WAF ctx bug, browser fallback (2025-12-26)
+
+### Overview
+Integrated performance fixes from deployments/perf-fixes:
+- Add cooldown + hysteresis to `PipelineHealthMonitor` to avoid log spam and oscillation; recover concurrency when healthy.
+- Fix `WAFDetector` to pass `ctx` into `runWafw00f` (prevents `ctx is not defined`).
+- Add Puppeteer fallback + clearer guidance when Playwright is missing in `BrowserCrawlerAgent`.
+
+### Modified Files
+- `src/local-source-generator/v2/orchestrator/health-monitor.js` — Cooldown (`adjustmentCooldownMs`), minimum-warning suppression, recovery threshold.
+- `src/local-source-generator/v2/agents/recon/waf-detector-agent.js` — `runWafw00f(ctx, target)` signature; pass `ctx` from `run`.
+- `src/local-source-generator/v2/agents/recon/browser-crawler-agent.js` — Fallback to Puppeteer shallow crawl when Playwright isn’t installed; actionable install messages.
+
+### Rationale
+Prevents noisy concurrency adjustments, fixes a runtime reference error in WAF detection, and ensures browser crawl degrades gracefully instead of failing silently.
+
 ## feat(lsg-v2): Add agent config flag and include EnhancedNuclei in default pipeline (2025-12-25)
 
 ### Overview

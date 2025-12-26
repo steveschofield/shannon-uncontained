@@ -116,7 +116,7 @@ export class WAFDetector extends BaseAgent {
     /**
      * Run wafw00f
      */
-    async runWafw00f(target) {
+    async runWafw00f(ctx, target) {
         const { promises: fsp } = await import('node:fs');
         const os = await import('node:os');
         const path = await import('node:path');
@@ -257,7 +257,7 @@ export class WAFDetector extends BaseAgent {
         // Try wafw00f first
         if (await isToolAvailable('wafw00f')) {
             ctx.recordToolInvocation();
-            const wafw00fResult = await this.runWafw00f(target);
+            const wafw00fResult = await this.runWafw00f(ctx, target);
 
             if (wafw00fResult) {
                 result = {
