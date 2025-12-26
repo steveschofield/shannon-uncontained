@@ -1,0 +1,28 @@
+{
+  "traceId": "7739624d4e8d53ca34b76fec5d082876",
+  "sessionId": "20251226222207226-xgv81z",
+  "agentName": "SubdomainHunterAgent",
+  "startTime": 1766787727253,
+  "endTime": 1766787729115,
+  "duration": 1862,
+  "spans": [
+    {
+      "spanId": "43e7c4cc35f3bc5e",
+      "traceId": "7739624d4e8d53ca34b76fec5d082876",
+      "name": "tool_execution",
+      "startTime": 1766787727290,
+      "attributes": {
+        "tool": "subfinder",
+        "command": "subfinder -d 192.168.1.130 -silent ",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766787728623,
+      "duration": 1333,
+      "result": {
+        "duration": 1332
+      }
+    }
+  ]
+}

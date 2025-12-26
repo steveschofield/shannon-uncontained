@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-26T22:26:04.183Z",
+  "command": "gau --subs 192.168.1.130",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 60000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "CrawlerAgent",
+  "stage": "recon:enumeration",
+  "tool": "gau",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 51766,
+  "timedOut": false,
+  "signal": null,
+  "killed": false,
+  "error": null,
+  "stdout_bytes": 32,
+  "stderr_bytes": 140,
+  "stdout_lines": 2,
+  "stderr_lines": 2,
+  "stdout_head": "http://192.168.1.130/robots.txt\n",
+  "stderr_head": "time=\"2025-12-26T17:25:12-05:00\" level=warning msg=\"error reading config: Config file /home/kali/.gau.toml not found, using default config\"\n",
+  "stdout_tail": "http://192.168.1.130/robots.txt\n",
+  "stderr_tail": "time=\"2025-12-26T17:25:12-05:00\" level=warning msg=\"error reading config: Config file /home/kali/.gau.toml not found, using default config\"\n",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}

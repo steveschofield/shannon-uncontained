@@ -1,0 +1,30 @@
+{
+  "traceId": "2efb62227616d06d81282172bf948d57",
+  "sessionId": "20251226222207226-xgv81z",
+  "agentName": "ContentDiscoveryAgent",
+  "startTime": 1766787964208,
+  "endTime": 1766788492775,
+  "duration": 528567,
+  "spans": [
+    {
+      "spanId": "d38c79b4e10f3910",
+      "traceId": "2efb62227616d06d81282172bf948d57",
+      "name": "tool_execution",
+      "startTime": 1766787964266,
+      "attributes": {
+        "tool": "ffuf",
+        "command": "ffuf -u \"http://192.168.1.130:3000/FUZZ\" -w \"/usr/share/wordlists/dirb/common.txt\" -t 25 -rate 25 -p \"0.1-0.3\" -e .php,.bak,.old,.txt,.conf,.json,.xml,.env -o /dev/stdout -of json -s -mc 200,201,204,301,302,307,401,403",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766788492753,
+      "duration": 528487,
+      "result": {
+        "duration": 528477,
+        "error": "Command failed: ffuf -u \"http://192.168.1.130:3000/FUZZ\" -w \"/usr/share/wordlists/dirb/common.txt\" -t 25 -rate 25 -p \"0.1-0.3\" -e .php,.bak,.old,.txt,.conf,.json,.xml,.env -o /dev/stdout -of json -s -mc 200,201,204,301,302,307,401,403\n",
+        "exitCode": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-26T22:22:14.021Z",
+  "command": "echo \"http://192.168.1.130:3000\" | httpx -silent -json -tech-detect",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 30000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "TechFingerprinterAgent",
+  "stage": "recon:enumeration",
+  "tool": "echo",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 496,
+  "timedOut": false,
+  "signal": null,
+  "killed": false,
+  "error": null,
+  "stdout_bytes": 521,
+  "stderr_bytes": 0,
+  "stdout_lines": 2,
+  "stderr_lines": 1,
+  "stdout_head": "{\"timestamp\":\"2025-12-26T17:22:14.015182175-05:00\",\"port\":\"3000\",\"url\":\"http://192.168.1.130:3000\",\"input\":\"http://192.168.1.130:3000\",\"title\":\"OWASP Juice Shop\",\"scheme\":\"http\",\"content_type\":\"text/html\",\"method\":\"GET\",\"host\":\"192.168.1.130\",\"host_ip\":\"192.168.1.130\",\"path\":\"/\",\"time\":\"13.957442ms\",\"a\":[\"192.168.1.130\"],\"tech\":[\"Cloudflare\",\"Onsen UI\",\"Osano:3.1.0\",\"cdnjs\",\"jQuery:2.2.4\"],\"words\":3681,\"lines\":33,\"status_code\":200,\"content_length\":75055,\"failed\":false,\"knowledgebase\":{\"PageType\":\"other\",\"pHash\":0}}\n",
+  "stderr_head": "",
+  "stdout_tail": "{\"timestamp\":\"2025-12-26T17:22:14.015182175-05:00\",\"port\":\"3000\",\"url\":\"http://192.168.1.130:3000\",\"input\":\"http://192.168.1.130:3000\",\"title\":\"OWASP Juice Shop\",\"scheme\":\"http\",\"content_type\":\"text/html\",\"method\":\"GET\",\"host\":\"192.168.1.130\",\"host_ip\":\"192.168.1.130\",\"path\":\"/\",\"time\":\"13.957442ms\",\"a\":[\"192.168.1.130\"],\"tech\":[\"Cloudflare\",\"Onsen UI\",\"Osano:3.1.0\",\"cdnjs\",\"jQuery:2.2.4\"],\"words\":3681,\"lines\":33,\"status_code\":200,\"content_length\":75055,\"failed\":false,\"knowledgebase\":{\"PageType\":\"other\",\"pHash\":0}}\n",
+  "stderr_tail": "",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}

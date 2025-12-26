@@ -1,0 +1,27 @@
+{
+  "traceId": "25d076d4a1ddff0dcdcd20bad1ba3f50",
+  "sessionId": "20251226222207226-xgv81z",
+  "agentName": "VulnHypothesizer",
+  "startTime": 1766788589410,
+  "endTime": 1766788633038,
+  "duration": 43628,
+  "spans": [
+    {
+      "spanId": "1772132740927c4d",
+      "traceId": "25d076d4a1ddff0dcdcd20bad1ba3f50",
+      "name": "llm_call",
+      "startTime": 1766788589413,
+      "attributes": {
+        "model": "llama3.1:8b",
+        "capability": "extract_structured_claims"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766788633014,
+      "duration": 43601,
+      "result": {
+        "tokens_used": 1302
+      }
+    }
+  ]
+}
