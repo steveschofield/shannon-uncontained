@@ -51,6 +51,7 @@
 * [LLM Configuration](configuration/llm-config.md) (planned)
 * [Tool Configuration](configuration/tool-config.md) (planned)
 * [Budget Limits](configuration/budgets.md) (planned)
+* [Rate Limiting](configuration/rate-limiting.md)
 
 ## Features
 

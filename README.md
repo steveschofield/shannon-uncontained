@@ -269,6 +269,35 @@ LLM_BASE_URL=https://your-proxy.com/v1
 
 For complete configuration options, see [`.env.example`](.env.example).
 
+## Rate Limiting
+
+Shannon includes an adaptive, global rate limiter to prevent overwhelming targets and to play nicely with WAFs.
+
+- Profiles: `stealth`, `conservative`, `normal`, `aggressive`
+- Per‑agent knobs (e.g., `requestDelay`, `maxEndpoints`) live in `src/config/rate-limit-config.js`
+- Simple wrapper `withRateLimit(agentName)` provides rate‑limited `fetch` with retries
+
+Quick start:
+
+```javascript
+import { GlobalRateLimiter } from './src/utils/global-rate-limiter.js';
+import { loadProfile, getRecommendedProfile } from './src/config/rate-limit-config.js';
+
+const target = 'https://example.com';
+const profile = loadProfile(getRecommendedProfile(target));
+GlobalRateLimiter.getInstance(profile.global);
+```
+
+Agent wrapper example:
+
+```javascript
+import { withRateLimit } from './src/utils/global-rate-limiter.js';
+const rl = withRateLimit('CrawlerAgent');
+const res = await rl.fetch('https://example.com/api', { method: 'GET' }, 3);
+```
+
+See details in `docs/gitbook/configuration/rate-limiting.md`.
+
 ---
 
 ## The Evidence-First Workflow

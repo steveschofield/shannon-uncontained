@@ -4,6 +4,22 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## docs(config): Rate limiting guide + README section (2025-12-26)
+
+### Overview
+Integrated the rate-limiting documentation from deployments into the repository docs and README. Added a GitBook page with quick start and agent integration patterns, and a concise README section with usage snippets.
+
+### Files Added
+- `docs/gitbook/configuration/rate-limiting.md` — Initialization, profiles, and agent wrapper examples.
+
+### Files Modified
+- `docs/gitbook/SUMMARY.md` — Linked the new Rate Limiting page under Configuration.
+- `README.md` — New “Rate Limiting” section with quick start and agent wrapper example.
+
+### Notes
+- Implementation already lives at `src/utils/global-rate-limiter.js` and `src/config/rate-limit-config.js`.
+- Profiles include per‑agent knobs that agents can consult to scale workload (e.g., request delays, limits).
+
 ## feat(lsg-v2): Add agent config flag and include EnhancedNuclei in default pipeline (2025-12-25)
 
 ### Overview
