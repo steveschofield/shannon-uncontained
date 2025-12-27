@@ -109,13 +109,17 @@ export const createGitCheckpoint = async (sourceDir, description, attempt) => {
     }
 
     // Check for uncommitted changes with retry logic
-    await executeGitCommandWithRetry(['git', 'status', '--porcelain'], sourceDir, 'status check');
+    const statusResult = await executeGitCommandWithRetry(['git', 'status', '--porcelain'], sourceDir, 'status check');
+    const hasChanges = statusResult.stdout.trim().length > 0;
+    if (!hasChanges) {
+      return { success: true, skipped: true };
+    }
 
     // Stage changes with retry logic
     await executeGitCommandWithRetry(['git', 'add', '-A'], sourceDir, 'staging changes');
 
     // Create commit with retry logic
-    await executeGitCommandWithRetry(['git', 'commit', '-m', `📍 Checkpoint: ${description} (attempt ${attempt})`, '--allow-empty'], sourceDir, 'creating commit');
+    await executeGitCommandWithRetry(['git', 'commit', '-m', `📍 Checkpoint: ${description} (attempt ${attempt})`], sourceDir, 'creating commit');
 
     return { success: true };
   } catch (error) {
@@ -125,11 +129,17 @@ export const createGitCheckpoint = async (sourceDir, description, attempt) => {
 
 export const commitGitSuccess = async (sourceDir, description) => {
   try {
+    const statusResult = await executeGitCommandWithRetry(['git', 'status', '--porcelain'], sourceDir, 'status check for success commit');
+    const hasChanges = statusResult.stdout.trim().length > 0;
+    if (!hasChanges) {
+      return { success: true, skipped: true };
+    }
+
     // Stage changes with retry logic
     await executeGitCommandWithRetry(['git', 'add', '-A'], sourceDir, 'staging changes for success commit');
 
     // Create success commit with retry logic
-    await executeGitCommandWithRetry(['git', 'commit', '-m', `✅ ${description}: completed successfully`, '--allow-empty'], sourceDir, 'creating success commit');
+    await executeGitCommandWithRetry(['git', 'commit', '-m', `✅ ${description}: completed successfully`], sourceDir, 'creating success commit');
 
     return { success: true };
   } catch (error) {

@@ -1417,6 +1417,16 @@ When no parameters are discovered, the XSS validator now tries a default `/searc
 
 ---
 
+## fix(lsg-v2): Skip empty git checkpoint/success commits (2025-12-27)
+
+### Overview
+Prevents the pipeline from writing empty marker commits when no workspace changes exist.
+
+### Modified Files
+- `src/utils/git-manager.js` — Skips commits when `git status --porcelain` is clean and removes `--allow-empty`.
+
+---
+
 ## feat(lsg-v2): Wire authentication config into auth flow detection (2025-12-27)
 
 ### Overview
