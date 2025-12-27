@@ -97,7 +97,7 @@ export class SubdomainHunterAgent extends BaseAgent {
             ctx.recordToolInvocation();
 
             const amassFlags = passive_only ? '-passive' : '-active';
-            const amassCmd = `amass enum ${amassFlags} -d ${domain} -norecursive -noalts -silent`;
+            const amassCmd = `amass enum ${amassFlags} -d ${domain} -norecursive -silent`;
             const amassOptions = getToolRunOptions('amass', inputs.toolConfig);
             const amassResult = await runToolWithRetry(amassCmd, {
                 ...amassOptions,

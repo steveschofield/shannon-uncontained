@@ -4,6 +4,17 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(lsg-v2): Drop deprecated amass flag (2025-12-27)
+
+### Overview
+Removed the deprecated `-noalts` flag from the amass command to prevent v5 CLI failures.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/recon/subdomain-hunter-agent.js` — Updated amass invocation flags.
+
+### Rationale
+Amass v5 no longer recognizes `-noalts`, causing subdomain enumeration to fail.
+
 ## chore(setup): Expand setup tool checks (2025-12-27)
 
 ### Overview
