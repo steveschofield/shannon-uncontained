@@ -3,7 +3,7 @@
 
 authentication:
   login_type: form  # Options: 'form' or 'sso'
-  login_url: "https://example.com/login"
+  login_url: "http://192.168.1.130:3000/#/login"
   credentials:
     username: "admin@juice-sh.op"
     password: "admin123"
