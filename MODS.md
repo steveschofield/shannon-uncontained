@@ -1165,3 +1165,13 @@ Enhanced console output to show tool failures, retries, and agent warnings/error
 
 ### Rationale
 Exploitation agents often skip due to missing parameters or fail due to tool errors; clearer console output makes these cases obvious without digging into logs.
+
+---
+
+## docs: Add Kali planning notes (2025-12-27)
+
+### Overview
+Documented Kali-focused tooling ideas for recon, exploitation, and reporting.
+
+### Modified Files
+- `README-Kali.md` — Kali Linux planning notes and suggested tool add-ons.
