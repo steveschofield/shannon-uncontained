@@ -405,11 +405,31 @@ shannon model show --workspace <dir>           # ASCII visualization
 shannon model graph --workspace <dir>          # ASCII knowledge graph
 shannon model export-html --workspace <dir>    # Interactive D3.js graph
 shannon model export-review --workspace <dir>  # Offline HTML review (model + metrics)
+shannon model export-proxy --workspace <dir>   # ZAP/Burp proxy bundle (OpenAPI + URLs)
 shannon model why <claim_id> --workspace <dir> # Explain a claim's evidence
 
 # Evidence commands
 shannon evidence stats --workspace <dir>  # Evidence statistics
 ```
+
+### Proxy Bundle Export (ZAP/Burp)
+
+Export a proxy import bundle from an existing workspace. This writes to
+`deliverables/proxy` by default.
+
+```bash
+./shannon.mjs model export-proxy --workspace ./shannon-results/example.com
+
+# Optional: override the base URL used for urls.txt
+./shannon.mjs model export-proxy --workspace ./shannon-results/example.com \
+  --target https://example.com
+```
+
+Bundle contents:
+- `deliverables/proxy/openapi.json` (import into ZAP or Burp)
+- `deliverables/proxy/urls.txt` (URL list for proxy seeding)
+- `deliverables/proxy/targets.txt` (base URL hint, when inferred)
+- `deliverables/proxy/proxy-bundle.json` (metadata)
 
 ### Agent Filtering and Resume Control
 

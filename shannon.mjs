@@ -114,6 +114,16 @@ modelCmd
     await modelCommand('export-review', null, options);
   });
 
+modelCmd
+  .command('export-proxy')
+  .description('Export a ZAP/Burp proxy import bundle (OpenAPI + URLs)')
+  .option('--workspace <dir>', 'Workspace directory', '.')
+  .option('-o, --output <dir>', 'Output directory for proxy bundle')
+  .option('--target <url>', 'Base URL override for building full URLs')
+  .action(async (options) => {
+    await modelCommand('export-proxy', null, options);
+  });
+
 // GENERATE COMMAND (Local Source Generator)
 program
   .command('generate')

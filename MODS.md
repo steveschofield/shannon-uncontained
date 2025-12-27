@@ -4,6 +4,19 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(cli): Export proxy bundle for ZAP/Burp (2025-12-27)
+
+### Overview
+Added `model export-proxy` to generate an offline proxy bundle (OpenAPI + URL list) for ZAP/Burp imports.
+
+### Modified Files
+- `shannon.mjs` — New `model export-proxy` subcommand.
+- `src/cli/commands/ModelCommand.js` — Bundle exporter (OpenAPI, urls.txt, metadata, README).
+- `README.md` — Documented proxy bundle usage and outputs.
+
+### Rationale
+Provide a low-friction handoff of Shannon recon output to standard proxy tools without requiring live API integration.
+
 ## fix(lsg-v2): Drop deprecated amass flag (2025-12-27)
 
 ### Overview

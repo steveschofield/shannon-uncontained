@@ -29,6 +29,9 @@ export async function modelCommand(action, arg, options) {
         case 'export-review':
             await exportHtmlReview(data, options, workspace);
             break;
+        case 'export-proxy':
+            await exportProxyBundle(data, options, workspace);
+            break;
         default:
             console.log(chalk.red(`Unknown action: ${action}`));
     }
@@ -263,6 +266,416 @@ async function exportHtmlReview(data, options, workspace) {
 
     console.log(chalk.green(`\n✅ Model review exported to: ${outputPath}`));
     console.log(chalk.gray(`   Open in browser: file://${path.resolve(outputPath)}`));
+}
+
+async function exportProxyBundle(data, options, workspace) {
+    const workspaceRoot = path.resolve(workspace || '.');
+    const outputDir = resolveOutputDir(options.output, workspaceRoot);
+    const { events, entities } = normalizeWorldModel(data);
+
+    await fs.ensureDir(outputDir);
+
+    const endpointList = collectEndpoints(entities, events);
+    const openapiSource = await writeOpenApiBundle({
+        workspaceRoot,
+        outputDir,
+        endpoints: endpointList,
+        baseUrlOverride: options.target,
+    });
+
+    const baseUrl = openapiSource.baseUrl;
+    const urls = buildUrlList(endpointList, baseUrl);
+    const urlsPath = path.join(outputDir, 'urls.txt');
+    await fs.writeFile(urlsPath, urls.join('\n') + (urls.length ? '\n' : ''));
+
+    const targetsPath = path.join(outputDir, 'targets.txt');
+    const targets = baseUrl ? [baseUrl] : [];
+    if (targets.length > 0) {
+        await fs.writeFile(targetsPath, targets.join('\n') + '\n');
+    }
+
+    const bundleMetaPath = path.join(outputDir, 'proxy-bundle.json');
+    await fs.writeJSON(bundleMetaPath, {
+        created_at: new Date().toISOString(),
+        base_url: baseUrl || null,
+        endpoints: endpointList.length,
+        urls: urls.length,
+        openapi_source: openapiSource.kind,
+    }, { spaces: 2 });
+
+    const readmePath = path.join(outputDir, 'README.md');
+    await fs.writeFile(readmePath, buildProxyReadme({
+        baseUrl,
+        openapiSource: openapiSource.kind,
+        endpoints: endpointList.length,
+        urls: urls.length,
+    }));
+
+    console.log(chalk.green(`\n✅ Proxy bundle exported to: ${outputDir}`));
+    console.log(chalk.gray(`   OpenAPI: ${path.join(outputDir, 'openapi.json')} (${openapiSource.kind})`));
+    console.log(chalk.gray(`   URLs: ${urlsPath} (${urls.length})`));
+    if (baseUrl) {
+        console.log(chalk.gray(`   Base URL: ${baseUrl}`));
+    } else {
+        console.log(chalk.yellow('   Base URL: not inferred (urls.txt contains paths only)'));
+    }
+}
+
+function resolveOutputDir(output, workspaceRoot) {
+    if (!output) {
+        return path.join(workspaceRoot, 'deliverables', 'proxy');
+    }
+    return path.isAbsolute(output) ? output : path.join(workspaceRoot, output);
+}
+
+function collectEndpoints(entities = [], events = []) {
+    const endpoints = new Map();
+    const addEndpoint = (entry) => {
+        if (!entry || !entry.path) return;
+        const method = normalizeMethod(entry.method);
+        const pathValue = normalizePath(entry.path);
+        const key = `${method} ${pathValue}`;
+
+        if (!endpoints.has(key)) {
+            endpoints.set(key, {
+                method,
+                path: pathValue,
+                url: entry.url || null,
+                params: [],
+            });
+        }
+
+        const target = endpoints.get(key);
+        if (entry.url && !target.url) {
+            target.url = entry.url;
+        }
+        mergeParams(target.params, entry.params || []);
+    };
+
+    for (const entity of entities || []) {
+        if (entity?.entity_type !== 'endpoint') continue;
+        const attrs = entity.attributes || {};
+        addEndpoint({
+            method: attrs.method || attrs.http_method,
+            path: attrs.path || attrs.url,
+            url: attrs.url,
+            params: Array.isArray(attrs.params) ? attrs.params : [],
+        });
+    }
+
+    for (const event of events || []) {
+        const payload = event.payload || event.content || {};
+        const eventType = event.event_type || event.type || payload.type || '';
+        const isEndpoint = eventType === 'endpoint_discovered'
+            || eventType === 'api_endpoint_inferred'
+            || payload.type === 'endpoint';
+
+        if (!isEndpoint && !payload.path && !payload.url) continue;
+
+        const urlValue = typeof payload.url === 'string' ? payload.url : null;
+        const pathValue = payload.path || (urlValue ? safeUrlPath(urlValue) : null);
+        addEndpoint({
+            method: payload.method || payload.http_method || payload.httpMethod,
+            path: pathValue,
+            url: urlValue,
+            params: Array.isArray(payload.params) ? payload.params : extractQueryParams(urlValue),
+        });
+    }
+
+    return Array.from(endpoints.values());
+}
+
+function normalizeMethod(value) {
+    return (value || 'GET').toString().toUpperCase();
+}
+
+function normalizePath(pathValue) {
+    if (!pathValue) return '/';
+    let normalized = pathValue.toString().trim();
+    if (/^https?:\/\//i.test(normalized)) {
+        const parsed = safeUrlPath(normalized);
+        if (parsed) {
+            normalized = parsed;
+        }
+    }
+    if (normalized.includes('?')) {
+        normalized = normalized.split('?')[0];
+    }
+    if (normalized.includes('#')) {
+        normalized = normalized.split('#')[0];
+    }
+    if (!normalized.startsWith('/')) {
+        normalized = `/${normalized}`;
+    }
+    normalized = normalized.replace(/:([A-Za-z0-9_]+)/g, '{$1}');
+    return normalized;
+}
+
+function safeUrlPath(urlValue) {
+    if (!urlValue) return null;
+    try {
+        return new URL(urlValue).pathname || '/';
+    } catch {
+        return null;
+    }
+}
+
+function extractQueryParams(urlValue) {
+    if (!urlValue) return [];
+    try {
+        const url = new URL(urlValue);
+        const params = [];
+        for (const name of url.searchParams.keys()) {
+            params.push({ name, location: 'query', type: 'string' });
+        }
+        return params;
+    } catch {
+        return [];
+    }
+}
+
+function mergeParams(targetParams, incoming) {
+    if (!Array.isArray(targetParams) || !Array.isArray(incoming)) return;
+    for (const param of incoming) {
+        if (!param || !param.name) continue;
+        const location = param.location || param.in || 'query';
+        const exists = targetParams.some(p => p.name === param.name && (p.location || p.in || 'query') === location);
+        if (!exists) {
+            targetParams.push({
+                name: param.name,
+                location,
+                type: param.type || 'string',
+            });
+        }
+    }
+}
+
+function buildUrlList(endpoints, baseUrl) {
+    const urls = new Set();
+    for (const endpoint of endpoints) {
+        const urlValue = endpoint.url || (baseUrl ? safeJoinUrl(baseUrl, endpoint.path) : null);
+        if (urlValue) {
+            urls.add(urlValue);
+        } else if (endpoint.path) {
+            urls.add(endpoint.path);
+        }
+    }
+    return Array.from(urls).sort();
+}
+
+function safeJoinUrl(baseUrl, pathValue) {
+    try {
+        return new URL(pathValue, baseUrl).toString();
+    } catch {
+        return null;
+    }
+}
+
+async function writeOpenApiBundle({ workspaceRoot, outputDir, endpoints, baseUrlOverride }) {
+    const workspaceOpenApiPath = path.join(workspaceRoot, 'openapi.json');
+    const outputOpenApiPath = path.join(outputDir, 'openapi.json');
+    let openapi = null;
+    let baseUrl = normalizeBaseUrl(baseUrlOverride);
+    let kind = 'generated';
+    let copied = false;
+
+    if (await fs.pathExists(workspaceOpenApiPath)) {
+        const raw = await fs.readFile(workspaceOpenApiPath, 'utf-8');
+        await fs.writeFile(outputOpenApiPath, raw);
+        kind = 'copied';
+        copied = true;
+        try {
+            openapi = JSON.parse(raw);
+        } catch {
+            openapi = null;
+        }
+    }
+
+    if (!baseUrl && openapi?.servers?.length) {
+        baseUrl = normalizeBaseUrl(openapi.servers[0]?.url);
+    }
+
+    if (!baseUrl) {
+        baseUrl = inferBaseUrlFromEndpoints(endpoints);
+    }
+
+    if (!copied) {
+        openapi = buildOpenApiSpec(endpoints, baseUrl);
+        await fs.writeJSON(outputOpenApiPath, openapi, { spaces: 2 });
+    }
+
+    return { kind, baseUrl };
+}
+
+function inferBaseUrlFromEndpoints(endpoints) {
+    for (const endpoint of endpoints || []) {
+        if (!endpoint?.url) continue;
+        const base = normalizeBaseUrl(endpoint.url);
+        if (base) return base;
+    }
+    return null;
+}
+
+function normalizeBaseUrl(value) {
+    if (!value || typeof value !== 'string') return null;
+    try {
+        return new URL(value).origin;
+    } catch {
+        try {
+            return new URL(`https://${value}`).origin;
+        } catch {
+            return null;
+        }
+    }
+}
+
+function buildOpenApiSpec(endpoints, baseUrl) {
+    const title = baseUrl ? `${new URL(baseUrl).hostname} API` : 'Discovered API';
+    const spec = {
+        openapi: '3.0.3',
+        info: {
+            title,
+            version: '1.0.0',
+            description: 'Auto-generated OpenAPI spec from Shannon endpoints',
+            'x-shannon-generated': true,
+        },
+        servers: baseUrl ? [{ url: baseUrl, description: 'Target server' }] : [],
+        paths: {},
+        components: {
+            schemas: {},
+        },
+    };
+
+    for (const endpoint of endpoints) {
+        if (!endpoint.path) continue;
+        const method = (endpoint.method || 'GET').toLowerCase();
+        if (!spec.paths[endpoint.path]) {
+            spec.paths[endpoint.path] = {};
+        }
+        if (spec.paths[endpoint.path][method]) continue;
+
+        const { params, bodyParams } = splitParams(endpoint);
+
+        const operation = {
+            summary: `${method.toUpperCase()} ${endpoint.path}`,
+            responses: {
+                '200': {
+                    description: 'Successful response',
+                },
+            },
+        };
+
+        if (params.length > 0) {
+            operation.parameters = params.map(param => ({
+                name: param.name,
+                in: param.location || 'query',
+                required: param.location === 'path',
+                schema: { type: mapParamType(param.type) },
+            }));
+        }
+
+        if (bodyParams.length > 0 && ['post', 'put', 'patch'].includes(method)) {
+            const properties = {};
+            for (const param of bodyParams) {
+                properties[param.name] = { type: mapParamType(param.type) };
+            }
+            operation.requestBody = {
+                required: true,
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                            properties,
+                        },
+                    },
+                },
+            };
+        }
+
+        spec.paths[endpoint.path][method] = operation;
+    }
+
+    return spec;
+}
+
+function splitParams(endpoint) {
+    const params = [];
+    const bodyParams = [];
+    const seen = new Set();
+
+    const pathParams = extractPathParams(endpoint.path);
+    for (const name of pathParams) {
+        if (!seen.has(`path:${name}`)) {
+            params.push({ name, location: 'path', type: 'string' });
+            seen.add(`path:${name}`);
+        }
+    }
+
+    for (const param of endpoint.params || []) {
+        if (!param || !param.name) continue;
+        const location = param.location || param.in || 'query';
+        const key = `${location}:${param.name}`;
+        if (seen.has(key)) continue;
+        if (location === 'body') {
+            bodyParams.push(param);
+        } else {
+            params.push({ name: param.name, location, type: param.type || 'string' });
+        }
+        seen.add(key);
+    }
+
+    return { params, bodyParams };
+}
+
+function extractPathParams(pathValue) {
+    if (!pathValue) return [];
+    const params = [];
+    const matches = pathValue.matchAll(/{([^}]+)}/g);
+    for (const match of matches) {
+        if (match[1]) {
+            params.push(match[1]);
+        }
+    }
+    return params;
+}
+
+function mapParamType(type) {
+    const typeMap = {
+        string: 'string',
+        integer: 'integer',
+        number: 'number',
+        boolean: 'boolean',
+        array: 'array',
+        object: 'object',
+        uuid: 'string',
+        email: 'string',
+        date: 'string',
+    };
+    return typeMap[type] || 'string';
+}
+
+function buildProxyReadme({ baseUrl, openapiSource, endpoints, urls }) {
+    const lines = [
+        '# Proxy Export Bundle',
+        '',
+        'Generated files:',
+        '- openapi.json: OpenAPI spec for ZAP/Burp import.',
+        '- urls.txt: URL list for proxy seeding (one URL per line).',
+        '- targets.txt: Base URL hint used for URL expansion (when inferred).',
+        '- proxy-bundle.json: Bundle metadata.',
+        '',
+        'Notes:',
+        `- OpenAPI source: ${openapiSource}.`,
+        `- Base URL: ${baseUrl || 'not inferred'}.`,
+        `- Endpoints: ${endpoints}.`,
+        `- URLs: ${urls}.`,
+        '',
+        'Usage hints:',
+        '- ZAP: File -> Import -> OpenAPI definition, or Import URLs from file.',
+        '- Burp: use OpenAPI import (if available) or add hosts/paths from urls.txt.',
+        '',
+    ];
+    return lines.join('\n');
 }
 
 function generateReviewHtml(payload) {
