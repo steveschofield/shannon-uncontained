@@ -150,6 +150,8 @@ program
     const { extname, resolve } = await import('path');
     let agentConfig;
     let toolConfig;
+    let configIncludeAgents;
+    let configExcludeAgents;
     let healthCheckConfig;
     let configData;
     let enableExploitation = options.enableExploitation ?? false;
@@ -245,6 +247,19 @@ program
       } else if (configData.toolConfig) {
         toolConfig = configData.toolConfig;
       }
+
+      // Agents allow/deny from config (equivalent to CLI --agents/--exclude-agents)
+      if (Array.isArray(configData.agents)) {
+        configIncludeAgents = configData.agents.map(String);
+      } else if (typeof configData.agents === 'string') {
+        configIncludeAgents = String(configData.agents).split(',').map(s => s.trim()).filter(Boolean);
+      }
+      const cfgEx = configData.exclude_agents || configData.excludeAgents;
+      if (Array.isArray(cfgEx)) {
+        configExcludeAgents = cfgEx.map(String);
+      } else if (typeof cfgEx === 'string') {
+        configExcludeAgents = String(cfgEx).split(',').map(s => s.trim()).filter(Boolean);
+      }
     }
 
     console.log(chalk.cyan.bold('🔍 LOCAL SOURCE GENERATOR'));
@@ -277,10 +292,10 @@ program
       // Parse agent filters
       const includeAgents = options.agents
         ? String(options.agents).split(',').map(s => s.trim()).filter(Boolean)
-        : undefined;
+        : (configIncludeAgents || undefined);
       const excludeAgents = options.excludeAgents
         ? String(options.excludeAgents).split(',').map(s => s.trim()).filter(Boolean)
-        : undefined;
+        : (configExcludeAgents || undefined);
 
       const result = await generateLocalSource(target, options.output, {
         skipNmap: options.skipNmap,

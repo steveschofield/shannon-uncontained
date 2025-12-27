@@ -1,0 +1,60 @@
+# Lab configuration for DVWA (Damn Vulnerable Web Application)
+# Educational use only. Enables safe-but-deeper probes and targeted lab behavior.
+
+profile: conservative            # keep requests modest for local/dev targets
+enable_exploitation: false       # keep active exploitation off unless you opt-in
+unsafe_probes: true              # master switch for lab mode
+
+# Per-agent lab overrides (used only when unsafe_probes: true)
+# Focus on general web risks that DVWA can illustrate in a lab setting.
+lab_agents:
+  - RequestSmugglingDetector
+  - IDORProbeAgent
+
+# IDOR-focused tuning (honored by IDORProbeAgent)
+agent_config:
+  IDORProbeAgent:
+    maxEndpoints: 80           # broaden candidates for DVWA drills
+    maxMutations: 5            # try more path/query variations per candidate
+
+# Hints (DVWA endpoints to explore):
+# - /vulnerabilities/idor/ (if present in your DVWA build)
+# - Endpoints with numeric ids: view.php?id=1, item.php?id=1, users.php?uid=1
+# - Try two users (two sessions) to validate horizontal access manually
+
+# =============================================================
+# Class Flow (DVWA IDOR & Smuggling) — Instructor Notes
+# =============================================================
+# 1) Start DVWA locally (example):
+#    docker run -it --rm -p 8080:80 vulnerables/web-dvwa
+# 2) Set Security level to Low (DVWA UI → DVWA Security → Low → Submit)
+# 3) Create two user accounts or use existing ones to validate IDOR
+# 4) Run a focused IDOR drill:
+#    shannon.mjs generate http://localhost:8080 \\
+#      --config configs/lab-dvwa.yaml \\
+#      --agents ParameterDiscoveryAgent,IDORProbeAgent \\
+#      -o ./lab-results-dvwa-idor
+# 5) Inspect results:
+#    - events.ndjson → search for "idor_possible_detected"
+#    - world-model.json → claims: "idor_possible"
+# 6) Validate manually:
+#    - In two browsers/incognito sessions (User A & B), try mutated IDs from evidence
+#    - Confirm whether User A can access User B’s resource (horizontal escalation)
+# 7) Optional: Smuggling payload shapes for education only:
+#    shannon.mjs generate http://localhost:8080 \\
+#      --config configs/lab-dvwa.yaml \\
+#      --agents RequestSmugglingDetector \\
+#      -o ./lab-results-dvwa-smuggle
+#    - See: deliverables/lab/request-smuggling/*.txt (generated PoCs not sent automatically)
+# 8) Debrief:
+#    - Why IDOR happens, authorization vs authentication
+#    - Discuss mitigations: proper authorization checks, access control testing, secure ID design
+
+# Optional environment variables for other labs (not typically needed for DVWA):
+#   export XXE_OOB_URL="https://oob.yourdomain/xxe.txt"
+#   export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"
+
+# Example per-agent throttles (optional)
+# agent_config:
+#   IDORProbeAgent:
+#     maxEndpoints: 50

@@ -85,6 +85,13 @@
 ## Contributing
 
 * [How to Contribute](contributing.md)
+
+## Labs
+
+* [Labs Overview](labs/README.md)
+* [DVWA Lab](labs/dvwa-lab.md)
+* [DVWA Kitchen Sink](labs/dvwa-kitchensink.md)
+* [Juice Shop Lab](labs/juice-shop-lab.md)
 * [Development Setup](development/setup.md) (planned)
 * [Testing](development/testing.md) (planned)
 * [Code Style](development/code-style.md) (planned)
