@@ -86,22 +86,24 @@ export async function runTool(command, options = {}) {
         debugMaxLines = parseInt(process.env.LSG_DEBUG_MAX_LINES || '200', 10),
         context = null,
         meta = null,
+        authContext = null,
     } = options;
 
-    const toolName = command.split(' ')[0];
+    const resolvedCommand = applyAuthContextToCommand(command, authContext || context?.authContext);
+    const toolName = resolvedCommand.split(' ')[0];
     const startTime = Date.now();
     let span = null;
     const agentName = context?.agentName || null;
     const stage = context?.stage || null;
     try {
         if (context && typeof context.startSpan === 'function') {
-            span = context.startSpan('tool_execution', { tool: toolName, command, cwd });
+            span = context.startSpan('tool_execution', { tool: toolName, command: resolvedCommand, cwd });
         }
         if (context && typeof context.logEvent === 'function') {
             context.logEvent({
                 type: 'tool_start',
                 tool: toolName,
-                command,
+                command: resolvedCommand,
                 cwd,
                 timeout_ms: timeout,
                 agent: agentName,
@@ -112,7 +114,7 @@ export async function runTool(command, options = {}) {
     } catch {}
 
     try {
-        const { stdout, stderr } = await execAsync(command, {
+        const { stdout, stderr } = await execAsync(resolvedCommand, {
             cwd,
             env: { ...process.env, ...env },
             timeout,
@@ -128,7 +130,7 @@ export async function runTool(command, options = {}) {
 
         if (debug && debugLogDir) {
             await writeDebugLog({
-                command,
+                command: resolvedCommand,
                 cwd,
                 timeout,
                 meta,
@@ -172,7 +174,7 @@ export async function runTool(command, options = {}) {
         });
         if (debug && debugLogDir) {
             await writeDebugLog({
-                command,
+                command: resolvedCommand,
                 cwd,
                 timeout,
                 meta,
@@ -247,10 +249,14 @@ export async function runToolWithRetry(command, options = {}) {
  */
 export const TOOL_TIMEOUTS = {
     nmap: 120000,
+    rustscan: 120000,
     subfinder: 60000,
+    amass: 120000,
     whatweb: 30000,
     gau: 60000,
     katana: 180000,
+    gospider: 180000,
+    waybackurls: 60000,
     httpx: 30000,
     nuclei: 300000,
     commix: 300000,
@@ -373,4 +379,115 @@ function pickNumber(...values) {
         }
     }
     return undefined;
+}
+
+function applyAuthContextToCommand(command, authContext) {
+    if (!authContext || typeof authContext !== 'object') return command;
+    const toolName = command.split(' ')[0];
+    const support = getAuthSupportForTool(toolName);
+    if (!support) return command;
+
+    const { headers, cookieHeader } = buildAuthHeaders(authContext);
+    if (headers.length === 0 && !cookieHeader) return command;
+
+    if (support.cookieFlag && cookieHeader) {
+        if (!hasCookieFlag(command, support.cookieFlag)) {
+            command += ` ${support.cookieFlag} ${shellQuote(cookieHeader)}`;
+        }
+    }
+
+    const headerPairs = cookieHeader && support.cookieFlag
+        ? headers.filter(([name]) => name.toLowerCase() !== 'cookie')
+        : headers;
+
+    if (headerPairs.length === 0) return command;
+
+    if (support.headerFlag === '--headers' && hasHeaderFlag(command)) {
+        return command;
+    }
+
+    if (support.headerJoin) {
+        const joined = headerPairs.map(([name, value]) => `${name}: ${value}`).join(support.headerJoin);
+        command += ` ${support.headerFlag} ${shellQuote(joined)}`;
+        return command;
+    }
+
+    for (const [name, value] of headerPairs) {
+        command += ` ${support.headerFlag} ${shellQuote(`${name}: ${value}`)}`;
+    }
+
+    return command;
+}
+
+function getAuthSupportForTool(toolName) {
+    const supportMap = {
+        httpx: { headerFlag: '-H' },
+        katana: { headerFlag: '-H' },
+        nuclei: { headerFlag: '-H' },
+        ffuf: { headerFlag: '-H', cookieFlag: '-b' },
+        sqlmap: { headerFlag: '--headers', headerJoin: '\n' },
+        commix: { headerFlag: '--headers', headerJoin: '\n', cookieFlag: '--cookie' },
+        xsstrike: { headerFlag: '--headers', headerJoin: '\n', cookieFlag: '--cookie' },
+    };
+    return supportMap[toolName] || null;
+}
+
+function buildAuthHeaders(authContext) {
+    const headers = [];
+    const headerMap = new Map();
+
+    if (authContext.headers && typeof authContext.headers === 'object') {
+        for (const [name, value] of Object.entries(authContext.headers)) {
+            if (value) headerMap.set(name, value);
+        }
+    }
+
+    if (authContext.bearerToken && !headerMap.has('Authorization')) {
+        headerMap.set('Authorization', `Bearer ${authContext.bearerToken}`);
+    }
+
+    const cookieHeader = buildCookieHeader(authContext.cookies);
+    if (cookieHeader && !headerMap.has('Cookie')) {
+        headerMap.set('Cookie', cookieHeader);
+    }
+
+    for (const [name, value] of headerMap.entries()) {
+        headers.push([name, value]);
+    }
+
+    return { headers, cookieHeader };
+}
+
+function buildCookieHeader(cookies) {
+    if (!Array.isArray(cookies) || cookies.length === 0) return null;
+    const cookieMap = new Map();
+    for (const cookie of cookies) {
+        const pair = String(cookie || '').split(';')[0].trim();
+        if (!pair || !pair.includes('=')) continue;
+        const [name] = pair.split('=');
+        if (!name) continue;
+        cookieMap.set(name.trim(), pair);
+    }
+    if (cookieMap.size === 0) return null;
+    return Array.from(cookieMap.values()).join('; ');
+}
+
+function hasHeaderFlag(command) {
+    return /\s(-H|--header|--headers)\b/.test(command);
+}
+
+function hasCookieFlag(command, cookieFlag) {
+    if (cookieFlag === '-b') {
+        return /\s-b\b/.test(command);
+    }
+    if (cookieFlag === '--cookie') {
+        return /\s--cookie\b/.test(command);
+    }
+    return /\s--cookie\b/.test(command);
+}
+
+function shellQuote(value) {
+    const str = String(value);
+    if (str.length === 0) return "''";
+    return `'${str.replace(/'/g, `'\\''`)}'`;
 }

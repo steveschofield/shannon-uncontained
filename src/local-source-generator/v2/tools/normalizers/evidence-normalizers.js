@@ -75,6 +75,31 @@ export function normalizeSubfinder(output, target) {
 }
 
 /**
+ * Parse amass output to evidence events
+ * @param {string} output - Amass output (one subdomain per line)
+ * @param {string} target - Target domain
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeAmass(output, target) {
+    const events = [];
+    const subdomains = output.split('\n').filter(s => s.trim());
+
+    for (const subdomain of subdomains) {
+        events.push(createEvidenceEvent({
+            source: 'amass',
+            event_type: EVENT_TYPES.DNS_RECORD,
+            target,
+            payload: {
+                subdomain: subdomain.trim(),
+                record_type: 'subdomain',
+            },
+        }));
+    }
+
+    return events;
+}
+
+/**
  * Parse whatweb output to evidence events
  * @param {string} output - Whatweb JSON output
  * @param {string} target - Target URL
@@ -226,6 +251,109 @@ export function normalizeKatana(output, target) {
 }
 
 /**
+ * Parse gospider output to evidence events
+ * @param {string} output - GoSpider output (line-based)
+ * @param {string} target - Target URL
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeGoSpider(output, target) {
+    const events = [];
+    const lines = output.split('\n').filter(l => l.trim());
+
+    for (const line of lines) {
+        const match = line.match(/https?:\/\/[^\s"'<>]+/);
+        if (!match) continue;
+
+        try {
+            const url = new URL(match[0]);
+            events.push(createEvidenceEvent({
+                source: 'gospider',
+                event_type: EVENT_TYPES.ENDPOINT_DISCOVERED,
+                target,
+                payload: {
+                    url: match[0],
+                    path: url.pathname,
+                    method: 'GET',
+                    params: extractParams(url),
+                    discovery_method: 'active_crawl',
+                },
+            }));
+        } catch {
+            // Skip invalid URLs
+        }
+    }
+
+    return events;
+}
+
+/**
+ * Parse waybackurls output to evidence events
+ * @param {string} output - Waybackurls output (one URL per line)
+ * @param {string} target - Target domain
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeWaybackUrls(output, target) {
+    const events = [];
+    const urls = output.split('\n').filter(u => u.trim());
+
+    for (const urlStr of urls) {
+        try {
+            const url = new URL(urlStr.trim());
+            const method = guessMethodFromUrl(url);
+            const params = extractParams(url);
+
+            events.push(createEvidenceEvent({
+                source: 'waybackurls',
+                event_type: EVENT_TYPES.ENDPOINT_DISCOVERED,
+                target,
+                payload: {
+                    url: urlStr.trim(),
+                    path: url.pathname,
+                    method,
+                    params,
+                    discovery_method: 'historical',
+                },
+            }));
+        } catch {
+            // Skip invalid URLs
+        }
+    }
+
+    return events;
+}
+
+/**
+ * Parse rustscan output to evidence events
+ * @param {string} output - Rustscan output
+ * @param {string} target - Target hostname
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeRustscan(output, target) {
+    const events = [];
+    const lines = output.split('\n');
+
+    for (const line of lines) {
+        const portMatch = line.match(/(\d+)\/(tcp|udp)/i);
+        if (!portMatch) continue;
+
+        const [, port, protocol] = portMatch;
+        events.push(createEvidenceEvent({
+            source: 'rustscan',
+            event_type: EVENT_TYPES.PORT_SCAN,
+            target,
+            payload: {
+                port: parseInt(port, 10),
+                protocol: protocol.toLowerCase(),
+                state: 'open',
+                service: null,
+            },
+        }));
+    }
+
+    return events;
+}
+
+/**
  * Parse httpx output to evidence events
  * @param {string} output - Httpx JSON output
  * @param {string} target - Target URL
@@ -368,8 +496,12 @@ function inferType(value) {
 export default {
     normalizeNmap,
     normalizeSubfinder,
+    normalizeAmass,
     normalizeWhatweb,
     normalizeGau,
     normalizeKatana,
+    normalizeGoSpider,
+    normalizeWaybackUrls,
+    normalizeRustscan,
     normalizeHttpx,
 };

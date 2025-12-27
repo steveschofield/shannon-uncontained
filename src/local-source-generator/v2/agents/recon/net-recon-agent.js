@@ -7,7 +7,7 @@
 
 import { BaseAgent } from '../base-agent.js';
 import { runToolWithRetry, getToolRunOptions, isToolAvailable } from '../../tools/runners/tool-runner.js';
-import { normalizeNmap } from '../../tools/normalizers/evidence-normalizers.js';
+import { normalizeNmap, normalizeRustscan } from '../../tools/normalizers/evidence-normalizers.js';
 import { EVENT_TYPES, createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -116,8 +116,51 @@ export class NetReconAgent extends BaseAgent {
         const nmapBin = await this.resolveNmap() || 'nmap'; // Default to PATH if detection fails (will fail later if broken)
 
         const topPorts = inputs.topPorts;
-        const ports = inputs.ports || '21,22,23,25,53,80,110,143,443,445,993,995,3306,3389,5432,8080,8443';
+        let ports = inputs.ports || '21,22,23,25,53,80,110,143,443,445,993,995,3306,3389,5432,8080,8443';
         const flags = inputs.aggressive ? '-A' : '-sV';
+
+        const rustscanAvailable = await isToolAvailable('rustscan');
+        if (rustscanAvailable) {
+            ctx.recordToolInvocation();
+
+            const rustscanCmd = `rustscan -a ${hostname}`;
+            const rustscanOptions = getToolRunOptions('rustscan', inputs.toolConfig);
+            const rustscanResult = await runToolWithRetry(rustscanCmd, {
+                ...rustscanOptions,
+                context: ctx,
+            });
+
+            if (rustscanResult.success) {
+                const events = normalizeRustscan(rustscanResult.stdout, hostname);
+                const rustscanPorts = [];
+
+                for (const event of events) {
+                    ctx.emitEvidence(event);
+                    if (event.event_type === EVENT_TYPES.PORT_SCAN) {
+                        rustscanPorts.push(event.payload.port);
+                    }
+                }
+
+                if (!topPorts && rustscanPorts.length > 0) {
+                    const portSet = new Set(ports.split(',').filter(Boolean));
+                    for (const port of rustscanPorts) {
+                        portSet.add(String(port));
+                    }
+                    ports = Array.from(portSet)
+                        .map((port) => Number(port))
+                        .sort((a, b) => a - b)
+                        .join(',');
+                }
+            } else {
+                ctx.emitEvidence(createEvidenceEvent({
+                    source: 'NetReconAgent',
+                    event_type: rustscanResult.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                    target: hostname,
+                    payload: { tool: 'rustscan', error: rustscanResult.error },
+                }));
+            }
+        }
+
         this.setStatus(`Scanning ${hostname} (${nmapBin} ${flags}${topPorts ? ` --top-ports ${topPorts}` : ` -p ${ports}`})...`);
         let command = `${nmapBin} ${flags} ${topPorts ? `--top-ports ${topPorts}` : `-p ${ports}`} --open ${hostname}`;
 

@@ -6,7 +6,7 @@
 
 import { BaseAgent } from '../base-agent.js';
 import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
-import { normalizeSubfinder } from '../../tools/normalizers/evidence-normalizers.js';
+import { normalizeSubfinder, normalizeAmass } from '../../tools/normalizers/evidence-normalizers.js';
 import { createEvidenceEvent, EVENT_TYPES } from '../../worldmodel/evidence-graph.js';
 
 export class SubdomainHunterAgent extends BaseAgent {
@@ -88,6 +88,40 @@ export class SubdomainHunterAgent extends BaseAgent {
                     event_type: result.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
                     target: domain,
                     payload: { tool: 'subfinder', error: result.error },
+                }));
+            }
+        }
+
+        const amassAvailable = await isToolAvailable('amass');
+        if (amassAvailable) {
+            ctx.recordToolInvocation();
+
+            const amassFlags = passive_only ? '-passive' : '-active';
+            const amassCmd = `amass enum ${amassFlags} -d ${domain} -norecursive -noalts -silent`;
+            const amassOptions = getToolRunOptions('amass', inputs.toolConfig);
+            const amassResult = await runToolWithRetry(amassCmd, {
+                ...amassOptions,
+                context: ctx,
+            });
+
+            if (amassResult.success) {
+                const events = normalizeAmass(amassResult.stdout, domain);
+                results.sources.push('amass');
+
+                for (const event of events) {
+                    const subdomain = event.payload.subdomain;
+                    if (!seenSubdomains.has(subdomain)) {
+                        seenSubdomains.add(subdomain);
+                        ctx.emitEvidence(event);
+                        results.subdomains.push(subdomain);
+                    }
+                }
+            } else {
+                ctx.emitEvidence(createEvidenceEvent({
+                    source: 'SubdomainHunterAgent',
+                    event_type: amassResult.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                    target: domain,
+                    payload: { tool: 'amass', error: amassResult.error },
                 }));
             }
         }

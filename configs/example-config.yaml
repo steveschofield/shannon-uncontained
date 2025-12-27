@@ -43,3 +43,18 @@ rules:
     - description: "Focus on user profile updates"
       type: path
       url_path: "/api/v2/user-profile"
+
+tool_config:
+  default:
+    timeout_ms: 180000
+    max_retries: 1
+    retry_delay_ms: 1000
+  tools:
+    amass:
+      timeout_ms: 180000
+    rustscan:
+      timeout_ms: 120000
+    gospider:
+      timeout_ms: 180000
+    waybackurls:
+      timeout_ms: 60000

@@ -41,6 +41,9 @@ These tools are used by their respective agents.
 - **katana** (Crawling)
 - **nuclei** (Vulnerability scanning)
 - **gau** (GetAllUrls)
+- **amass** (Subdomain discovery)
+- **gospider** (Crawling)
+- **waybackurls** (Historical URLs)
 
 **Installation**:
 All can be installed via `go install`:
@@ -50,8 +53,19 @@ go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 go install -v github.com/projectdiscovery/katana/cmd/katana@latest
 go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest
 go install -v github.com/lc/gau/v2/cmd/gau@latest
+go install -v github.com/owasp-amass/amass/v4/...@latest
+go install github.com/jaeles-project/gospider@latest
+go install github.com/tomnomnom/waybackurls@latest
 ```
 Ensure `$GOPATH/bin` or `$HOME/go/bin` is in your PATH.
+
+### 4. Rust-Based Recon Tools
+- **rustscan** (Fast port discovery)
+
+**Installation**:
+```bash
+cargo install rustscan
+```
 
 ## Environment Resolution
 The `shannon` CLI attempts to resolve these tools from your environment.
