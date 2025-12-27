@@ -1,5 +1,4 @@
 shannon-results*
-deployments*
 .DS_Store*
 settings.json
 .python-version
@@ -20,3 +19,4 @@ __pycache__/*
 *.swo
 .idea/*
 *.iml
+*deployments/*
