@@ -519,6 +519,23 @@ agent_config:
     delay: "0.2-0.5"
 ```
 
+To override Metasploit module sets per phase, add module lists/maps under the agent name:
+
+```yaml
+agent_config:
+  MetasploitRecon:
+    reconModules:
+      - auxiliary/scanner/http/http_version
+      - auxiliary/scanner/http/robots_txt
+    techReconModules:
+      wordpress:
+        - auxiliary/scanner/http/wordpress_login_enum
+  MetasploitExploit:
+    exploitModules:
+      wordpress:
+        - exploit/unix/webapp/wp_admin_shell_upload
+```
+
 To override tool timeouts or retries (e.g., `katana`, `ffuf`, `amass`, `rustscan`), add `tool_config`:
 
 ```yaml

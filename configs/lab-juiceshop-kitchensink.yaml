@@ -82,6 +82,17 @@ agent_config:
   # (Example placeholder) You can add other agents with custom knobs as they adopt agent_config.
   # OpenRedirectAgent:
   #   customParams: ["next","return","redirect_uri","url"]
+  # MetasploitRecon:
+  #   reconModules:
+  #     - auxiliary/scanner/http/http_version
+  #     - auxiliary/scanner/http/robots_txt
+  #   techReconModules:
+  #     wordpress:
+  #       - auxiliary/scanner/http/wordpress_login_enum
+  # MetasploitExploit:
+  #   exploitModules:
+  #     wordpress:
+  #       - exploit/unix/webapp/wp_admin_shell_upload
 
 # =========================
 # Tool configuration (example placeholders)
