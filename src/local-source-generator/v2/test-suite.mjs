@@ -36,6 +36,7 @@ import {
     createLSGv2,
     VERSION, ARCHITECTURE,
 } from './index.js';
+import { XSSValidatorAgent } from './agents/exploitation/xss-validator-agent.js';
 
 // Test utilities
 const colors = {
@@ -307,6 +308,21 @@ async function runTests() {
         });
         assert(ctx.evidenceGraph, 'Should have evidenceGraph');
         assert(typeof ctx.recordTokens === 'function', 'Should have recordTokens');
+    });
+
+    test('XSSValidatorAgent builds /search?q= seed target', () => {
+        const agent = new XSSValidatorAgent();
+        const seed = agent.buildSearchSeedTarget('http://example.com');
+        assert(seed, 'Seed should be created');
+        assert(seed.parameter === 'q', 'Seed parameter should be q');
+        assert(seed.path === '/search', 'Seed path should be /search');
+        assert(seed.target.includes('/search?q='), 'Seed target should include /search?q=');
+    });
+
+    test('XSSValidatorAgent seed returns null on invalid target', () => {
+        const agent = new XSSValidatorAgent();
+        const seed = agent.buildSearchSeedTarget('not a url');
+        assert(seed === null, 'Seed should be null for invalid URL');
     });
 
     // --------------------------------------------------------------------------

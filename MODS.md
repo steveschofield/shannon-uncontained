@@ -1175,3 +1175,17 @@ Documented Kali-focused tooling ideas for recon, exploitation, and reporting.
 
 ### Modified Files
 - `README-Kali.md` — Kali Linux planning notes and suggested tool add-ons.
+
+---
+
+## feat(lsg-v2): Seed XSS validation with /search?q= (2025-12-27)
+
+### Overview
+When no parameters are discovered, the XSS validator now tries a default `/search?q=` seed path before skipping.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/exploitation/xss-validator-agent.js` — Added seed fallback and logging.
+- `README.md` — Documented XSS seed behavior.
+
+### Tests
+- `src/local-source-generator/v2/test-suite.mjs` — Added unit tests for XSS seed helper.
