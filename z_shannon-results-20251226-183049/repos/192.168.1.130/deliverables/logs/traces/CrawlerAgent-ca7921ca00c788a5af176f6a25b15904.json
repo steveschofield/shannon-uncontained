@@ -1,0 +1,50 @@
+{
+  "traceId": "ca7921ca00c788a5af176f6a25b15904",
+  "sessionId": "20251226233051183-qstvqb",
+  "agentName": "CrawlerAgent",
+  "startTime": 1766791887152,
+  "endTime": 1766792127437,
+  "duration": 240285,
+  "spans": [
+    {
+      "spanId": "dd380cef49f67a1f",
+      "traceId": "ca7921ca00c788a5af176f6a25b15904",
+      "name": "tool_execution",
+      "startTime": 1766791887378,
+      "attributes": {
+        "tool": "katana",
+        "command": "katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766792067386,
+      "duration": 180008,
+      "result": {
+        "duration": 180005,
+        "error": "Command failed: katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl\n",
+        "exitCode": 1
+      }
+    },
+    {
+      "spanId": "be714b1f8c2c030c",
+      "traceId": "ca7921ca00c788a5af176f6a25b15904",
+      "name": "tool_execution",
+      "startTime": 1766792067402,
+      "attributes": {
+        "tool": "gau",
+        "command": "gau --subs 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766792127409,
+      "duration": 60007,
+      "result": {
+        "duration": 60004,
+        "error": "Command failed: gau --subs 192.168.1.130\ntime=\"2025-12-26T18:34:27-05:00\" level=warning msg=\"error reading config: Config file /home/kali/.gau.toml not found, using default config\"\n",
+        "exitCode": 1
+      }
+    }
+  ]
+}

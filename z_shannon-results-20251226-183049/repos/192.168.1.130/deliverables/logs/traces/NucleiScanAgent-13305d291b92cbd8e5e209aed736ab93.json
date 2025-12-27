@@ -1,0 +1,28 @@
+{
+  "traceId": "13305d291b92cbd8e5e209aed736ab93",
+  "sessionId": "20251226233051183-qstvqb",
+  "agentName": "NucleiScanAgent",
+  "startTime": 1766793284762,
+  "endTime": 1766793465673,
+  "duration": 180911,
+  "spans": [
+    {
+      "spanId": "444bfd3b0ba09d89",
+      "traceId": "13305d291b92cbd8e5e209aed736ab93",
+      "name": "tool_execution",
+      "startTime": 1766793284763,
+      "attributes": {
+        "tool": "nuclei",
+        "command": "nuclei -u \"http://192.168.1.130:3000\" -jsonl -silent -tags cves,exposures,vulnerabilities,misconfiguration -severity medium,high,critical -rate-limit 150 -timeout 10",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766793465664,
+      "duration": 180901,
+      "result": {
+        "duration": 180900
+      }
+    }
+  ]
+}

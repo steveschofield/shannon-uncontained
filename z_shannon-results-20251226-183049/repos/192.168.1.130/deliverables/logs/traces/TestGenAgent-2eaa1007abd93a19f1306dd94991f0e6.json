@@ -1,0 +1,27 @@
+{
+  "traceId": "2eaa1007abd93a19f1306dd94991f0e6",
+  "sessionId": "20251226233051183-qstvqb",
+  "agentName": "TestGenAgent",
+  "startTime": 1766793472594,
+  "endTime": 1766793545054,
+  "duration": 72460,
+  "spans": [
+    {
+      "spanId": "a1ce5df8cce7fd4e",
+      "traceId": "2eaa1007abd93a19f1306dd94991f0e6",
+      "name": "llm_call",
+      "startTime": 1766793472597,
+      "attributes": {
+        "model": "llama3.1:8b",
+        "capability": "test_generation"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766793545000,
+      "duration": 72403,
+      "result": {
+        "tokens_used": 1345
+      }
+    }
+  ]
+}

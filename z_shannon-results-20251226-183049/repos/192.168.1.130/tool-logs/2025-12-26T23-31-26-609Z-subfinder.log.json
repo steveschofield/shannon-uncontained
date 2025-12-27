@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-26T23:31:26.610Z",
+  "command": "subfinder -d 192.168.1.130 -silent ",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 60000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "SubdomainHunterAgent",
+  "stage": "recon:discovery",
+  "tool": "subfinder",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 35357,
+  "timedOut": false,
+  "signal": null,
+  "killed": false,
+  "error": null,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_lines": 1,
+  "stderr_lines": 1,
+  "stdout_head": "",
+  "stderr_head": "",
+  "stdout_tail": "",
+  "stderr_tail": "",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}
