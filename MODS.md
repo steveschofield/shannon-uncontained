@@ -15,6 +15,30 @@ Removed the deprecated `-noalts` flag from the amass command to prevent v5 CLI f
 ### Rationale
 Amass v5 no longer recognizes `-noalts`, causing subdomain enumeration to fail.
 
+## fix(lsg-v2): Emit metasploit RPC unavailable evidence (2025-12-27)
+
+### Overview
+Metasploit agent now emits a tool error evidence event when msfrpc is unreachable, so runs clearly show when the RPC daemon is not running.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/exploitation/metasploit-agent.js` — Added TOOL_ERROR evidence emission on connect failure.
+
+### Rationale
+Make missed msfrpc startups visible in logs without requiring verbose console output.
+
+## feat(lsg-v2): Configure Metasploit module sets via agent config (2025-12-27)
+
+### Overview
+Added config-driven overrides for Metasploit recon and exploit module lists instead of hardcoding only in code.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/exploitation/metasploit-agent.js` — Reads module sets from inputs/agent_config.
+- `README.md` — Documented module override config example.
+- `configs/lab-juiceshop-kitchensink.yaml` — Added commented example for Metasploit module config.
+
+### Rationale
+Allow lab owners to customize which Metasploit modules run without editing source.
+
 ## chore(setup): Expand setup tool checks (2025-12-27)
 
 ### Overview

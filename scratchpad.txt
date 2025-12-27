@@ -5,9 +5,11 @@
   --enable-exploitation \
   --export-review-html
 
+~/code/shannon-uncontained/scripts
+./ start-msfrpcd.sh
 using llama model
-
 export LSG_ALLOW_PRIVATE=1
+export LSG_LOG_LLM_REQUESTS=1
 export LSG_DEBUG_SAVE_OUTPUT=1
 export LLM_FAST_MODEL=llama3.1:8b
 export LLM_PROVIDER=ollama
@@ -18,6 +20,7 @@ export LLM_MODEL=llama3.1:8b
 
 using deephat model. 
 export LSG_ALLOW_PRIVATE=1
+export LSG_LOG_LLM_REQUESTS=1
 export LSG_DEBUG_SAVE_OUTPUT=1
 export LLM_FAST_MODEL=DeepHat/DeepHat-V1-7B:latest
 export LLM_PROVIDER=ollama
