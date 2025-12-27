@@ -8,6 +8,26 @@
 #     --config configs/lab-juiceshop-kitchensink.yaml \
 #     -o ./lab-results-juice-kitchensink
 
+uthentication:
+  login_type: form  # Options: 'form' or 'sso'
+  login_url: "http://192.168.1.130:3000/#/login"
+  credentials:
+    username: "admin@juice-sh.op"
+    password: "admin123"
+    totp_secret: "JBSWY3DPEHPK3PXP"  # Optional TOTP secret for 2FA
+  
+  # Natural language instructions for login flow
+  login_flow:
+    - "Type $username into the email field"
+    - "Type $password into the password field"
+    - "Click the 'Sign In' button"
+    - "Enter $totp in the verification code field"
+    - "Click 'Verify'"
+  
+  success_condition:
+    type: url_contains  # Options: 'url_contains' or 'element_present'
+    value: "/#/score-board"
+
 # =========================
 # Global pipeline controls
 # =========================

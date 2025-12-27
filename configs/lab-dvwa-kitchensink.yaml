@@ -11,9 +11,9 @@
 # Global pipeline controls
 # =========================
 profile: conservative              # Rate-limit profile: stealth|conservative|normal|aggressive
-enable_exploitation: false         # Keep active exploitation OFF unless explicitly enabled
+enable_exploitation: true         # Keep active exploitation OFF unless explicitly enabled
 export_review_html: true           # Save model-review.html in the workspace
-log_llm_requests: false            # Record LLM POST metadata in events.ndjson
+log_llm_requests: true            # Record LLM POST metadata in events.ndjson
 
 # =========================
 # Lab / unsafe mode (educational use)
