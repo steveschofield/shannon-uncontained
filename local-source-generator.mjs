@@ -186,6 +186,7 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
             resume: options.resume !== false,
             agentConfig: options.agentConfig,
             toolConfig: options.toolConfig,
+            authentication: options.authentication || null,
             profile: options.profile,
             enableExploitation: options.enableExploitation,
             // Pass through NetRecon options if provided

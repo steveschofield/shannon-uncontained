@@ -4,6 +4,36 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## chore(setup): Expand setup tool checks (2025-12-27)
+
+### Overview
+Updated `setup.sh` to validate and install additional Go-based recon tools (amass, gospider, waybackurls) and to warn when RustScan is missing.
+
+### Modified Files
+- `setup.sh` — Added Go tool installs and RustScan check.
+- `README.md` — Clarified setup.sh behavior in External Tooling section.
+
+### Rationale
+Make initial environment setup more reliable and reduce manual tool installation steps.
+
+## feat(lsg-v2): Integrate amass, rustscan, gospider, waybackurls (2025-12-27)
+
+### Overview
+Added optional recon tooling for stronger subdomain discovery, port discovery, and crawling (amass, rustscan, gospider, waybackurls). Includes evidence normalization, tool availability checks, and timeouts.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/recon/subdomain-hunter-agent.js` — Added amass enumeration.
+- `src/local-source-generator/v2/agents/recon/net-recon-agent.js` — Added rustscan pre-scan and port merging.
+- `src/local-source-generator/v2/agents/recon/crawler-agent.js` — Added gospider crawl and waybackurls history.
+- `src/local-source-generator/v2/tools/normalizers/evidence-normalizers.js` — Added normalizers for amass, rustscan, gospider, waybackurls.
+- `src/local-source-generator/v2/tools/preflight.js` — Added tool registry checks and install hints.
+- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Added timeouts for new tools.
+- `DEPENDENCIES.md` — Documented new recon tool installs.
+- `README.md` — Linked optional tooling setup.
+
+### Rationale
+Improve endpoint and subdomain coverage while keeping tooling optional and transparent to users.
+
 ## feat(cli): Opt-in exploitation flag (2025-12-26)
 
 ### Overview
@@ -1349,3 +1379,43 @@ When no parameters are discovered, the XSS validator now tries a default `/searc
 
 ### Tests
 - `src/local-source-generator/v2/test-suite.mjs` — Added unit tests for XSS seed helper.
+
+---
+
+## feat(lsg-v2): Wire authentication config into auth flow detection (2025-12-27)
+
+### Overview
+Passes `authentication` config into the pipeline so AuthFlowDetector can seed login URLs and test credentials, enabling login-flow mapping during runs.
+
+### Modified Files
+- `shannon.mjs` — Reads `authentication` from config and excludes it from agent config parsing.
+- `local-source-generator.mjs` — Passes authentication settings into the pipeline options.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Adds `authentication` and `test_credentials` to agent inputs.
+- `src/local-source-generator/v2/agents/analysis/auth-flow-detector.js` — Consumes authentication config, seeds login URL, and logs auth seed events.
+- `README.md` — Documented authentication config behavior.
+
+---
+
+## feat(lsg-v2): Reuse auth cookies for tool execution (2025-12-27)
+
+### Overview
+Captures session cookies from AuthFlowDetector and applies them to supported recon/exploitation tools so authenticated runs carry session state.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/base-agent.js` — Adds `authContext` to agent context.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Adds AuthFlowDetector to the analysis stage, extracts auth context, and injects it into subsequent agent inputs/contexts.
+-- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Applies auth headers/cookies to supported tools (`httpx`, `katana`, `ffuf`, `nuclei`, `sqlmap`, `commix`, `xsstrike`).
+-- `src/local-source-generator/v2/agents/analysis/auth-flow-detector.js` — Exposes token values for Bearer/JWT reuse.
+-- `README.md` — Documents authenticated tool usage.
+
+---
+
+## docs(lsg-v2): Document per-tool config overrides (2025-12-27)
+
+### Overview
+Adds structured `tool_config` examples for per-tool timeout/retry overrides, including new recon tools.
+
+### Modified Files
+- `configs/config-schema.json` — Documents `tool_config` structure with defaults and per-tool overrides.
+- `configs/example-config.yaml` — Adds sample `tool_config` block for new tools.
+- `README.md` — Updates tool override guidance and examples.

@@ -63,6 +63,38 @@ const TOOL_REGISTRY = {
             all: 'go install github.com/lc/gau/v2/cmd/gau@latest'
         }
     },
+    amass: {
+        check: 'amass -version',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install -v github.com/owasp-amass/amass/v4/...@latest'
+        }
+    },
+    rustscan: {
+        check: 'rustscan -V',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'cargo install rustscan'
+        }
+    },
+    gospider: {
+        check: 'gospider --version',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install github.com/jaeles-project/gospider@latest'
+        }
+    },
+    waybackurls: {
+        check: 'waybackurls --help',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install github.com/tomnomnom/waybackurls@latest'
+        }
+    },
 
     // Exploitation tools
     nuclei: {

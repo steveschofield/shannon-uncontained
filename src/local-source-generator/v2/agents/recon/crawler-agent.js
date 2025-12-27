@@ -7,7 +7,7 @@
 
 import { BaseAgent } from '../base-agent.js';
 import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
-import { normalizeKatana, normalizeGau } from '../../tools/normalizers/evidence-normalizers.js';
+import { normalizeKatana, normalizeGau, normalizeGoSpider, normalizeWaybackUrls } from '../../tools/normalizers/evidence-normalizers.js';
 import { EVENT_TYPES, createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 
 export class CrawlerAgent extends BaseAgent {
@@ -109,6 +109,44 @@ export class CrawlerAgent extends BaseAgent {
             }
         }
 
+        const gospiderAvailable = await isToolAvailable('gospider');
+        if (gospiderAvailable) {
+            ctx.recordToolInvocation();
+
+            const gospiderCmd = `gospider -s ${target} -d ${depth}`;
+            const gospiderOptions = getToolRunOptions('gospider', inputs.toolConfig);
+            const gospiderResult = await runToolWithRetry(gospiderCmd, {
+                ...gospiderOptions,
+                context: ctx,
+            });
+
+            if (gospiderResult.success) {
+                const events = normalizeGoSpider(gospiderResult.stdout, target);
+                results.sources.push('gospider');
+
+                for (const event of events) {
+                    const path = event.payload.path;
+
+                    if (!seenPaths.has(path)) {
+                        seenPaths.add(path);
+                        ctx.emitEvidence(event);
+                        results.endpoints.push(event.payload);
+
+                        if (path.endsWith('.js')) {
+                            results.js_files.push(event.payload.url);
+                        }
+                    }
+                }
+            } else {
+                ctx.emitEvidence(createEvidenceEvent({
+                    source: 'CrawlerAgent',
+                    event_type: gospiderResult.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                    target,
+                    payload: { tool: 'gospider', error: gospiderResult.error },
+                }));
+            }
+        }
+
         // Run gau for historical URLs
         if (includeHistorical) {
             const gauAvailable = await isToolAvailable('gau');
@@ -125,6 +163,37 @@ export class CrawlerAgent extends BaseAgent {
                 if (gauResult.success) {
                     const events = normalizeGau(gauResult.stdout, target);
                     results.sources.push('gau');
+
+                    for (const event of events) {
+                        const path = event.payload.path;
+
+                        if (!seenPaths.has(path)) {
+                            seenPaths.add(path);
+                            ctx.emitEvidence(event);
+                            results.endpoints.push(event.payload);
+
+                            if (path.endsWith('.js')) {
+                                results.js_files.push(event.payload.url);
+                            }
+                        }
+                    }
+                }
+            }
+
+            const waybackAvailable = await isToolAvailable('waybackurls');
+            if (waybackAvailable) {
+                ctx.recordToolInvocation();
+
+                const waybackCmd = `waybackurls ${hostname}`;
+                const waybackOptions = getToolRunOptions('waybackurls', inputs.toolConfig);
+                const waybackResult = await runToolWithRetry(waybackCmd, {
+                    ...waybackOptions,
+                    context: ctx,
+                });
+
+                if (waybackResult.success) {
+                    const events = normalizeWaybackUrls(waybackResult.stdout, target);
+                    results.sources.push('waybackurls');
 
                     for (const event of events) {
                         const path = event.payload.path;

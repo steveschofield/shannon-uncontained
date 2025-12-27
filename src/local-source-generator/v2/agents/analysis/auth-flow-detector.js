@@ -39,6 +39,24 @@ export class AuthFlowDetector extends BaseAgent {
                         password: { type: 'string' }
                     }
                 },
+                authentication: {
+                    type: 'object',
+                    description: 'Optional authentication config from user settings',
+                    properties: {
+                        login_type: { type: 'string' },
+                        login_url: { type: 'string' },
+                        credentials: {
+                            type: 'object',
+                            properties: {
+                                username: { type: 'string' },
+                                password: { type: 'string' },
+                                totp_secret: { type: 'string' }
+                            }
+                        },
+                        login_flow: { type: 'array', items: { type: 'string' } },
+                        success_condition: { type: 'object' }
+                    }
+                },
                 follow_redirects: {
                     type: 'boolean',
                     default: true,
@@ -161,7 +179,9 @@ export class AuthFlowDetector extends BaseAgent {
     }
 
     async run(ctx, inputs) {
-        const { target, test_credentials, follow_redirects = true } = inputs;
+        const { target, follow_redirects = true } = inputs;
+        const authConfig = inputs.authentication || null;
+        const test_credentials = inputs.test_credentials || authConfig?.credentials || null;
         const baseUrl = this.normalizeBaseUrl(target);
 
         const results = {
@@ -176,6 +196,16 @@ export class AuthFlowDetector extends BaseAgent {
 
         // Phase 1: Discover login endpoints
         const loginEndpoints = await this.discoverLoginEndpoints(ctx, baseUrl);
+        const seededLogin = this.normalizeLoginEndpoint(authConfig?.login_url || authConfig?.loginUrl, baseUrl);
+        if (seededLogin && !loginEndpoints.some(endpoint => endpoint.url === seededLogin.url)) {
+            loginEndpoints.unshift(seededLogin);
+            ctx.logEvent?.({
+                type: 'auth_login_seeded',
+                agent: this.name,
+                login_url: seededLogin.url,
+                source: 'config'
+            });
+        }
         results.login_endpoints = loginEndpoints;
 
         // Phase 2: Analyze each login endpoint
@@ -232,6 +262,28 @@ export class AuthFlowDetector extends BaseAgent {
 
         this.setStatus(`Detection complete: ${results.auth_mechanisms.length} mechanisms found`);
         return results;
+    }
+
+    normalizeLoginEndpoint(loginUrl, baseUrl) {
+        if (!loginUrl) return null;
+        try {
+            if (loginUrl.startsWith('http://') || loginUrl.startsWith('https://')) {
+                const parsed = new URL(loginUrl);
+                return {
+                    url: loginUrl,
+                    path: parsed.pathname || '/login',
+                    method: 'POST'
+                };
+            }
+            const path = loginUrl.startsWith('/') ? loginUrl : `/${loginUrl}`;
+            return {
+                url: `${baseUrl}${path}`,
+                path,
+                method: 'POST'
+            };
+        } catch {
+            return null;
+        }
     }
 
     /**
@@ -964,7 +1016,8 @@ export class AuthFlowDetector extends BaseAgent {
                     tokens.push({
                         field: fullPath,
                         type: this.inferTokenType(key),
-                        sample: value.length > 20 ? value.substring(0, 20) + '...' : value
+                        sample: value.length > 20 ? value.substring(0, 20) + '...' : value,
+                        value
                     });
                 }
                 

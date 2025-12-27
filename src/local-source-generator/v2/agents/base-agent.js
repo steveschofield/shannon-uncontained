@@ -28,6 +28,7 @@ export class AgentContext extends EventEmitter {
     trace = null,
     agentName = null,
     stage = null,
+    authContext = null,
   }) {
     super();
     this.evidenceGraph = evidenceGraph;
@@ -55,6 +56,7 @@ export class AgentContext extends EventEmitter {
     this.trace = trace; // TraceContext for current agent
     this.agentName = agentName;
     this.stage = stage;
+    this.authContext = authContext;
   }
 
   /**

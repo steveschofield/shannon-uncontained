@@ -99,9 +99,10 @@ fi
 # 7. Check Go Tools
 echo "Checking Go binaries..."
 GOBIN=$(go env GOPATH)/bin
-TOOLS=("subfinder" "httpx" "nuclei" "katana" "gau")
+PD_TOOLS=("subfinder" "httpx" "nuclei" "katana" "gau")
+GO_TOOLS=("amass|github.com/owasp-amass/amass/v4/...@latest" "gospider|github.com/jaeles-project/gospider@latest" "waybackurls|github.com/tomnomnom/waybackurls@latest")
 
-for tool in "${TOOLS[@]}"; do
+for tool in "${PD_TOOLS[@]}"; do
     if ! command -v $tool &> /dev/null; then
         echo "Installing $tool..."
         go install -v github.com/projectdiscovery/$tool/v2/cmd/$tool@latest || \
@@ -110,6 +111,27 @@ for tool in "${TOOLS[@]}"; do
         echo "✅ $tool"
     fi
 done
+
+for entry in "${GO_TOOLS[@]}"; do
+    tool="${entry%%|*}"
+    repo="${entry#*|}"
+    if ! command -v $tool &> /dev/null; then
+        echo "Installing $tool..."
+        go install -v "$repo"
+    else
+        echo "✅ $tool"
+    fi
+done
+
+# 7b. Check RustScan (Rust-based)
+echo -n "Checking RustScan... "
+if ! command -v rustscan &> /dev/null; then
+    echo "⚠️  Missing (Optional)"
+    echo "   Install via: sudo apt-get install -y rustscan"
+    echo "   Or: cargo install rustscan"
+else
+    echo "✅ Found"
+fi
 
 # 8. Check .env
 echo -n "Checking .env configuration... "

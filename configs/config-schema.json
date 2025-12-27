@@ -76,7 +76,9 @@
         }
       },
       "required": ["login_type", "login_url", "credentials", "success_condition"],
-      "additionalProperties": false
+      "additionalProperties": {
+        "$ref": "#/$defs/tool_config_entry"
+      }
     },
     "rules": {
       "type": "object",
@@ -109,7 +111,19 @@
     "tool_config": {
       "type": "object",
       "description": "Per-tool overrides (timeouts/retries) for external tools",
-      "additionalProperties": true
+      "properties": {
+        "default": {
+          "$ref": "#/$defs/tool_config_entry"
+        },
+        "tools": {
+          "type": "object",
+          "description": "Per-tool override map keyed by tool name",
+          "additionalProperties": {
+            "$ref": "#/$defs/tool_config_entry"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "login": {
       "type": "object",

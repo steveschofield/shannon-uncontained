@@ -81,6 +81,7 @@ export class Orchestrator extends EventEmitter {
         this.executionLog = [];
         this.currentStage = null;
         this.aborted = false;
+        this.authContext = null;
     }
 
     /**
@@ -103,6 +104,12 @@ export class Orchestrator extends EventEmitter {
         return { ...rest, ...config, agentConfig };
     }
 
+    applySharedAuth(inputs) {
+        if (!this.authContext) return inputs;
+        const mergedAuth = mergeAuthContext(inputs?.authContext, this.authContext);
+        return { ...inputs, authContext: mergedAuth, authTokens: mergedAuth };
+    }
+
     /**
      * Create execution context for an agent
      * @param {object} budget - Budget overrides
@@ -123,6 +130,7 @@ export class Orchestrator extends EventEmitter {
             trace: traceForAgent,
             agentName,
             stage: this.currentStage,
+            authContext: this.authContext,
         });
         return ctx;
     }
@@ -262,6 +270,10 @@ export class Orchestrator extends EventEmitter {
             this.cache.set(cacheKey, result);
         }
 
+        if (result.success && agentName === 'AuthFlowDetector') {
+            this.updateAuthContext(result.outputs);
+        }
+
         // Log execution
         this.executionLog.push({
             agent: agentName,
@@ -339,7 +351,7 @@ export class Orchestrator extends EventEmitter {
                 // 2. Fill slots if healthy and available
                 while (active.size < limit && queue.length > 0) {
                     const agentName = queue.shift();
-                    const agentInputs = this.applyAgentConfig(inputs, agentName);
+                    const agentInputs = this.applySharedAuth(this.applyAgentConfig(inputs, agentName));
                     const promise = this.executeAgent(agentName, agentInputs)
                         .then(result => {
                             results[agentName] = result;
@@ -371,7 +383,7 @@ export class Orchestrator extends EventEmitter {
                 if (this.aborted) break;
 
                 try {
-                    const agentInputs = this.applyAgentConfig(inputs, agentName);
+                    const agentInputs = this.applySharedAuth(this.applyAgentConfig(inputs, agentName));
                     const result = await this.executeAgent(agentName, agentInputs);
                     results[agentName] = result;
                     if (!result.success) {
@@ -470,6 +482,7 @@ export class Orchestrator extends EventEmitter {
 
             // Phase 2: Analysis  
             new PipelineStage('analysis', [
+                'AuthFlowDetector',
                 'ArchitectInferAgent',
                 'AuthFlowAnalyzer',
                 'DataFlowMapper',
@@ -575,6 +588,8 @@ export class Orchestrator extends EventEmitter {
         }
 
         // Create initial inputs
+        const authConfig = options.authentication || null;
+        const testCredentials = options.test_credentials || authConfig?.credentials || null;
         const inputs = {
             target,
             outputDir,
@@ -583,6 +598,8 @@ export class Orchestrator extends EventEmitter {
             agentConfig: mergedConfig.agents,
             toolConfig: options.toolConfig || null,
             rateLimitProfile: profileName,
+            authentication: authConfig,
+            test_credentials: testCredentials,
         };
 
         // Resumability part 2:
@@ -640,6 +657,21 @@ export class Orchestrator extends EventEmitter {
             target,
             outputDir,
         };
+    }
+
+    updateAuthContext(outputs) {
+        if (!outputs || typeof outputs !== 'object') return;
+        const nextContext = extractAuthContext(outputs);
+        if (!nextContext) return;
+        const merged = mergeAuthContext(this.authContext, nextContext);
+        if (!merged) return;
+        this.authContext = merged;
+        this.emit('auth:context-updated', {
+            cookies: merged.cookies?.length || 0,
+            headers: Object.keys(merged.headers || {}).length,
+            bearer: merged.bearerToken ? true : false,
+            source: merged.source || 'AuthFlowDetector',
+        });
     }
 
     /**
@@ -862,3 +894,83 @@ export class Orchestrator extends EventEmitter {
 }
 
 export default Orchestrator;
+
+function extractAuthContext(outputs) {
+    const flows = Array.isArray(outputs.auth_flows) ? outputs.auth_flows : [];
+    const cookies = [];
+    const bearerTokens = [];
+
+    for (const flow of flows) {
+        const sessionTokens = Array.isArray(flow?.session_tokens)
+            ? flow.session_tokens
+            : (typeof flow?.session_tokens === 'string' ? [flow.session_tokens] : []);
+        for (const token of sessionTokens) {
+            const cookie = String(token || '').split(';')[0].trim();
+            if (cookie && cookie.includes('=')) {
+                cookies.push(cookie);
+            }
+        }
+
+        if (Array.isArray(flow?.tokens)) {
+            for (const token of flow.tokens) {
+                if (typeof token === 'string') {
+                    bearerTokens.push(token);
+                } else if (token && typeof token.value === 'string') {
+                    bearerTokens.push(token.value);
+                }
+            }
+        }
+    }
+
+    if (cookies.length === 0 && bearerTokens.length === 0) return null;
+
+    return {
+        cookies,
+        headers: {},
+        bearerToken: bearerTokens[0] || null,
+        source: 'AuthFlowDetector',
+    };
+}
+
+function mergeAuthContext(base, next) {
+    if (!base && !next) return null;
+    if (!base) return normalizeAuthContext(next);
+    if (!next) return normalizeAuthContext(base);
+
+    const merged = normalizeAuthContext(base);
+    const incoming = normalizeAuthContext(next);
+
+    const cookieMap = new Map();
+    for (const cookie of merged.cookies || []) {
+        const [name] = cookie.split('=');
+        if (name) cookieMap.set(name.trim(), cookie);
+    }
+    for (const cookie of incoming.cookies || []) {
+        const [name] = cookie.split('=');
+        if (name) cookieMap.set(name.trim(), cookie);
+    }
+
+    const headers = { ...(merged.headers || {}) };
+    for (const [key, value] of Object.entries(incoming.headers || {})) {
+        headers[key] = value;
+    }
+
+    return {
+        cookies: Array.from(cookieMap.values()),
+        headers,
+        bearerToken: merged.bearerToken || incoming.bearerToken || null,
+        source: incoming.source || merged.source || 'AuthFlowDetector',
+    };
+}
+
+function normalizeAuthContext(context) {
+    if (!context || typeof context !== 'object') {
+        return { cookies: [], headers: {}, bearerToken: null, source: null };
+    }
+    return {
+        cookies: Array.isArray(context.cookies) ? context.cookies : [],
+        headers: context.headers && typeof context.headers === 'object' ? context.headers : {},
+        bearerToken: typeof context.bearerToken === 'string' ? context.bearerToken : null,
+        source: context.source || null,
+    };
+}

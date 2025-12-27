@@ -153,6 +153,7 @@ program
     let configIncludeAgents;
     let configExcludeAgents;
     let healthCheckConfig;
+    let authenticationConfig;
     let configData;
     let enableExploitation = options.enableExploitation ?? false;
     let exportReviewHtml = options.exportReviewHtml ?? false;
@@ -187,9 +188,10 @@ program
       }
     }
 
-      if (configData && typeof configData === 'object') {
+    if (configData && typeof configData === 'object') {
       // Extract health check config if present
       healthCheckConfig = configData.health_check || configData.healthCheck;
+      authenticationConfig = configData.authentication || configData.auth || null;
       const configEnableExploitation = configData.enable_exploitation ?? configData.enableExploitation;
       if (typeof configEnableExploitation === 'boolean') {
         enableExploitation = configEnableExploitation;
@@ -222,6 +224,8 @@ program
           'profile',
           'pipeline',
           'agents',
+          'authentication',
+          'auth',
           'health_check',
           'healthCheck',
           'enable_exploitation',
@@ -313,6 +317,7 @@ program
         debugTools: !!options.debugTools,
         unsafeProbes,
         labAgents: unsafeProbes ? labAgentsList : [],
+        authentication: authenticationConfig,
         includeAgents,
         excludeAgents,
         resume: options.resume === false || options.noResume ? false : true,

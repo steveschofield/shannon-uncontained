@@ -120,6 +120,10 @@ cp .env.example .env
 
 > **⚠️ Important:** Shannon requires an LLM provider to function. See the [LLM Provider Setup](#llm-provider-setup) section below for configuration instructions.
 
+## External Tooling
+
+Shannon shells out to external security tools for recon and exploitation. For full coverage, install the optional recon tools `amass`, `rustscan`, `gospider`, and `waybackurls` alongside the existing toolchain. Running `./setup.sh` validates the toolchain and will install Go-based tools when Go is available, while warning if RustScan is missing. See `DEPENDENCIES.md` for setup guidance.
+
 ### Graph View Modes
 
 | Mode           | Description                                                    |
@@ -449,6 +453,22 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
 
 XSS validation uses discovered parameters when available. If none are found, the XSS validator will try a default seed path at `/search?q=` before skipping.
 
+### Authentication Config (Login Flow)
+
+If you provide `authentication` in your config, the `AuthFlowDetector` will attempt a login flow and map session/token handling. Captured session cookies and Bearer/JWT tokens are reused for supported recon/exploitation tools (currently: `httpx`, `katana`, `ffuf`, `nuclei`, `sqlmap`, `commix`, `xsstrike`).
+
+```yaml
+authentication:
+  login_type: form
+  login_url: "https://target.com/login"
+  credentials:
+    username: "user@example.com"
+    password: "password123"
+  success_condition:
+    type: url_contains
+    value: "/dashboard"
+```
+
 ### Agent Configuration via JSON
 
 Provide per-agent options in a JSON file and point `--config` to it.
@@ -499,16 +519,31 @@ agent_config:
     delay: "0.2-0.5"
 ```
 
-To override tool timeouts or retries (e.g., `katana`, `ffuf`), add `tool_config`:
+To override tool timeouts or retries (e.g., `katana`, `ffuf`, `amass`, `rustscan`), add `tool_config`:
 
 ```yaml
 tool_config:
-  katana:
-    timeout_ms: 300000
-    max_retries: 0
-  ffuf:
-    timeout_ms: 600000
+  default:
+    timeout_ms: 180000
+    max_retries: 1
+    retry_delay_ms: 1000
+  tools:
+    katana:
+      timeout_ms: 300000
+      max_retries: 0
+    ffuf:
+      timeout_ms: 600000
+    amass:
+      timeout_ms: 180000
+    rustscan:
+      timeout_ms: 120000
+    gospider:
+      timeout_ms: 180000
+    waybackurls:
+      timeout_ms: 60000
 ```
+
+Legacy flat entries like `tool_config.katana` are still accepted.
 
 Rate limiting profiles (from `src/config/rate-limit-config.js`):
 
