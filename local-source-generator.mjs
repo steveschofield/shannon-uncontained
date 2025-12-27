@@ -87,6 +87,8 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
         maxParallel: options.parallel || 4,
         enableCaching: true,
         streamDeltas: true,
+        unsafeProbes: options.unsafeProbes === true,
+        labAgents: Array.isArray(options.labAgents) ? options.labAgents : [],
     });
 
     // Initialize unified logger after workspace/sourceDir creation

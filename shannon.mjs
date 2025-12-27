@@ -143,6 +143,8 @@ program
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .option('--export-review-html', 'Also export model-review.html into the run workspace')
   .option('--log-llm-requests', 'Log LLM POST metadata in events.ndjson')
+  .option('--unsafe-probes', 'Enable unsafe/lab probes for certain detectors (OFF by default)')
+  .option('--lab <list>', 'Comma-separated agent names to enable lab-only behavior (requires --unsafe-probes)')
   .action(async (target, options) => {
     const { generateLocalSource } = await import('./local-source-generator.mjs');
     const { extname, resolve } = await import('path');
@@ -153,6 +155,8 @@ program
     let enableExploitation = options.enableExploitation ?? false;
     let exportReviewHtml = options.exportReviewHtml ?? false;
     let logLlmRequests = options.logLlmRequests ?? false;
+    let unsafeProbes = options.unsafeProbes ?? false;
+    let labAgentsList = [];
 
     if (options.config) {
       try {
@@ -195,6 +199,14 @@ program
       const configLogLlmRequests = configData.log_llm_requests ?? configData.logLlmRequests;
       if (typeof configLogLlmRequests === 'boolean') {
         logLlmRequests = configLogLlmRequests;
+      }
+      const configUnsafeProbes = configData.unsafe_probes ?? configData.unsafeProbes;
+      if (typeof configUnsafeProbes === 'boolean') {
+        unsafeProbes = configUnsafeProbes;
+      }
+      const cfgLabAgents = configData.lab_agents || configData.labAgents;
+      if (Array.isArray(cfgLabAgents)) {
+        labAgentsList.push(...cfgLabAgents.map(String));
       }
 
       // Extract per-agent config (supports agent_config or raw map without reserved keys)
@@ -243,6 +255,19 @@ program
     console.log(chalk.gray(`Exploitation: ${enableExploitation ? 'enabled (opt-in)' : 'disabled (default)'}`));
     console.log(chalk.gray(`Export Review HTML: ${exportReviewHtml ? 'yes' : 'no'}`));
     console.log(chalk.gray(`Log LLM Requests: ${logLlmRequests ? 'yes' : 'no'}`));
+    console.log(chalk.gray(`Unsafe Probes: ${unsafeProbes ? 'enabled (opt-in)' : 'disabled (default)'}`));
+    if (unsafeProbes) {
+      // Merge CLI-provided lab list
+      if (options.lab) {
+        const cliLab = String(options.lab).split(',').map(s => s.trim()).filter(Boolean);
+        labAgentsList.push(...cliLab);
+      }
+      // Deduplicate
+      labAgentsList = Array.from(new Set(labAgentsList));
+      if (labAgentsList.length > 0) {
+        console.log(chalk.gray(`Lab Agents: ${labAgentsList.join(', ')}`));
+      }
+    }
 
     if (logLlmRequests) {
       process.env.LSG_LOG_LLM_REQUESTS = '1';
@@ -271,6 +296,8 @@ program
         parallel: parseInt(options.parallel),
         verbose: options.verbose,
         debugTools: !!options.debugTools,
+        unsafeProbes,
+        labAgents: unsafeProbes ? labAgentsList : [],
         includeAgents,
         excludeAgents,
         resume: options.resume === false || options.noResume ? false : true,

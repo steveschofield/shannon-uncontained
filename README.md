@@ -741,6 +741,119 @@ Types: feat, fix, docs, refactor, test, chore
 Example: feat(lsg-v2): Register APISchemaGenerator
 ```
 
+---
+
+## Web Vulnerability Detectors (HackTricks‑Inspired)
+
+These vuln‑analysis agents provide safe, early‑phase coverage for common web issues without destructive payloads. Each emits structured events and claims you can search in `events.ndjson` and `world-model.json`.
+
+- OpenRedirectAgent
+  - Detects open redirects via common params (`next`, `redirect_uri`, `url`, ...)
+  - Events: `open_redirect_detected` | Claims: `open_redirect`
+- SSTIAgent
+  - Minimal template payloads (e.g., `{{7*7}}`) on likely params; flags `49` in responses
+  - Events: `ssti_detected` | Claims: `server_side_template_injection`
+- JWTAnalyzerAgent
+  - Extracts JWTs from `Set-Cookie`, decodes header/payload, flags alg=none/missing claims
+  - Events: `jwt_detected`, `jwt_misconfig` | Claims: `jwt_misconfiguration`, `jwt_alg_none`, `jwt_missing_claims`
+- JWTPolicyCheckerAgent
+  - Fetches OIDC discovery (`/.well-known/openid-configuration`); flags weak defaults
+  - Events: `jwt_policy_issue` | Claims: `jwt_policy_weak`
+- CachePoisoningProbeAgent
+  - Safe header probes (X‑Forwarded‑*, Forwarded) for reflection/cache risks
+  - Events: `cache_poisoning_risk` | Claims: `cache_poisoning_possible`
+- CacheDeceptionAnalyzerAgent
+  - Static‑looking suffix trick (`/index.php/fake.css`), Vary/Cache headers analysis
+  - Events: `cache_deception_risk` | Claims: `cache_deception_possible`
+- RequestSmugglingDetector
+  - Heuristics for CL/TE risk (no malformed requests): proxy/origin header combos, TE, keep‑alive behavior
+  - Events: `request_smuggling_risk` | Claims: `request_smuggling_possible`
+- XXEUploadAgent
+  - Posts benign XML with DOCTYPE to upload/import endpoints; flags parser error indicators (no OOB)
+  - Events: `xxe_indicator_detected` | Claims: `xxe_possible`
+- OAuthMisconfigAgent
+  - Craft `/oauth/authorize`‑style URLs with `redirect_uri=https://example.org/callback` and elevated scopes; flags acceptance or hints
+  - Events: `oauth_misconfig` | Claims: `oauth_misconfiguration`
+- IDORProbeAgent
+  - Mutates numeric/UUID identifiers in path/query and compares body sizes for variance
+  - Events: `idor_possible_detected` | Claims: `idor_possible`
+
+All agents honor rate‑limit profiles and run with conservative defaults to minimize impact on targets.
+
+### Unsafe/Lab Probes (Opt‑In)
+
+Some detectors support a more aggressive “lab” mode. Enable explicitly:
+
+```bash
+# CLI
+shannon.mjs generate https://target --unsafe-probes
+
+# or YAML config
+log_llm_requests: false
+enable_exploitation: false
+export_review_html: true
+unsafe_probes: true
+```
+
+Notes:
+- Unsafe/lab mode increases candidate counts and may use deeper payloads (still tries to avoid disruption).
+- XXE: set `XXE_OOB_URL` to your controlled endpoint for OOB checks (lab only).
+- Request smuggling tests remain heuristic in safe mode; lab mode is still conservative (no malformed CL/TE sent by default).
+
+Per‑agent lab overrides
+
+- Enable subset of agents for lab behavior:
+
+```bash
+shannon.mjs generate https://juice.shop \
+  --unsafe-probes \
+  --lab RequestSmugglingDetector,JWTAnalyzerAgent
+```
+
+- Or via config:
+
+```yaml
+unsafe_probes: true
+lab_agents: ["RequestSmugglingDetector", "JWTAnalyzerAgent"]
+```
+
+Lab PoCs
+
+- Request Smuggling: generates raw HTTP payload examples under `deliverables/lab/request-smuggling/*.txt` (lab only; not sent automatically)
+- OAuth: generates authorization URLs under `deliverables/lab/oauth/*.txt` when redirect_uri tampering is accepted (lab only)
+- JWT: when `JWTAnalyzerAgent` is in lab, emits a PoC alg=none token as an evidence event (`jwt_poc_generated`) for educational use
+
+Sample Lab Config (Juice Shop)
+
+Use the provided YAML and environment variables for a ready‑to‑run lab setup:
+
+```yaml
+# configs/lab-juiceshop.yaml
+profile: conservative
+enable_exploitation: false
+unsafe_probes: true
+lab_agents: ["RequestSmugglingDetector", "JWTAnalyzerAgent", "OAuthMisconfigAgent"]
+```
+
+Run:
+
+```bash
+export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"   # optional
+export XXE_OOB_URL="https://oob.yourdomain/xxe.txt"              # optional
+shannon.mjs generate http://localhost:3000 \
+  --config configs/lab-juiceshop.yaml \
+  -o ./lab-results
+```
+
+---
+
+## Acknowledgements
+
+- HackTricks — Many techniques, naming, and safety heuristics were inspired by the excellent HackTricks community resources and playbooks.
+  - Repository: https://github.com/carlospolop/hacktricks
+  - Handbook: https://book.hacktricks.xyz/
+  - We adapted several ideas into safe, early‑phase detectors (open redirect, SSTI, cache issues, JWT/OIDC checks, IDOR heuristics, and XXE indicators) and credited them in this project’s change log.
+
 
 This avoids pyenv shim “command not found” errors (e.g., wafw00f/sslyze/trufflehog) when running the framework.
 

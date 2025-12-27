@@ -4,6 +4,7 @@ settings.json
 .python-version
 node_modules/*
 mcp-server/node_modules/*
+hacktricks*
 .vscode/*
 !.vscode/settings.json
 .env

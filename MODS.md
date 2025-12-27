@@ -19,6 +19,67 @@ Aligns with deployment guidance: keep active exploitation opt-in to avoid accide
 
 ---
 
+## docs(vuln): Document HackTricks‑inspired detectors in README (2025-12-26)
+
+### Overview
+Added a README section summarizing new safe vuln‑analysis agents (open redirect, SSTI, JWT analyzers/policy, cache poisoning/deception, request smuggling heuristics, XXE upload indicators, OAuth misconfig, IDOR). Lists their event and claim names for easy lookup.
+
+### Modified Files
+- `README.md` — New section “Web Vulnerability Detectors (HackTricks‑Inspired)”.
+
+### Rationale
+Make it simple to interpret findings in `events.ndjson` and `world-model.json` and to understand the safety model of these detectors.
+
+---
+
+## docs: Add HackTricks acknowledgement (2025-12-26)
+
+### Overview
+Added explicit acknowledgement to HackTricks in README and GitBook, noting the source of inspiration for several safe, early‑phase detectors.
+
+### Files Modified / Added
+- `README.md` — New “Acknowledgements” section with links to the HackTricks repo and handbook.
+- `docs/gitbook/acknowledgements.md` — New page crediting HackTricks and summarizing which detectors were informed by it.
+- `docs/gitbook/SUMMARY.md` — Linked the Acknowledgements page.
+
+### Rationale
+To transparently attribute technique inspiration and pay credit to the HackTricks community resources.
+
+---
+
+## feat(cli): Lab agent overrides with --lab (2025-12-26)
+
+### Overview
+Added `--lab <list>` to enable lab-only behavior per agent when `--unsafe-probes` is on. Supports YAML `lab_agents: [ ... ]`. Prints selected lab agents in the run banner.
+
+### Modified Files
+- `shannon.mjs` — Adds `--lab` flag; merges with `lab_agents` from config; prints status; passes to generator.
+- `local-source-generator.mjs` — Forwards `labAgents` to LSG v2 context.
+- `README.md` — Documents per-agent lab overrides.
+- Agents updated to read `ctx.config.labAgents`: RequestSmugglingDetector, JWTAnalyzerAgent.
+
+### Rationale
+Allows fine-grained, explicit opt-in for deeper lab behavior on educational targets like OWASP Juice Shop while keeping safe defaults on production targets.
+
+---
+
+## feat(lab): Generate PoC artifacts for request smuggling and OAuth (2025-12-26)
+
+### Overview
+For lab sessions (when `--unsafe-probes` and `--lab` include the agent):
+- RequestSmugglingDetector: writes raw HTTP CL/TE and h2c upgrade PoC payloads to `deliverables/lab/request-smuggling/*.txt` (not sent automatically).
+- OAuthMisconfigAgent: writes authorization URLs to `deliverables/lab/oauth/*.txt` when `redirect_uri` acceptance is detected; supports `OAUTH_LAB_REDIRECT_URL`.
+- JWTAnalyzerAgent: emits a `jwt_poc_generated` evidence event with an alg=none token for educational use.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/vuln-analysis/request-smuggling-detector.js` — Lab PoC file generation.
+- `src/local-source-generator/v2/agents/vuln-analysis/oauth-misconfig-agent.js` — Lab auth URL artifacts.
+- `src/local-source-generator/v2/agents/vuln-analysis/jwt-analyzer-agent.js` — Lab PoC token event.
+- `README.md` — Notes on Lab PoCs locations and usage.
+
+### Rationale
+Provide hands-on, reproducible learning artifacts for OWASP Juice Shop and other educational targets without sending aggressive traffic automatically.
+
 ## chore(llm): Log LLM POST metadata for SourceGen repairs (2025-12-26)
 
 ### Overview
@@ -352,6 +413,38 @@ Documented the simplified push workflow in the main README and GitBook, includin
 - `docs/gitbook/SUMMARY.md` — Enabled the Contributing page (removed “planned” tag).
 
 ---
+
+## feat(lsg-v2): Add OpenRedirect and SSTI agents (2025-12-26)
+
+### Overview
+Integrated two HackTricks-driven checks into the vuln-analysis suite: open redirect detection and server-side template injection (SSTI) detection.
+
+### Files Added
+- `src/local-source-generator/v2/agents/vuln-analysis/open-redirect-agent.js` — Probes common redirect parameters, verifies 3xx Location to external host; emits `open_redirect_detected` and `open_redirect` claim.
+- `src/local-source-generator/v2/agents/vuln-analysis/ssti-agent.js` — Sends minimal template payloads (e.g., `{{7*7}}`) to selected params; detects `49` in response; emits `ssti_detected` and `server_side_template_injection` claim.
+
+### Files Modified
+- `src/local-source-generator/v2/agents/vuln-analysis/index.js` — Imports/exports the new agents and registers them after core vuln tests.
+
+### Rationale
+Based on HackTricks playbooks, these are high-signal checks with low noise and zero external tool requirements, fitting early validation without heavy footprint.
+
+---
+
+## feat(lsg-v2): Add JWTAnalyzer and CachePoisoningProbe agents (2025-12-26)
+
+### Overview
+Added a lightweight JWT analyzer (no brute force) and a safe cache poisoning probe to expand early-phase detection.
+
+### Files Added
+- `src/local-source-generator/v2/agents/vuln-analysis/jwt-analyzer-agent.js` — Extracts JWTs from Set-Cookie, decodes header/payload, and flags weak algs/missing claims.
+- `src/local-source-generator/v2/agents/vuln-analysis/cache-poisoning-probe-agent.js` — Sends benign proxy/caching headers and detects reflection/Location header risks and cache indicators.
+
+### Files Modified
+- `src/local-source-generator/v2/agents/vuln-analysis/index.js` — Imports/exports and registers both agents.
+
+### Rationale
+These checks provide quick signal aligned with HackTricks guidance while staying safe for production targets and avoiding external tool dependencies.
 
 ## chore(vscode): Status bar Sync button + keybindings (2025-12-26)
 

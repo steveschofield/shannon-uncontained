@@ -1,0 +1,26 @@
+# Lab configuration for OWASP Juice Shop (educational use only)
+# Enables safe-but-deeper probes and per-agent lab behavior where supported.
+
+profile: conservative            # keep requests modest for local/dev targets
+enable_exploitation: false       # keep active exploitation off unless you opt-in
+unsafe_probes: true              # master switch for lab mode
+
+# Per-agent lab overrides (used only when unsafe_probes: true)
+# RequestSmugglingDetector: generates raw HTTP PoCs (not sent automatically)
+# JWTAnalyzerAgent: emits alg=none PoC token event for education
+lab_agents:
+  - RequestSmugglingDetector
+  - JWTAnalyzerAgent
+  - OAuthMisconfigAgent
+
+# Optional (set as environment variables when running):
+#   export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"
+#   export XXE_OOB_URL="https://oob.yourdomain/xxe.txt"
+
+# Example per-agent throttles (optional)
+# agent_config:
+#   CachePoisoningProbeAgent:
+#     maxCandidates: 30
+#   IDORProbeAgent:
+#     maxEndpoints: 50
+
