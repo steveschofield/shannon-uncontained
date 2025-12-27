@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runToolWithRetry, getToolTimeout, isToolAvailable } from '../../tools/runners/tool-runner.js';
+import { runToolWithRetry, getToolRunOptions, isToolAvailable } from '../../tools/runners/tool-runner.js';
 import { normalizeNmap } from '../../tools/normalizers/evidence-normalizers.js';
 import { EVENT_TYPES, createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 import { execFile } from 'node:child_process';
@@ -122,8 +122,9 @@ export class NetReconAgent extends BaseAgent {
         let command = `${nmapBin} ${flags} ${topPorts ? `--top-ports ${topPorts}` : `-p ${ports}`} --open ${hostname}`;
 
         // Run nmap (Full NSE support required)
+        const nmapOptions = getToolRunOptions('nmap', inputs.toolConfig);
         let result = await runToolWithRetry(command, {
-            timeout: getToolTimeout('nmap'),
+            ...nmapOptions,
             context: ctx,
         });
 

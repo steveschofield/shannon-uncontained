@@ -5,7 +5,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runToolWithRetry, isToolAvailable, getToolTimeout } from '../../tools/runners/tool-runner.js';
+import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 import { normalizeSubfinder } from '../../tools/normalizers/evidence-normalizers.js';
 import { createEvidenceEvent, EVENT_TYPES } from '../../worldmodel/evidence-graph.js';
 
@@ -64,8 +64,9 @@ export class SubdomainHunterAgent extends BaseAgent {
 
             const flags = passive_only ? '' : '-active';
             const subfinderCmd = `subfinder -d ${domain} -silent ${flags}`;
+            const subfinderOptions = getToolRunOptions('subfinder', inputs.toolConfig);
             const result = await runToolWithRetry(subfinderCmd, {
-                timeout: getToolTimeout('subfinder'),
+                ...subfinderOptions,
                 context: ctx,
             });
 

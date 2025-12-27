@@ -101,6 +101,16 @@
       },
       "additionalProperties": false
     },
+    "agent_config": {
+      "type": "object",
+      "description": "Per-agent configuration map for LSG v2",
+      "additionalProperties": true
+    },
+    "tool_config": {
+      "type": "object",
+      "description": "Per-tool overrides (timeouts/retries) for external tools",
+      "additionalProperties": true
+    },
     "login": {
       "type": "object",
       "description": "Deprecated: Use 'authentication' section instead",
@@ -138,6 +148,28 @@
       },
       "required": ["description", "type", "url_path"],
       "additionalProperties": false
+    },
+    "tool_config_entry": {
+      "type": "object",
+      "description": "Per-tool configuration overrides",
+      "properties": {
+        "timeout_ms": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Tool timeout in milliseconds"
+        },
+        "max_retries": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum retries for the tool"
+        },
+        "retry_delay_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Delay between retries in milliseconds"
+        }
+      },
+      "additionalProperties": true
     }
   }
 }

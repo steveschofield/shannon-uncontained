@@ -165,6 +165,16 @@ Ensure generated Express projects include `@eslint/js` so `eslint.config.js` can
 
 ---
 
+## fix(exploitation): XSSValidatorAgent ctx usage and skip logic (2025-12-26)
+
+### Overview
+Fixed XSSValidatorAgent to pass context to the tool runner and skip gracefully when no parameter is provided.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/exploitation/xss-validator-agent.js` — Passes `ctx` into xsstrike execution; logs errors and falls back to manual tests; skips when missing parameter.
+
+---
+
 ## feat(lsg-v2): Target health monitoring (2025-12-26)
 
 ### Overview
@@ -1113,3 +1123,32 @@ Wired three additional vuln-analysis agents into the default index: CSRFDetector
 
 ### Rationale
 These agents already exist and extend coverage to CSRF, SSRF, and GraphQL-specific issues. Registering them aligns the default pipeline with documented capabilities. No README updates needed.
+
+---
+
+## feat(lsg-v2): Per-tool config overrides (2025-12-27)
+
+### Overview
+Added per-tool configuration overrides so timeouts/retries can be tuned (e.g., katana/ffuf) without code edits.
+
+### Modified Files
+- `shannon.mjs` — Parse `tool_config` from JSON/YAML config files and pass through to the generator.
+- `local-source-generator.mjs` — Forward `toolConfig` into the orchestrator pipeline.
+- `src/local-source-generator/v2/orchestrator/scheduler.js` — Include `toolConfig` in agent inputs.
+- `src/local-source-generator/v2/tools/runners/tool-runner.js` — Add per-tool override handling for timeouts/retries and new defaults.
+- `src/local-source-generator/v2/agents/recon/crawler-agent.js` — Use per-tool options for katana/gau.
+- `src/local-source-generator/v2/agents/recon/tech-fingerprinter-agent.js` — Use per-tool options for whatweb/httpx.
+- `src/local-source-generator/v2/agents/recon/subdomain-hunter-agent.js` — Use per-tool options for subfinder.
+- `src/local-source-generator/v2/agents/recon/content-discovery-agent.js` — Use per-tool options for ffuf/feroxbuster.
+- `src/local-source-generator/v2/agents/recon/waf-detector-agent.js` — Use per-tool options for wafw00f.
+- `src/local-source-generator/v2/agents/recon/secret-scanner-agent.js` — Use per-tool options for trufflehog/gitleaks.
+- `src/local-source-generator/v2/agents/analysis/tls-analyzer.js` — Use per-tool options for sslyze.
+- `src/local-source-generator/v2/agents/exploitation/nuclei-agent.js` — Use per-tool options for nuclei.
+- `src/local-source-generator/v2/agents/exploitation/sqlmap-agent.js` — Use per-tool options for sqlmap.
+- `src/local-source-generator/v2/agents/exploitation/xss-validator-agent.js` — Use per-tool options for xsstrike.
+- `src/local-source-generator/v2/agents/exploitation/cmdi-agent.js` — Use per-tool options for commix.
+- `configs/config-schema.json` — Allow `agent_config` and `tool_config` keys.
+- `README.md` — Document `tool_config` usage.
+
+### Rationale
+Timeouts and retries can now be tuned per tool in config files, enabling safer runs on fragile targets and reducing false “tool failed” timeouts.

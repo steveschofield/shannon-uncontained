@@ -497,6 +497,17 @@ agent_config:
     delay: "0.2-0.5"
 ```
 
+To override tool timeouts or retries (e.g., `katana`, `ffuf`), add `tool_config`:
+
+```yaml
+tool_config:
+  katana:
+    timeout_ms: 300000
+    max_retries: 0
+  ffuf:
+    timeout_ms: 600000
+```
+
 Rate limiting profiles (from `src/config/rate-limit-config.js`):
 
 ```bash

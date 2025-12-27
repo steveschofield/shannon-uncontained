@@ -581,6 +581,7 @@ export class Orchestrator extends EventEmitter {
             framework: options.framework || 'express',
             ...options, // Pass through all options including msfrpcConfig
             agentConfig: mergedConfig.agents,
+            toolConfig: options.toolConfig || null,
             rateLimitProfile: profileName,
         };
 

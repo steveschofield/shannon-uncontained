@@ -147,6 +147,7 @@ program
     const { generateLocalSource } = await import('./local-source-generator.mjs');
     const { extname, resolve } = await import('path');
     let agentConfig;
+    let toolConfig;
     let healthCheckConfig;
     let configData;
     let enableExploitation = options.enableExploitation ?? false;
@@ -180,7 +181,7 @@ program
       }
     }
 
-    if (configData && typeof configData === 'object') {
+      if (configData && typeof configData === 'object') {
       // Extract health check config if present
       healthCheckConfig = configData.health_check || configData.healthCheck;
       const configEnableExploitation = configData.enable_exploitation ?? configData.enableExploitation;
@@ -215,6 +216,8 @@ program
           'exportReviewHtml',
           'log_llm_requests',
           'logLlmRequests',
+          'tool_config',
+          'toolConfig',
         ]);
         const candidateKeys = Object.keys(configData).filter(k => !reserved.has(k));
         if (candidateKeys.length > 0) {
@@ -223,6 +226,12 @@ program
             agentConfig[key] = configData[key];
           }
         }
+      }
+
+      if (configData.tool_config) {
+        toolConfig = configData.tool_config;
+      } else if (configData.toolConfig) {
+        toolConfig = configData.toolConfig;
       }
     }
 
@@ -266,6 +275,7 @@ program
         excludeAgents,
         resume: options.resume === false || options.noResume ? false : true,
         agentConfig,
+        toolConfig,
         healthCheck: healthCheckConfig,
         profile: options.profile,
         enableExploitation,

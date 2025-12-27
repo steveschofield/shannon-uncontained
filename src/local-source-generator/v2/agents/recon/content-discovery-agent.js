@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runTool, isToolAvailable } from '../../tools/runners/tool-runner.js';
+import { runTool, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 
 export class ContentDiscoveryAgent extends BaseAgent {
     constructor(options = {}) {
@@ -314,7 +314,8 @@ export class ContentDiscoveryAgent extends BaseAgent {
             : this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads, rateLimit, delay });
 
         ctx.recordToolInvocation();
-        const result = await runTool(command, { timeout: 300000, context: ctx });
+        const toolOptions = getToolRunOptions(selectedTool, inputs.toolConfig);
+        const result = await runTool(command, { timeout: toolOptions.timeout, context: ctx });
 
         // Parse output
         const discovered = selectedTool === 'feroxbuster'
