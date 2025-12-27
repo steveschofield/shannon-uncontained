@@ -181,7 +181,26 @@ class UnifiedLogger {
       
       case 'tool_end':
         const toolStatus = event.success ? chalk.green('✓') : chalk.red('✗');
-        console.log(chalk.yellow(`[${timestamp}] ${traceId}   ${toolStatus} ${event.tool} completed in ${event.duration}ms`));
+        if (event.success) {
+          console.log(chalk.yellow(`[${timestamp}] ${traceId}   ${toolStatus} ${event.tool} completed in ${event.duration}ms`));
+        } else {
+          const reason = event.timedOut
+            ? 'timeout'
+            : (event.error ? `error: ${event.error}` : 'error');
+          console.log(chalk.yellow(`[${timestamp}] ${traceId}   ${toolStatus} ${event.tool} failed in ${event.duration}ms (${reason})`));
+        }
+        break;
+
+      case 'tool_retry':
+        console.log(chalk.yellow(`[${timestamp}] ${traceId}   ↻ Retrying ${event.tool} (attempt ${event.attempt}/${event.maxRetries})`));
+        break;
+
+      case 'agent_warning':
+        console.log(chalk.yellow(`[${timestamp}] ${traceId}   ⚠ ${event.agent}: ${event.warning}`));
+        break;
+
+      case 'agent_error':
+        console.log(chalk.red(`[${timestamp}] ${traceId}   ❌ ${event.agent}: ${event.error}`));
         break;
       
       case 'llm_call':
