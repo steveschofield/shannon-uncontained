@@ -1,0 +1,27 @@
+{
+  "traceId": "46d1d048c27898e7742c49cc7e750054",
+  "sessionId": "20251227025730349-rn07oh",
+  "agentName": "ArchitectInferAgent",
+  "startTime": 1766804795780,
+  "endTime": 1766804817329,
+  "duration": 21549,
+  "spans": [
+    {
+      "spanId": "5baa6d16485e98c3",
+      "traceId": "46d1d048c27898e7742c49cc7e750054",
+      "name": "llm_call",
+      "startTime": 1766804795795,
+      "attributes": {
+        "model": "llama3.1:8b",
+        "capability": "infer_architecture_graph"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766804817258,
+      "duration": 21463,
+      "result": {
+        "tokens_used": 1000
+      }
+    }
+  ]
+}

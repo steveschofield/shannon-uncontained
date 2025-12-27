@@ -1,0 +1,28 @@
+{
+  "traceId": "4a88ae2c683ac540c4fae6aff69d5edf",
+  "sessionId": "20251227025730349-rn07oh",
+  "agentName": "SQLmapAgent",
+  "startTime": 1766804916869,
+  "endTime": 1766804918558,
+  "duration": 1689,
+  "spans": [
+    {
+      "spanId": "c6a74069cb6aac6d",
+      "traceId": "4a88ae2c683ac540c4fae6aff69d5edf",
+      "name": "tool_execution",
+      "startTime": 1766804917570,
+      "attributes": {
+        "tool": "sqlmap",
+        "command": "sqlmap -u \"http://192.168.1.130:3000\" --batch --output-dir=/tmp/sqlmap_output --level=2 --risk=1 --forms --crawl=1 --answers=\"crack=N,dict=N,continue=Y,quit=N\" --text-only",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766804918539,
+      "duration": 969,
+      "result": {
+        "duration": 968
+      }
+    }
+  ]
+}
