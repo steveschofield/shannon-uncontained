@@ -1,0 +1,46 @@
+{
+  "traceId": "dd6fdd8f903762c8e6250bbf581d933c",
+  "sessionId": "20251226233051183-qstvqb",
+  "agentName": "TechFingerprinterAgent",
+  "startTime": 1766791887152,
+  "endTime": 1766791891879,
+  "duration": 4727,
+  "spans": [
+    {
+      "spanId": "d5c974587c7971c8",
+      "traceId": "dd6fdd8f903762c8e6250bbf581d933c",
+      "name": "tool_execution",
+      "startTime": 1766791887376,
+      "attributes": {
+        "tool": "whatweb",
+        "command": "whatweb -a 3 --log-json=- http://192.168.1.130:3000",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766791891284,
+      "duration": 3908,
+      "result": {
+        "duration": 3908
+      }
+    },
+    {
+      "spanId": "9cb397e60087aa70",
+      "traceId": "dd6fdd8f903762c8e6250bbf581d933c",
+      "name": "tool_execution",
+      "startTime": 1766791891345,
+      "attributes": {
+        "tool": "echo",
+        "command": "echo \"http://192.168.1.130:3000\" | httpx -silent -json -tech-detect",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766791891869,
+      "duration": 524,
+      "result": {
+        "duration": 523
+      }
+    }
+  ]
+}
