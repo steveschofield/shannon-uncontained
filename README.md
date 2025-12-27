@@ -447,6 +447,8 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate https://target.com \
   --output ./shannon-results-$(date +%Y%m%d-%H%M%S)
 ```
 
+XSS validation uses discovered parameters when available. If none are found, the XSS validator will try a default seed path at `/search?q=` before skipping.
+
 ### Agent Configuration via JSON
 
 Provide per-agent options in a JSON file and point `--config` to it.
