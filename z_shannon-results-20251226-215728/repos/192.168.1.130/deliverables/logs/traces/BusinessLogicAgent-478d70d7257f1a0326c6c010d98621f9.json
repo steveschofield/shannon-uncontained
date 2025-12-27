@@ -1,0 +1,27 @@
+{
+  "traceId": "478d70d7257f1a0326c6c010d98621f9",
+  "sessionId": "20251227025730349-rn07oh",
+  "agentName": "BusinessLogicAgent",
+  "startTime": 1766804817395,
+  "endTime": 1766804874314,
+  "duration": 56919,
+  "spans": [
+    {
+      "spanId": "2a4fe74697057972",
+      "traceId": "478d70d7257f1a0326c6c010d98621f9",
+      "name": "llm_call",
+      "startTime": 1766804817399,
+      "attributes": {
+        "model": "llama3.1:8b",
+        "capability": "infer_architecture_graph"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766804874281,
+      "duration": 56882,
+      "result": {
+        "tokens_used": 1615
+      }
+    }
+  ]
+}

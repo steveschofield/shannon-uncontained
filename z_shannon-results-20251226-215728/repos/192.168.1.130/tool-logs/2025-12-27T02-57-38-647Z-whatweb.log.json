@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-27T02:57:38.647Z",
+  "command": "whatweb -a 3 --log-json=- http://192.168.1.130:3000",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 30000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "TechFingerprinterAgent",
+  "stage": "recon:enumeration",
+  "tool": "whatweb",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 3962,
+  "timedOut": false,
+  "signal": null,
+  "killed": false,
+  "error": null,
+  "stdout_bytes": 932,
+  "stderr_bytes": 0,
+  "stdout_lines": 5,
+  "stderr_lines": 1,
+  "stdout_head": "[\n{\"target\":\"http://192.168.1.130:3000\",\"http_status\":200,\"request_config\":{\"headers\":{\"User-Agent\":\"WhatWeb/0.6.3\"}},\"plugins\":{\"Country\":{\"string\":[\"RESERVED\"],\"module\":[\"ZZ\"]},\"HTML5\":{},\"IP\":{\"string\":[\"192.168.1.130\"]},\"JQuery\":{\"version\":[\"2.2.4\"]},\"Script\":{\"string\":[\"module\"]},\"Title\":{\"string\":[\"OWASP Juice Shop\"]},\"UncommonHeaders\":{\"string\":[\"access-control-allow-origin,x-content-type-options,feature-policy,x-recruiting\"]},\"X-Frame-Options\":{\"string\":[\"SAMEORIGIN\"]}}}\n\u001b[1m\u001b[34mhttp://192.168.1.130:3000\u001b[0m [200 OK] \u001b[1mCountry\u001b[0m[\u001b[0m\u001b[22mRESERVED\u001b[0m][\u001b[1m\u001b[31mZZ\u001b[0m], \u001b[1mHTML5\u001b[0m, \u001b[1mIP\u001b[0m[\u001b[0m\u001b[22m192.168.1.130\u001b[0m], \u001b[1mJQuery\u001b[0m[\u001b[1m\u001b[32m2.2.4\u001b[0m], \u001b[1mScript\u001b[0m[\u001b[0m\u001b[22mmodule\u001b[0m], \u001b[1mTitle\u001b[0m[\u001b[1m\u001b[33mOWASP Juice Shop\u001b[0m], \u001b[1mUncommonHeaders\u001b[0m[\u001b[0m\u001b[22maccess-control-allow-origin,x-content-type-options,feature-policy,x-recruiting\u001b[0m], \u001b[1mX-Frame-Options\u001b[0m[\u001b[0m\u001b[22mSAMEORIGIN\u001b[0m]\n]\n",
+  "stderr_head": "",
+  "stdout_tail": "[\n{\"target\":\"http://192.168.1.130:3000\",\"http_status\":200,\"request_config\":{\"headers\":{\"User-Agent\":\"WhatWeb/0.6.3\"}},\"plugins\":{\"Country\":{\"string\":[\"RESERVED\"],\"module\":[\"ZZ\"]},\"HTML5\":{},\"IP\":{\"string\":[\"192.168.1.130\"]},\"JQuery\":{\"version\":[\"2.2.4\"]},\"Script\":{\"string\":[\"module\"]},\"Title\":{\"string\":[\"OWASP Juice Shop\"]},\"UncommonHeaders\":{\"string\":[\"access-control-allow-origin,x-content-type-options,feature-policy,x-recruiting\"]},\"X-Frame-Options\":{\"string\":[\"SAMEORIGIN\"]}}}\n\u001b[1m\u001b[34mhttp://192.168.1.130:3000\u001b[0m [200 OK] \u001b[1mCountry\u001b[0m[\u001b[0m\u001b[22mRESERVED\u001b[0m][\u001b[1m\u001b[31mZZ\u001b[0m], \u001b[1mHTML5\u001b[0m, \u001b[1mIP\u001b[0m[\u001b[0m\u001b[22m192.168.1.130\u001b[0m], \u001b[1mJQuery\u001b[0m[\u001b[1m\u001b[32m2.2.4\u001b[0m], \u001b[1mScript\u001b[0m[\u001b[0m\u001b[22mmodule\u001b[0m], \u001b[1mTitle\u001b[0m[\u001b[1m\u001b[33mOWASP Juice Shop\u001b[0m], \u001b[1mUncommonHeaders\u001b[0m[\u001b[0m\u001b[22maccess-control-allow-origin,x-content-type-options,feature-policy,x-recruiting\u001b[0m], \u001b[1mX-Frame-Options\u001b[0m[\u001b[0m\u001b[22mSAMEORIGIN\u001b[0m]\n]\n",
+  "stderr_tail": "",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}

@@ -1,0 +1,28 @@
+{
+  "traceId": "f1d2153e4ea90ebca515dfb8e485b6d3",
+  "sessionId": "20251227025730349-rn07oh",
+  "agentName": "NetReconAgent",
+  "startTime": 1766804253271,
+  "endTime": 1766804259815,
+  "duration": 6544,
+  "spans": [
+    {
+      "spanId": "bd42a1618e51f977",
+      "traceId": "f1d2153e4ea90ebca515dfb8e485b6d3",
+      "name": "tool_execution",
+      "startTime": 1766804253310,
+      "attributes": {
+        "tool": "nmap",
+        "command": "nmap -sV -p 21,22,23,25,53,80,110,143,443,445,993,995,3306,3389,5432,8080,8443 --open 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766804259806,
+      "duration": 6496,
+      "result": {
+        "duration": 6495
+      }
+    }
+  ]
+}
