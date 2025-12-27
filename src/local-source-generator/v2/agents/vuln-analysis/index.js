@@ -18,6 +18,16 @@ import { BusinessLogicFuzzer } from './business-logic-fuzzer.js';
 import { CSRFDetector } from './csrf-detector.js';
 import { SSRFDetector } from './ssrf-detector.js';
 import { GraphQLTester } from './graphql-tester.js';
+import { OpenRedirectAgent } from './open-redirect-agent.js';
+import { SSTIAgent } from './ssti-agent.js';
+import { JWTAnalyzerAgent } from './jwt-analyzer-agent.js';
+import { CachePoisoningProbeAgent } from './cache-poisoning-probe-agent.js';
+import { RequestSmugglingDetector } from './request-smuggling-detector.js';
+import { JWTPolicyCheckerAgent } from './jwt-policy-checker-agent.js';
+import { CacheDeceptionAnalyzerAgent } from './cache-deception-analyzer-agent.js';
+import { XXEUploadAgent } from './xxe-upload-agent.js';
+import { OAuthMisconfigAgent } from './oauth-misconfig-agent.js';
+import { IDORProbeAgent } from './idor-probe-agent.js';
 
 export {
     ParameterDiscoveryAgent,
@@ -27,6 +37,16 @@ export {
     CSRFDetector,
     SSRFDetector,
     GraphQLTester,
+    OpenRedirectAgent,
+    SSTIAgent,
+    JWTAnalyzerAgent,
+    CachePoisoningProbeAgent,
+    RequestSmugglingDetector,
+    JWTPolicyCheckerAgent,
+    CacheDeceptionAnalyzerAgent,
+    XXEUploadAgent,
+    OAuthMisconfigAgent,
+    IDORProbeAgent,
 };
 
 /**
@@ -44,6 +64,16 @@ export function registerVulnAnalysisAgents(orchestrator) {
     orchestrator.registerAgent(new CSRFDetector());             // NEW - CSRF detection
     orchestrator.registerAgent(new SSRFDetector());             // NEW - SSRF detection
     orchestrator.registerAgent(new GraphQLTester());            // NEW - GraphQL tests
+    orchestrator.registerAgent(new OpenRedirectAgent());        // NEW - Open redirect detection
+    orchestrator.registerAgent(new SSTIAgent());                // NEW - SSTI detection
+    orchestrator.registerAgent(new JWTAnalyzerAgent());         // NEW - JWT analysis
+    orchestrator.registerAgent(new CachePoisoningProbeAgent()); // NEW - Cache poisoning probe
+    orchestrator.registerAgent(new RequestSmugglingDetector()); // NEW - Request smuggling heuristics
+    orchestrator.registerAgent(new JWTPolicyCheckerAgent());    // NEW - OIDC policy checks
+    orchestrator.registerAgent(new CacheDeceptionAnalyzerAgent());// NEW - Cache deception & Vary
+    orchestrator.registerAgent(new XXEUploadAgent());           // NEW - XXE safe upload probes
+    orchestrator.registerAgent(new OAuthMisconfigAgent());      // NEW - OAuth redirect/scope checks
+    orchestrator.registerAgent(new IDORProbeAgent());           // NEW - IDOR heuristic probe
     
     // Existing agents would be registered here
     // orchestrator.registerAgent(new SQLInjectionAgent());

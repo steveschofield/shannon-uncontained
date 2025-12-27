@@ -93,4 +93,5 @@
 
 * [Glossary](appendices/glossary.md) (planned)
 * [References](appendices/references.md) (planned)
+* [Acknowledgements](acknowledgements.md)
 * [Changelog](appendices/changelog.md) (planned)
