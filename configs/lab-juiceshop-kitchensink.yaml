@@ -1,0 +1,102 @@
+# Kitchen Sink Lab Config for OWASP Juice Shop
+#
+# This file demonstrates most knobs you can control when running Shannon LSG v2.
+# It is intended for learning and inspection, not all keys must be enabled.
+#
+# Run example:
+#   shannon.mjs generate http://localhost:3000 \
+#     --config configs/lab-juiceshop-kitchensink.yaml \
+#     -o ./lab-results-juice-kitchensink
+
+# =========================
+# Global pipeline controls
+# =========================
+profile: conservative              # Rate-limit profile: stealth|conservative|normal|aggressive
+enable_exploitation: false         # Keep active exploitation OFF unless explicitly enabled
+export_review_html: true           # Save model-review.html in the workspace
+log_llm_requests: false            # Record LLM POST metadata in events.ndjson
+
+# Lab / unsafe mode (educational use only)
+unsafe_probes: true                # Master switch for deeper-but-careful probes
+lab_agents:                        # Per-agent lab behavior (only honored if unsafe_probes: true)
+  - RequestSmugglingDetector       # Generate raw HTTP smuggling PoCs (not sent automatically)
+  - JWTAnalyzerAgent               # Emit alg=none PoC token as event (educational)
+  - OAuthMisconfigAgent            # Write authorization URLs if redirect_uri acceptance detected
+
+# Optional environment variables (set in your shell before running):
+#   export XXE_OOB_URL="https://oob.yourdomain/xxe.txt"            # lab-only XXE indicator endpoint
+#   export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"  # lab auth redirect to capture code
+
+# =========================
+# Target health monitoring
+# =========================
+health_check:
+  enabled: true
+  stopOnDown: true
+  waitForRecovery: false
+  maxFailures: 3           # consecutive failed checks before marking target down
+  interval: 30000          # ms between checks
+  timeout: 10000           # ms per check
+  recoveryTimeout: 180000  # ms to wait when waitForRecovery: true
+
+# =========================
+# Per-agent configuration
+# =========================
+# Only agents that read agent_config will use these values; others keep defaults.
+agent_config:
+  # Recon / Content discovery throttles (if you enable this agent in a focused run)
+  ContentDiscoveryAgent:
+    rateLimit: 5           # requests/sec for ffuf
+    delay: 200             # ms inter-request delay
+    threads: 10            # parallel ffuf threads
+
+  # IDOR lab tuning — if you include IDORProbeAgent in a focused run
+  IDORProbeAgent:
+    maxEndpoints: 60       # wider search surface
+    maxMutations: 5        # try more path/query variations per candidate
+
+  # Cache poisoning probe (candidate breadth)
+  CachePoisoningProbeAgent:
+    maxCandidates: 40
+
+  # (Example placeholder) You can add other agents with custom knobs as they adopt agent_config.
+  # OpenRedirectAgent:
+  #   customParams: ["next","return","redirect_uri","url"]
+
+# =========================
+# Tool configuration (example placeholders)
+# =========================
+# Tools may read from this section to adjust paths/timeouts. Not all tools honor it yet.
+tool_config:
+  nmap:
+    timeout_ms: 120000
+  nuclei:
+    rate_limit: 50
+  sqlmap:
+    timeout_ms: 180000
+
+# =========================
+# Instructor Notes (Class Flow)
+# =========================
+# 1) Start Juice Shop:
+#    docker run -it --rm -p 3000:3000 bkimminich/juice-shop
+# 2) Core drill (Open Redirect + JWT + Cache):
+#    shannon.mjs generate http://localhost:3000 \
+#      --config configs/lab-juiceshop-kitchensink.yaml \
+#      --agents OpenRedirectAgent,JWTAnalyzerAgent,CacheDeceptionAnalyzerAgent \
+#      -o ./lab-results-juice-core
+# 3) Optional XSS drill (if xsstrike installed):
+#    shannon.mjs generate http://localhost:3000 \
+#      --config configs/lab-juiceshop-kitchensink.yaml \
+#      --agents DOMXSSAgent,XSSValidatorAgent \
+#      -o ./lab-results-juice-xss
+# 4) Optional OAuth demo (if endpoints present):
+#    export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"
+#    shannon.mjs generate http://localhost:3000 \
+#      --config configs/lab-juiceshop-kitchensink.yaml \
+#      --lab OAuthMisconfigAgent \
+#      --agents OAuthMisconfigAgent \
+#      -o ./lab-results-juice-oauth
+# 5) Review events.ndjson for:
+#    - open_redirect_detected, jwt_detected/jwt_misconfig, cache_deception_risk, dom_xss_detected, xss_confirmed
+# 6) Debrief and mitigations: strict redirect allowlists, JWT alg/scope policies, headers (Vary/Cache), output encoding

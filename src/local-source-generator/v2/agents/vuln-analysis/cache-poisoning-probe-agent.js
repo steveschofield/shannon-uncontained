@@ -57,7 +57,9 @@ export class CachePoisoningProbeAgent extends BaseAgent {
   async run(ctx, inputs) {
     const { target, discoveredEndpoints = [] } = inputs;
     const base = this.normalizeBase(target);
-    const candidates = this.pickCandidates(discoveredEndpoints, base);
+    const cfg = (ctx.config && ctx.config.agentConfig && ctx.config.agentConfig.CachePoisoningProbeAgent) || {};
+    const maxCandidates = cfg.maxCandidates ?? 20;
+    const candidates = this.pickCandidates(discoveredEndpoints, base, maxCandidates);
     const risks = [];
     let tested = 0;
 
@@ -97,7 +99,7 @@ export class CachePoisoningProbeAgent extends BaseAgent {
     try { return await res.text(); } catch { return ''; }
   }
 
-  pickCandidates(discovered, base) {
+  pickCandidates(discovered, base, limit = 20) {
     const urls = new Set();
     for (const ep of discovered) {
       const u = ep?.url || ep?.path;
@@ -106,7 +108,7 @@ export class CachePoisoningProbeAgent extends BaseAgent {
       if (/^\/$|index|home|login|product|search/i.test(full)) urls.add(full);
     }
     if (urls.size === 0) ['/', '/index', '/home', '/search'].forEach(p => urls.add(`${base}${p}`));
-    return Array.from(urls).slice(0, 20);
+    return Array.from(urls).slice(0, limit);
   }
 
   normalizeBase(target) {

@@ -24,3 +24,33 @@ lab_agents:
 #   IDORProbeAgent:
 #     maxEndpoints: 50
 
+# =============================================================
+# Class Flow (Juice Shop) — Instructor Notes
+# =============================================================
+# 1) Start Juice Shop locally:
+#    docker run -it --rm -p 3000:3000 bkimminich/juice-shop
+# 2) (Optional) Install XSStrike for XSS validator:
+#    pipx install xsstrike    # or see scripts/install-all-tools.sh
+# 3) Run focused checks (Open Redirect + JWT + Cache):
+#    shannon.mjs generate http://localhost:3000 \
+#      --config configs/lab-juiceshop.yaml \
+#      --agents OpenRedirectAgent,JWTAnalyzerAgent,CacheDeceptionAnalyzerAgent \
+#      -o ./lab-results-juice-core
+#    - events.ndjson → open_redirect_detected, jwt_detected/jwt_misconfig, cache_deception_risk
+# 4) (Optional) XSS drill (DOM + reflected) — requires xsstrike for validator:
+#    shannon.mjs generate http://localhost:3000 \
+#      --config configs/lab-juiceshop.yaml \
+#      --agents DOMXSSAgent,XSSValidatorAgent \
+#      -o ./lab-results-juice-xss
+#    - events.ndjson → dom_xss_detected, xss_confirmed
+# 5) (Optional) OAuth checks (if app exposes auth endpoints):
+#    export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"
+#    shannon.mjs generate http://localhost:3000 \
+#      --config configs/lab-juiceshop.yaml \
+#      --lab OAuthMisconfigAgent \
+#      --agents OAuthMisconfigAgent \
+#      -o ./lab-results-juice-oauth
+#    - deliverables/lab/oauth/*.txt contains authorize URLs (if redirect_uri accepted)
+# 6) Debrief:
+#    - Discuss open redirect → OAuth flows, JWT policy issues, cache deception, XSS sinks/validation
+#    - Review mitigations: strict redirect allowlists, JWT alg/scope policies, cache headers/Vary, output encoding

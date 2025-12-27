@@ -80,6 +80,73 @@ For lab sessions (when `--unsafe-probes` and `--lab` include the agent):
 ### Rationale
 Provide hands-on, reproducible learning artifacts for OWASP Juice Shop and other educational targets without sending aggressive traffic automatically.
 
+---
+
+## docs(labs): Add DVWA lab walkthrough (2025-12-26)
+
+### Overview
+Added a GitBook page with a step-by-step DVWA lab (IDOR focus, plus request smuggling PoCs), aligned with the lab-dvwa.yaml config.
+
+### Files Added / Modified
+- `docs/gitbook/labs/dvwa-lab.md` — Walkthrough with commands and validation steps.
+- `docs/gitbook/SUMMARY.md` — Adds a Labs section and links the DVWA lab page.
+- `configs/lab-dvwa.yaml` — Annotated with a “Class Flow” comment block for quick reference.
+
+### Rationale
+Provide instructors and learners with a guided, reproducible lab path using Shannon’s lab mode.
+
+---
+
+## docs(labs): Add Labs overview index (2025-12-26)
+
+### Overview
+Added a Labs Overview page linking to the DVWA and Juice Shop walkthroughs with a quick comparison of what each demonstrates best.
+
+### Files Added / Modified
+- `docs/gitbook/labs/README.md` — Labs landing page and quick comparison.
+- `docs/gitbook/SUMMARY.md` — Links the Labs Overview under the Labs section.
+
+### Rationale
+Provide a single entry point to pick the right lab for a given lesson (IDOR, open redirect/JWT/cache, XSS, etc.).
+
+---
+
+## docs(config): Add lab-juiceshop-kitchensink.yaml (2025-12-26)
+
+### Overview
+Added a comprehensive “kitchen sink” Juice Shop lab config that showcases most available pipeline and agent options with annotated comments.
+
+### Files Added
+- `configs/lab-juiceshop-kitchensink.yaml`
+
+### Rationale
+Provide an exhaustive, self‑documenting example for instructors and reviewers to understand the full range of configurable behaviors.
+
+---
+
+## docs(config): Add lab-dvwa-kitchensink.yaml (2025-12-26)
+
+### Overview
+Added a comprehensive DVWA “kitchen sink” config mirroring the Juice Shop version, with lab flags, health check, agent/tool configs, and an instructor class flow.
+
+### Files Added
+- `configs/lab-dvwa-kitchensink.yaml`
+
+### Rationale
+Offer an exhaustive, self‑documenting DVWA example for labs and code review, independent of CLI flags.
+
+## feat(cli): Config-driven agent allow/deny lists (2025-12-26)
+
+### Overview
+YAML/JSON configs can now specify `agents: [ ... ]` (allowlist) and `exclude_agents: [ ... ]` (denylist), equivalent to CLI `--agents` and `--exclude-agents`.
+
+### Modified Files
+- `shannon.mjs` — Reads `agents` and `exclude_agents` (or `excludeAgents`) from config; merges with CLI flags.
+- `README.md` — Docs showing config usage and CLI equivalence.
+
+### Rationale
+Expands configurability for classrooms and CI where CLI flags are verbose or impractical.
+
 ## chore(llm): Log LLM POST metadata for SourceGen repairs (2025-12-26)
 
 ### Overview

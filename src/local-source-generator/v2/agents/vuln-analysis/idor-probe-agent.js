@@ -49,7 +49,11 @@ export class IDORProbeAgent extends BaseAgent {
   async run(ctx, inputs) {
     const { target, discoveredEndpoints = [] } = inputs;
     const base = this.normalizeBase(target);
-    const candidates = this.findIdEndpoints(discoveredEndpoints, base);
+    const unsafe = !!(ctx.config && ctx.config.unsafeProbes);
+    const cfg = (ctx.config && ctx.config.agentConfig && ctx.config.agentConfig.IDORProbeAgent) || {};
+    const maxEndpoints = cfg.maxEndpoints ?? (unsafe ? 50 : 30);
+    const maxMutations = cfg.maxMutations ?? 3;
+    const candidates = this.findIdEndpoints(discoveredEndpoints, base, maxEndpoints);
 
     const findings = [];
     let tested = 0;
@@ -63,7 +67,7 @@ export class IDORProbeAgent extends BaseAgent {
       const baseText = baseRes.bodyText;
       const baseLen = baseText.length;
 
-      for (const mutated of this.mutate(c)) {
+      for (const mutated of this.mutate(c, maxMutations)) {
         const res2 = await this.safeFetch(mutated);
         tested++;
         if (res2.ok && Math.abs(res2.bodyText.length - baseLen) > Math.max(200, baseLen * 0.3)) {
@@ -89,7 +93,7 @@ export class IDORProbeAgent extends BaseAgent {
     } catch { return { ok: false, bodyText: '', status: 0 }; }
   }
 
-  findIdEndpoints(discovered, base) {
+  findIdEndpoints(discovered, base, maxEndpoints) {
     const urls = new Set();
     for (const ep of discovered) {
       const u = ep?.url || ep?.path || '';
@@ -99,10 +103,10 @@ export class IDORProbeAgent extends BaseAgent {
         urls.add(full);
       }
     }
-    return Array.from(urls).slice(0, 30).map(url => ({ url }));
+    return Array.from(urls).slice(0, maxEndpoints).map(url => ({ url }));
   }
 
-  mutate(c) {
+  mutate(c, maxMutations = 3) {
     const muts = [];
     try {
       const u = new URL(c.url);
@@ -127,7 +131,7 @@ export class IDORProbeAgent extends BaseAgent {
         muts.push(u2.toString());
       }
     } catch { /* ignore */ }
-    return muts.slice(0, 3);
+    return muts.slice(0, maxMutations);
   }
 
   set(u, k, v) { const u2 = new URL(u.toString()); u2.searchParams.set(k, v); return u2.toString(); }

@@ -5,6 +5,8 @@
   --enable-exploitation \
   --export-review-html
 
+using llama model
+
 export LSG_ALLOW_PRIVATE=1
 export LSG_DEBUG_SAVE_OUTPUT=1
 export LLM_FAST_MODEL=llama3.1:8b
@@ -14,4 +16,12 @@ export LLM_SMART_MODEL=llama3.1:8b
 export LLM_CODE_MODEL=llama3.1:8b
 export LLM_MODEL=llama3.1:8b
 
-
+using deephat model. 
+export LSG_ALLOW_PRIVATE=1
+export LSG_DEBUG_SAVE_OUTPUT=1
+export LLM_FAST_MODEL=DeepHat/DeepHat-V1-7B:latest
+export LLM_PROVIDER=ollama
+export LLM_BASE_URL=http://192.168.1.69:11434/v1
+export LLM_SMART_MODEL=DeepHat/DeepHat-V1-7B:latest
+export LLM_CODE_MODEL=DeepHat/DeepHat-V1-7B:latest
+export LLM_MODEL=DeepHat/DeepHat-V1-7B:latest

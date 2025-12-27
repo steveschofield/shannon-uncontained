@@ -1,0 +1,107 @@
+## Kitchen Sink Lab Config for DVWA (Damn Vulnerable Web Application)
+##
+## This exhaustive example demonstrates most knobs you can control in Shannon.
+## It is meant for review and education. Not all keys must be enabled in a run.
+##
+## Docs:
+##   - Labs Overview: docs/gitbook/labs/README.md
+##   - DVWA Walkthrough: docs/gitbook/labs/dvwa-lab.md
+
+# =========================
+# Global pipeline controls
+# =========================
+profile: conservative              # Rate-limit profile: stealth|conservative|normal|aggressive
+enable_exploitation: false         # Keep active exploitation OFF unless explicitly enabled
+export_review_html: true           # Save model-review.html in the workspace
+log_llm_requests: false            # Record LLM POST metadata in events.ndjson
+
+# =========================
+# Lab / unsafe mode (educational use)
+# =========================
+unsafe_probes: true                # Master switch for deeper-but-careful probes
+lab_agents:                        # Per-agent lab behavior (applies only if unsafe_probes: true)
+  - RequestSmugglingDetector       # Generate raw HTTP smuggling PoCs (not sent automatically)
+  - IDORProbeAgent                 # Emphasize IDOR by widening scope (see agent_config)
+  # - JWTAnalyzerAgent             # Enable if your DVWA build uses JWTs
+  # - OAuthMisconfigAgent          # Enable if testing a DVWA variant with OAuth flows
+
+# Optional environment variables (set before running):
+#   export XXE_OOB_URL="https://oob.yourdomain/xxe.txt"            # lab-only XXE indicator endpoint
+#   export OAUTH_LAB_REDIRECT_URL="https://your-lab-host/callback"  # lab auth redirect to capture code
+
+# =========================
+# Target health monitoring
+# =========================
+health_check:
+  enabled: true
+  stopOnDown: true
+  waitForRecovery: false
+  maxFailures: 3
+  interval: 30000
+  timeout: 10000
+  recoveryTimeout: 180000
+
+# =========================
+# Per-agent configuration (only honored by agents that read agent_config)
+# =========================
+agent_config:
+  # Recon / Content discovery throttles (enable agent in a focused run if needed)
+  ContentDiscoveryAgent:
+    rateLimit: 5
+    delay: 200
+    threads: 10
+
+  # IDOR lab tuning — widen search surface & mutations
+  IDORProbeAgent:
+    maxEndpoints: 80
+    maxMutations: 5
+
+  # Cache poisoning probe (candidate breadth)
+  CachePoisoningProbeAgent:
+    maxCandidates: 40
+
+  # Placeholders for other agent-specific knobs as they adopt agent_config
+  # OpenRedirectAgent:
+  #   customParams: ["next","return","redirect_uri","url"]
+
+# =========================
+# Tool configuration (examples, not all tools read these yet)
+# =========================
+tool_config:
+  nmap:
+    timeout_ms: 120000
+  nuclei:
+    rate_limit: 50
+  sqlmap:
+    timeout_ms: 180000
+
+# =========================
+# Instructor Notes (Class Flow)
+# =========================
+# 1) Start DVWA:
+#    docker run -it --rm -p 8080:80 vulnerables/web-dvwa
+#    In DVWA UI: set Security → Low; create two users for IDOR validation
+# 2) Focused IDOR drill (recommended):
+#    shannon.mjs generate http://localhost:8080 \
+#      --config configs/lab-dvwa-kitchensink.yaml \
+#      --agents ParameterDiscoveryAgent,IDORProbeAgent \
+#      -o ./lab-results-dvwa-idor
+#    - Look for events: idor_possible_detected; claims: idor_possible
+# 3) Request smuggling payload shapes (education only):
+#    shannon.mjs generate http://localhost:8080 \
+#      --config configs/lab-dvwa-kitchensink.yaml \
+#      --agents RequestSmugglingDetector \
+#      -o ./lab-results-dvwa-smuggle
+#    - See deliverables/lab/request-smuggling/*.txt — not sent automatically
+# 4) Optional: Open Redirect & Cache deception (if endpoints exist):
+#    shannon.mjs generate http://localhost:8080 \
+#      --config configs/lab-dvwa-kitchensink.yaml \
+#      --agents OpenRedirectAgent,CacheDeceptionAnalyzerAgent \
+#      -o ./lab-results-dvwa-core
+# 5) Optional: XXE indicator probes (upload/import endpoints):
+#    export XXE_OOB_URL="https://oob.yourdomain/xxe.txt"   # optional, lab only
+#    shannon.mjs generate http://localhost:8080 \
+#      --config configs/lab-dvwa-kitchensink.yaml \
+#      --agents XXEUploadAgent \
+#      -o ./lab-results-dvwa-xxe
+# 6) Debrief & mitigations: authorization checks, input handlers, proxy behavior, cache headers

@@ -845,6 +845,42 @@ shannon.mjs generate http://localhost:3000 \
   -o ./lab-results
 ```
 
+Sample Lab Config (DVWA)
+
+Use the provided YAML for DVWA:
+
+```yaml
+# configs/lab-dvwa.yaml
+profile: conservative
+enable_exploitation: false
+unsafe_probes: true
+lab_agents: ["RequestSmugglingDetector", "IDORProbeAgent"]
+```
+
+Run:
+
+```bash
+shannon.mjs generate http://localhost:8080 \
+  --config configs/lab-dvwa.yaml \
+  -o ./lab-results-dvwa
+```
+
+Config‑based agent allow/deny lists
+
+You can select agents from YAML/JSON config (equivalent to CLI flags):
+
+```yaml
+agents: ["SecurityHeaderAnalyzer", "TLSAnalyzer"]          # allowlist
+exclude_agents: ["RequestSmugglingDetector", "IDORProbeAgent"]  # denylist
+```
+
+CLI has the same controls:
+
+```bash
+--agents SecurityHeaderAnalyzer,TLSAnalyzer
+--exclude-agents RequestSmugglingDetector,IDORProbeAgent
+```
+
 ---
 
 ## Acknowledgements
