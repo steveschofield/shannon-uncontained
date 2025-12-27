@@ -127,6 +127,7 @@ done
 echo -n "Checking RustScan... "
 if ! command -v rustscan &> /dev/null; then
     echo "⚠️  Missing (Optional)"
+    echo "   Install Rust toolchain: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
     echo "   Install via: sudo apt-get install -y rustscan"
     echo "   Or: cargo install rustscan"
 else
