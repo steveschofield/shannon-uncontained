@@ -1152,3 +1152,16 @@ Added per-tool configuration overrides so timeouts/retries can be tuned (e.g., k
 
 ### Rationale
 Timeouts and retries can now be tuned per tool in config files, enabling safer runs on fragile targets and reducing false “tool failed” timeouts.
+
+---
+
+## feat(lsg-v2): Improve console logging for exploitation runs (2025-12-27)
+
+### Overview
+Enhanced console output to show tool failures, retries, and agent warnings/errors so exploitation stages are easier to interpret.
+
+### Modified Files
+- `src/logging/unified-logger.js` — Added console output for tool failures, retries, agent warnings, and agent errors.
+
+### Rationale
+Exploitation agents often skip due to missing parameters or fail due to tool errors; clearer console output makes these cases obvious without digging into logs.
