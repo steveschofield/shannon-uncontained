@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runToolWithRetry, isToolAvailable, getToolTimeout } from '../../tools/runners/tool-runner.js';
+import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 import { normalizeKatana, normalizeGau } from '../../tools/normalizers/evidence-normalizers.js';
 import { EVENT_TYPES, createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 
@@ -68,8 +68,9 @@ export class CrawlerAgent extends BaseAgent {
             ctx.recordToolInvocation();
 
             const katanaCmd = `katana -u ${target} -d ${depth} -jc -silent -jsonl`;
+            const katanaOptions = getToolRunOptions('katana', inputs.toolConfig);
             const katanaResult = await runToolWithRetry(katanaCmd, {
-                timeout: getToolTimeout('katana'),
+                ...katanaOptions,
                 context: ctx,
             });
 
@@ -115,8 +116,9 @@ export class CrawlerAgent extends BaseAgent {
                 ctx.recordToolInvocation();
 
                 const gauCmd = `gau --subs ${hostname}`;
+                const gauOptions = getToolRunOptions('gau', inputs.toolConfig);
                 const gauResult = await runToolWithRetry(gauCmd, {
-                    timeout: getToolTimeout('gau'),
+                    ...gauOptions,
                     context: ctx,
                 });
 

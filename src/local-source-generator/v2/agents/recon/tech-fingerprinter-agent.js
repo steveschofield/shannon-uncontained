@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runToolWithRetry, isToolAvailable, getToolTimeout } from '../../tools/runners/tool-runner.js';
+import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 import { normalizeWhatweb, normalizeHttpx } from '../../tools/normalizers/evidence-normalizers.js';
 import { createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 import { CLAIM_TYPES } from '../../epistemics/ledger.js';
@@ -68,8 +68,9 @@ export class TechFingerprinterAgent extends BaseAgent {
             ctx.recordToolInvocation();
 
             const whatwebCmd = `whatweb -a 3 --log-json=- ${target}`;
+            const whatwebOptions = getToolRunOptions('whatweb', inputs.toolConfig);
             const result = await runToolWithRetry(whatwebCmd, {
-                timeout: getToolTimeout('whatweb'),
+                ...whatwebOptions,
                 context: ctx,
             });
 
@@ -102,8 +103,9 @@ export class TechFingerprinterAgent extends BaseAgent {
             ctx.recordToolInvocation();
 
             const httpxCmd = `echo "${target}" | httpx -silent -json -tech-detect`;
+            const httpxOptions = getToolRunOptions('httpx', inputs.toolConfig);
             const result = await runToolWithRetry(httpxCmd, {
-                timeout: getToolTimeout('httpx'),
+                ...httpxOptions,
                 context: ctx,
             });
 

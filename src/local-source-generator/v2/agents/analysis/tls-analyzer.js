@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runTool, isToolAvailable } from '../../tools/runners/tool-runner.js';
+import { runTool, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 
 export class TLSAnalyzer extends BaseAgent {
     constructor(options = {}) {
@@ -69,7 +69,7 @@ export class TLSAnalyzer extends BaseAgent {
     /**
      * Run sslyze scan
      */
-    async runSslyze(ctx, target, port = 443) {
+    async runSslyze(ctx, target, port = 443, toolConfig = null) {
         const { promises: fsp } = await import('node:fs');
         const os = await import('node:os');
         const path = await import('node:path');
@@ -78,7 +78,8 @@ export class TLSAnalyzer extends BaseAgent {
         const outFile = path.join(tmpDir, 'sslyze.json');
 
         const cmd = `sslyze ${target}:${port} --json_out=${outFile}`;
-        await runTool(cmd, { timeout: 120000, context: ctx });
+        const toolOptions = getToolRunOptions('sslyze', toolConfig);
+        await runTool(cmd, { timeout: toolOptions.timeout, context: ctx });
 
         try {
             const content = await fsp.readFile(outFile, 'utf-8');
@@ -324,7 +325,7 @@ export class TLSAnalyzer extends BaseAgent {
         if (await isToolAvailable('sslyze')) {
             ctx.recordToolInvocation();
             try {
-                const sslyzeResult = await this.runSslyze(ctx, hostname, port);
+                const sslyzeResult = await this.runSslyze(ctx, hostname, port, inputs.toolConfig);
                 if (sslyzeResult) {
                     analysis = this.parseSslyzeResults(sslyzeResult);
                     tool = 'sslyze';

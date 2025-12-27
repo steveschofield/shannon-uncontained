@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runTool, isToolAvailable } from '../../tools/runners/tool-runner.js';
+import { runTool, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 import { fs, path } from 'zx';
 
 export class SecretScannerAgent extends BaseAgent {
@@ -94,9 +94,10 @@ export class SecretScannerAgent extends BaseAgent {
     /**
      * Scan with trufflehog
      */
-    async scanWithTrufflehog(sourceDir) {
+    async scanWithTrufflehog(ctx, sourceDir, toolConfig = null) {
         const cmd = `trufflehog filesystem "${sourceDir}" --json --no-update`;
-        const result = await runTool(cmd, { timeout: 180000, context: ctx });
+        const toolOptions = getToolRunOptions('trufflehog', toolConfig);
+        const result = await runTool(cmd, { timeout: toolOptions.timeout, context: ctx });
 
         const secrets = [];
         const lines = (result.stdout || '').split('\n').filter(l => l.trim());
@@ -121,9 +122,10 @@ export class SecretScannerAgent extends BaseAgent {
     /**
      * Scan with gitleaks
      */
-    async scanWithGitleaks(sourceDir) {
+    async scanWithGitleaks(ctx, sourceDir, toolConfig = null) {
         const cmd = `gitleaks detect --source "${sourceDir}" --report-format json --report-path /dev/stdout --no-git`;
-        const result = await runTool(cmd, { timeout: 180000, context: ctx });
+        const toolOptions = getToolRunOptions('gitleaks', toolConfig);
+        const result = await runTool(cmd, { timeout: toolOptions.timeout, context: ctx });
 
         const secrets = [];
 
@@ -241,9 +243,9 @@ export class SecretScannerAgent extends BaseAgent {
         let secrets = [];
 
         if (selectedTool === 'trufflehog') {
-            secrets = await this.scanWithTrufflehog(sourceDir);
+            secrets = await this.scanWithTrufflehog(ctx, sourceDir, inputs.toolConfig);
         } else if (selectedTool === 'gitleaks') {
-            secrets = await this.scanWithGitleaks(sourceDir);
+            secrets = await this.scanWithGitleaks(ctx, sourceDir, inputs.toolConfig);
         } else {
             // Fallback to regex
             secrets = await this.scanWithRegex(sourceDir);

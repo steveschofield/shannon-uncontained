@@ -254,6 +254,14 @@ export const TOOL_TIMEOUTS = {
     httpx: 30000,
     nuclei: 300000,
     commix: 300000,
+    ffuf: 300000,
+    feroxbuster: 300000,
+    xsstrike: 180000,
+    sqlmap: 300000,
+    wafw00f: 60000,
+    trufflehog: 180000,
+    gitleaks: 180000,
+    sslyze: 120000,
 };
 
 /**
@@ -261,11 +269,28 @@ export const TOOL_TIMEOUTS = {
  * @param {string} toolName - Tool name
  * @returns {number} Timeout in ms
  */
-export function getToolTimeout(toolName) {
+export function getToolTimeout(toolName, toolConfig = null) {
+    const overrides = getToolOverrides(toolName, toolConfig);
+    const overrideTimeout = pickNumber(
+        overrides.timeout_ms,
+        overrides.timeoutMs,
+        overrides.timeout
+    );
+    if (Number.isFinite(overrideTimeout) && overrideTimeout > 0) {
+        return overrideTimeout;
+    }
     return TOOL_TIMEOUTS[toolName] || 60000;
 }
 
-export default { runTool, runToolWithRetry, isToolAvailable, ToolResult };
+export function getToolRunOptions(toolName, toolConfig = null) {
+    const overrides = getToolOverrides(toolName, toolConfig);
+    const timeout = getToolTimeout(toolName, toolConfig);
+    const maxRetries = pickNumber(overrides.max_retries, overrides.maxRetries);
+    const retryDelay = pickNumber(overrides.retry_delay_ms, overrides.retryDelayMs, overrides.retryDelay);
+    return { timeout, maxRetries, retryDelay };
+}
+
+export default { runTool, runToolWithRetry, isToolAvailable, ToolResult, getToolTimeout, getToolRunOptions };
 
 async function writeDebugLog({ command, cwd, timeout, meta, agentName, stage, result, debugLogDir, maxLines }) {
     try {
@@ -332,4 +357,20 @@ async function writeDebugLog({ command, cwd, timeout, meta, agentName, stage, re
 
 function sanitizeName(name) {
     return String(name).replace(/[^a-zA-Z0-9_.-]+/g, '_');
+}
+
+function getToolOverrides(toolName, toolConfig) {
+    if (!toolConfig || typeof toolConfig !== 'object') return {};
+    const defaults = toolConfig.default || toolConfig.defaults || toolConfig.global || {};
+    const perTool = toolConfig[toolName] || (toolConfig.tools && toolConfig.tools[toolName]) || {};
+    return { ...defaults, ...perTool };
+}
+
+function pickNumber(...values) {
+    for (const value of values) {
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return value;
+        }
+    }
+    return undefined;
 }

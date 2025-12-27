@@ -6,7 +6,7 @@
  */
 
 import { BaseAgent } from '../base-agent.js';
-import { runTool, isToolAvailable } from '../../tools/runners/tool-runner.js';
+import { runTool, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 
 export class WAFDetector extends BaseAgent {
     constructor(options = {}) {
@@ -116,7 +116,7 @@ export class WAFDetector extends BaseAgent {
     /**
      * Run wafw00f
      */
-    async runWafw00f(ctx, target) {
+    async runWafw00f(ctx, target, toolConfig = null) {
         const { promises: fsp } = await import('node:fs');
         const os = await import('node:os');
         const path = await import('node:path');
@@ -125,7 +125,8 @@ export class WAFDetector extends BaseAgent {
         const outFile = path.join(tmpDir, 'wafw00f.json');
 
         const cmd = `wafw00f "${target}" -o ${outFile} -f json`;
-        const result = await runTool(cmd, { timeout: 60000, context: ctx });
+        const toolOptions = getToolRunOptions('wafw00f', toolConfig);
+        const result = await runTool(cmd, { timeout: toolOptions.timeout, context: ctx });
 
         try {
             const content = await fsp.readFile(outFile, 'utf-8');
@@ -257,7 +258,7 @@ export class WAFDetector extends BaseAgent {
         // Try wafw00f first
         if (await isToolAvailable('wafw00f')) {
             ctx.recordToolInvocation();
-            const wafw00fResult = await this.runWafw00f(ctx, target);
+            const wafw00fResult = await this.runWafw00f(ctx, target, inputs.toolConfig);
 
             if (wafw00fResult) {
                 result = {
