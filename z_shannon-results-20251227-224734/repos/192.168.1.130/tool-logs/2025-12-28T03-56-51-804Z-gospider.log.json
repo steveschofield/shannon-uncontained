@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-28T03:56:51.805Z",
+  "command": "gospider -s http://192.168.1.130:3000 -d 3",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 180000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "CrawlerAgent",
+  "stage": "recon:enumeration",
+  "tool": "gospider",
+  "success": false,
+  "exitCode": 1,
+  "duration_ms": 180004,
+  "timedOut": true,
+  "signal": "SIGTERM",
+  "killed": true,
+  "error": "Command failed: gospider -s http://192.168.1.130:3000 -d 3\n",
+  "stdout_bytes": 0,
+  "stderr_bytes": 59,
+  "stdout_lines": 1,
+  "stderr_lines": 2,
+  "stdout_head": "",
+  "stderr_head": "Command failed: gospider -s http://192.168.1.130:3000 -d 3\n",
+  "stdout_tail": "",
+  "stderr_tail": "Command failed: gospider -s http://192.168.1.130:3000 -d 3\n",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}

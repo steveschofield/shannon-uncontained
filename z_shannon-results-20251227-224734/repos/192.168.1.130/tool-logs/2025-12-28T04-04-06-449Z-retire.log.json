@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-28T04:04:06.450Z",
+  "command": "retire --path \"/home/kali/code/shannon-uncontained/tmp-retire-KrNbgH\" --outputformat json",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 120000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "JSSecurityAgent",
+  "stage": "analysis",
+  "tool": "retire",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 188,
+  "timedOut": false,
+  "signal": null,
+  "killed": false,
+  "error": null,
+  "stdout_bytes": 104,
+  "stderr_bytes": 0,
+  "stdout_lines": 2,
+  "stderr_lines": 1,
+  "stdout_head": "{\"version\":\"5.4.0\",\"start\":\"2025-12-28T04:04:06.366Z\",\"data\":[],\"messages\":[],\"errors\":[],\"time\":0.073}\n",
+  "stderr_head": "",
+  "stdout_tail": "{\"version\":\"5.4.0\",\"start\":\"2025-12-28T04:04:06.366Z\",\"data\":[],\"messages\":[],\"errors\":[],\"time\":0.073}\n",
+  "stderr_tail": "",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}

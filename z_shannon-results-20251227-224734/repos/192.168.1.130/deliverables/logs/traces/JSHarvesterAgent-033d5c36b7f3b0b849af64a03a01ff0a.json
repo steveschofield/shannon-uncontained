@@ -1,0 +1,28 @@
+{
+  "traceId": "033d5c36b7f3b0b849af64a03a01ff0a",
+  "sessionId": "20251228034751271-a75owe",
+  "agentName": "JSHarvesterAgent",
+  "startTime": 1766894583299,
+  "endTime": 1766894583767,
+  "duration": 468,
+  "spans": [
+    {
+      "spanId": "e550cff7f9901b63",
+      "traceId": "033d5c36b7f3b0b849af64a03a01ff0a",
+      "name": "tool_execution",
+      "startTime": 1766894583319,
+      "attributes": {
+        "tool": "subjs",
+        "command": "subjs -i \"shannon-results-20251227-224734/repos/192.168.1.130/tmp-subjs-YgS8Ws/subjs-1766894583319.txt\"",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766894583346,
+      "duration": 27,
+      "result": {
+        "duration": 26
+      }
+    }
+  ]
+}

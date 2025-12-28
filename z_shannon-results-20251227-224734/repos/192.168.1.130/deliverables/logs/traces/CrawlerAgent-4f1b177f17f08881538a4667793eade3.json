@@ -1,0 +1,164 @@
+{
+  "traceId": "4f1b177f17f08881538a4667793eade3",
+  "sessionId": "20251228034751271-a75owe",
+  "agentName": "CrawlerAgent",
+  "startTime": 1766893851525,
+  "endTime": 1766894583297,
+  "duration": 731772,
+  "spans": [
+    {
+      "spanId": "d07a546ab3500b47",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766893851755,
+      "attributes": {
+        "tool": "katana",
+        "command": "katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766894031764,
+      "duration": 180009,
+      "result": {
+        "duration": 180005,
+        "error": "Command failed: katana -u http://192.168.1.130:3000 -d 3 -jc -silent -jsonl\n",
+        "exitCode": 1
+      }
+    },
+    {
+      "spanId": "eb989424ad867533",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894031800,
+      "attributes": {
+        "tool": "gospider",
+        "command": "gospider -s http://192.168.1.130:3000 -d 3",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766894211806,
+      "duration": 180006,
+      "result": {
+        "duration": 180004,
+        "error": "Command failed: gospider -s http://192.168.1.130:3000 -d 3\n",
+        "exitCode": 1
+      }
+    },
+    {
+      "spanId": "7b6e69229a3476cd",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894216860,
+      "attributes": {
+        "tool": "printf",
+        "command": "printf \"%s\\n\" \"http://192.168.1.130:3000\" | hakrawler -d 3 -u",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766894216897,
+      "duration": 37,
+      "result": {
+        "duration": 37
+      }
+    },
+    {
+      "spanId": "9c2866e8b968a61a",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894216917,
+      "attributes": {
+        "tool": "gau",
+        "command": "gau --subs 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766894276924,
+      "duration": 60007,
+      "result": {
+        "duration": 60005,
+        "error": "Command failed: gau --subs 192.168.1.130\ntime=\"2025-12-27T22:56:56-05:00\" level=warning msg=\"error reading config: Config file /home/kali/.gau.toml not found, using default config\"\n",
+        "exitCode": 1
+      }
+    },
+    {
+      "spanId": "88fa6f156e764095",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894276948,
+      "attributes": {
+        "tool": "gauplus",
+        "command": "gauplus -subs 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766894281647,
+      "duration": 4699,
+      "result": {
+        "duration": 4697
+      }
+    },
+    {
+      "spanId": "de6a0c217b16e946",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894286690,
+      "attributes": {
+        "tool": "waybackurls",
+        "command": "waybackurls 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766894342935,
+      "duration": 56245,
+      "result": {
+        "duration": 56242
+      }
+    },
+    {
+      "spanId": "2be08898f1be8fe9",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894343256,
+      "attributes": {
+        "tool": "waymore",
+        "command": "waymore -i 192.168.1.130 -mode U",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766894463262,
+      "duration": 120006,
+      "result": {
+        "duration": 120004,
+        "error": "Command failed: waymore -i 192.168.1.130 -mode U\n",
+        "exitCode": 1
+      }
+    },
+    {
+      "spanId": "11d9abbf73597e27",
+      "traceId": "4f1b177f17f08881538a4667793eade3",
+      "name": "tool_execution",
+      "startTime": 1766894463262,
+      "attributes": {
+        "tool": "waymore",
+        "command": "waymore -i 192.168.1.130",
+        "cwd": "/home/kali/code/shannon-uncontained"
+      },
+      "events": [],
+      "status": "error",
+      "endTime": 1766894583271,
+      "duration": 120009,
+      "result": {
+        "duration": 120006,
+        "error": "Command failed: waymore -i 192.168.1.130\n",
+        "exitCode": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-12-28T03:59:02.933Z",
+  "command": "waybackurls 192.168.1.130",
+  "cwd": "/home/kali/code/shannon-uncontained",
+  "timeout_ms": 60000,
+  "meta": {
+    "attempt": 0,
+    "maxRetries": 2
+  },
+  "agent": "CrawlerAgent",
+  "stage": "recon:enumeration",
+  "tool": "waybackurls",
+  "success": true,
+  "exitCode": 0,
+  "duration_ms": 56242,
+  "timedOut": false,
+  "signal": null,
+  "killed": false,
+  "error": null,
+  "stdout_bytes": 32,
+  "stderr_bytes": 0,
+  "stdout_lines": 2,
+  "stderr_lines": 1,
+  "stdout_head": "http://192.168.1.130/robots.txt\n",
+  "stderr_head": "",
+  "stdout_tail": "http://192.168.1.130/robots.txt\n",
+  "stderr_tail": "",
+  "stdout_file": null,
+  "stderr_file": null,
+  "max_lines": 200,
+  "hint": "Set LSG_DEBUG_SAVE_OUTPUT=1 to save full stdout/stderr when truncated"
+}

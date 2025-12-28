@@ -1,0 +1,27 @@
+{
+  "traceId": "2c7cefe9c6fdfc90f0707d965b2cc601",
+  "sessionId": "20251228034751271-a75owe",
+  "agentName": "AuthFlowAnalyzer",
+  "startTime": 1766894630446,
+  "endTime": 1766894645736,
+  "duration": 15290,
+  "spans": [
+    {
+      "spanId": "49bc7447594264f0",
+      "traceId": "2c7cefe9c6fdfc90f0707d965b2cc601",
+      "name": "llm_call",
+      "startTime": 1766894630449,
+      "attributes": {
+        "model": "llama3.1:8b",
+        "capability": "extract_structured_claims"
+      },
+      "events": [],
+      "status": "success",
+      "endTime": 1766894645727,
+      "duration": 15278,
+      "result": {
+        "tokens_used": 751
+      }
+    }
+  ]
+}
