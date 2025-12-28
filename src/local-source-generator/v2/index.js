@@ -76,9 +76,18 @@ export { EvaluationHarness, BenchmarkTarget, MetricCalculator, createStandardCor
  * @returns {Orchestrator} Configured orchestrator
  */
 export function createLSGv2(options = {}) {
+    const parseNumber = (value) => {
+        if (value === undefined || value === null) return undefined;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+    };
+    const maxParallel = parseNumber(options.maxParallel);
+    const parallel = parseNumber(options.parallel) ?? maxParallel;
+
     const orchestrator = new _Orchestrator({
         mode: options.mode || 'live',
-        maxParallel: options.maxParallel || 4,
+        maxParallel: maxParallel ?? 4,
+        ...(parallel !== undefined ? { parallel } : {}),
         enableCaching: options.enableCaching !== false,
         streamDeltas: options.streamDeltas !== false,
         epistemicConfig: options.epistemicConfig || {},

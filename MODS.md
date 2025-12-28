@@ -1639,3 +1639,15 @@ Adds structured `tool_config` examples for per-tool timeout/retry overrides, inc
 - `configs/config-schema.json` — Documents `tool_config` structure with defaults and per-tool overrides.
 - `configs/example-config.yaml` — Adds sample `tool_config` block for new tools.
 - `README.md` — Updates tool override guidance and examples.
+
+---
+
+## fix(lsg-v2): Honor CLI parallel cap for adaptive concurrency (2025-12-28)
+
+### Overview
+Ensures the adaptive throttler respects the CLI `--parallel` cap by wiring it into the LSG v2 orchestrator configuration.
+
+### Modified Files
+- `src/local-source-generator/v2/index.js` — Propagates the `parallel` override (or alias) to the orchestrator.
+- `local-source-generator.mjs` — Passes the CLI `--parallel` value to LSG v2.
+- `src/local-source-generator/v2/test-lsg-v2.mjs` — Aligns the test harness with the `parallel` config name.

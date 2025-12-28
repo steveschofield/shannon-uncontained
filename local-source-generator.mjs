@@ -84,7 +84,7 @@ export async function generateLocalSource(webUrl, outputDir, options = {}) {
     console.log(chalk.magenta('\n🚀 Initializing LSGv2 Pipeline...'));
     const orchestrator = createLSGv2({
         mode: 'live',
-        maxParallel: options.parallel || 4,
+        parallel: options.parallel || 4,
         enableCaching: true,
         streamDeltas: true,
         unsafeProbes: options.unsafeProbes === true,

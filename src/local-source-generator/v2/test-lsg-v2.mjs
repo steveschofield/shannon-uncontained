@@ -57,7 +57,7 @@ Examples:
     log(colors.yellow, '📦 Creating orchestrator with all agents...');
     const lsg = createLSGv2({
         mode: 'live',
-        maxParallel: 2,
+        parallel: 2,
         enableCaching: true,
         streamDeltas: true,
     });
