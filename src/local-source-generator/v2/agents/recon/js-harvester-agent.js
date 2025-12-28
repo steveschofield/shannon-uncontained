@@ -332,22 +332,11 @@ export class JSHarvesterAgent extends BaseAgent {
             const tmpFile = path.join(process.cwd(), `subjs-${Date.now()}.txt`);
             await fs.writeFile(tmpFile, `${target}\n`);
             const subjsOptions = getToolRunOptions('subjs', toolConfig);
-            const cmds = [
-                `subjs -u ${target}`,
-                `subjs -i "${tmpFile}"`,
-            ];
-            let result = null;
-            for (const cmd of cmds) {
-                const attempt = await runToolWithRetry(cmd, {
-                    ...subjsOptions,
-                    context: ctx,
-                });
-                if (attempt.success) {
-                    result = attempt;
-                    break;
-                }
-                result = attempt;
-            }
+            const cmd = `subjs -i "${tmpFile}"`;
+            const result = await runToolWithRetry(cmd, {
+                ...subjsOptions,
+                context: ctx,
+            });
 
             if (result && result.success) {
                 const lines = String(result.stdout || '').split('\n').map(l => l.trim()).filter(Boolean);

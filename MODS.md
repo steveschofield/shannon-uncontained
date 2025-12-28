@@ -18,6 +18,17 @@ Updated install guidance and setup automation to use Git-based pipx installs for
 ### Rationale
 Avoid pipx failures on Kali/Linux by pointing users to the upstream Git repositories for tools not available on PyPI.
 
+## fix(lsg-v2): Use subjs input file flag (2025-12-27)
+
+### Overview
+Updated subjs invocation to use the supported input file flag and avoid the invalid `-u` argument.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/recon/js-harvester-agent.js` — Switched subjs to `-i` input file mode only.
+
+### Rationale
+The subjs CLI does not define a `-u` flag, causing immediate failures before falling back.
+
 ## fix(setup): Handle LinkFinder pipx installs without console scripts (2025-12-27)
 
 ### Overview
