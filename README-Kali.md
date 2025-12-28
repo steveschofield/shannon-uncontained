@@ -4,9 +4,10 @@ This note highlights Kali-focused capabilities and the extra tooling Shannon can
 
 ## Current Core Tooling (from preflight)
 The framework already checks for and uses these tools when available:
-- Recon: nmap, subfinder, amass, katana, gau, gauplus, waybackurls, waymore, gospider, subjs, httpx, whatweb, wafw00f, dnsx, shuffledns, puredns, altdns
+- Recon: nmap, subfinder, amass, katana, hakrawler, gau, gauplus, waybackurls, waymore, gospider, subjs, httpx, whatweb, wafw00f, dnsx, shuffledns, puredns, altdns
 - Content discovery: feroxbuster, ffuf, dirsearch, gobuster
-- JS/parameter discovery: linkfinder, xnlinkfinder, arjun, paramspider
+- JS/parameter discovery: linkfinder, xnlinkfinder, arjun, paramspider, secretfinder, retire
+- API testing: schemathesis
 - Exploitation/validation: nuclei, sqlmap, xsstrike, commix, metasploit (msfrpcd/msfconsole)
 - Secrets: gitleaks
 

@@ -307,6 +307,16 @@ export function normalizeGoSpider(output, target) {
 }
 
 /**
+ * Parse hakrawler output to evidence events
+ * @param {string} output - Hakrawler output (one URL per line)
+ * @param {string} target - Target URL
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeHakrawler(output, target) {
+    return normalizeUrlList(output, target, 'hakrawler', 'active_crawl');
+}
+
+/**
  * Parse waybackurls output to evidence events
  * @param {string} output - Waybackurls output (one URL per line)
  * @param {string} target - Target domain
@@ -552,6 +562,7 @@ export default {
     normalizeGauplus,
     normalizeKatana,
     normalizeGoSpider,
+    normalizeHakrawler,
     normalizeWaybackUrls,
     normalizeWaymore,
     normalizeRustscan,

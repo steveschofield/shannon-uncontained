@@ -103,6 +103,7 @@ PD_TOOLS=("subfinder" "httpx" "nuclei" "katana" "gau")
 GO_TOOLS=(
     "amass|github.com/owasp-amass/amass/v4/...@latest"
     "gospider|github.com/jaeles-project/gospider@latest"
+    "hakrawler|github.com/hakluke/hakrawler@latest"
     "waybackurls|github.com/tomnomnom/waybackurls@latest"
     "gauplus|github.com/bp0lr/gauplus@latest"
     "subjs|github.com/lc/subjs@latest"
@@ -169,7 +170,7 @@ if [ "${ID:-}" = "kali" ]; then
 
     if command -v pipx &> /dev/null; then
         echo "Checking pipx tools..."
-        PY_TOOLS=("waymore" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns")
+        PY_TOOLS=("waymore" "schemathesis" "secretfinder" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns")
         for tool in "${PY_TOOLS[@]}"; do
             if ! command -v $tool &> /dev/null; then
                 install_cmd="$tool"
@@ -178,6 +179,9 @@ if [ "${ID:-}" = "kali" ]; then
                     linkfinder)
                         install_cmd="git+https://github.com/GerbenJavado/LinkFinder.git"
                         install_args=(--include-deps)
+                        ;;
+                    secretfinder)
+                        install_cmd="git+https://github.com/m4ll0k/SecretFinder.git"
                         ;;
                     paramspider)
                         install_cmd="git+https://github.com/devanshbatham/ParamSpider.git"
@@ -221,6 +225,13 @@ EOF
     else
         echo "⚠️  pipx not available; skipping Python tool installs"
     fi
+
+    if ! command -v retire &> /dev/null; then
+        echo "Installing retire.js (npm)..."
+        npm install -g retire || echo "⚠️  Failed to install retire.js via npm"
+    else
+        echo "✅ retire"
+    fi
 fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -250,17 +261,41 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     if command -v pipx &> /dev/null; then
         echo "Checking pipx tools..."
-        PY_TOOLS=("waymore" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns" "dirsearch")
+        PY_TOOLS=("waymore" "schemathesis" "secretfinder" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns" "dirsearch")
         for tool in "${PY_TOOLS[@]}"; do
             if ! command -v $tool &> /dev/null; then
+                install_cmd="$tool"
+                install_args=()
+                case "$tool" in
+                    linkfinder)
+                        install_cmd="git+https://github.com/GerbenJavado/LinkFinder.git"
+                        install_args=(--include-deps)
+                        ;;
+                    secretfinder)
+                        install_cmd="git+https://github.com/m4ll0k/SecretFinder.git"
+                        ;;
+                    paramspider)
+                        install_cmd="git+https://github.com/devanshbatham/ParamSpider.git"
+                        ;;
+                    altdns)
+                        install_cmd="git+https://github.com/infosec-au/altdns.git"
+                        ;;
+                esac
                 echo "Installing $tool (pipx)..."
-                pipx install $tool || echo "⚠️  Failed to install $tool via pipx"
+                pipx install "${install_args[@]}" "$install_cmd" || echo "⚠️  Failed to install $tool via pipx"
             else
                 echo "✅ $tool"
             fi
         done
     else
         echo "⚠️  pipx not available; skipping Python tool installs"
+    fi
+
+    if ! command -v retire &> /dev/null; then
+        echo "Installing retire.js (npm)..."
+        npm install -g retire || echo "⚠️  Failed to install retire.js via npm"
+    else
+        echo "✅ retire"
     fi
 fi
 

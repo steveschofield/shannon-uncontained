@@ -87,6 +87,14 @@ const TOOL_REGISTRY = {
             all: 'go install github.com/jaeles-project/gospider@latest'
         }
     },
+    hakrawler: {
+        check: 'hakrawler -h',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install github.com/hakluke/hakrawler@latest'
+        }
+    },
     waybackurls: {
         check: 'waybackurls --help',
         required: false,
@@ -173,6 +181,34 @@ const TOOL_REGISTRY = {
             kali: 'pipx install xnlinkfinder',
             ubuntu: 'pipx install xnlinkfinder',
             pip: 'pip install xnlinkfinder'
+        }
+    },
+    schemathesis: {
+        check: 'schemathesis --version',
+        required: false,
+        category: 'analysis',
+        install: {
+            kali: 'pipx install schemathesis',
+            ubuntu: 'pipx install schemathesis',
+            pip: 'pip install schemathesis'
+        }
+    },
+    retire: {
+        check: 'retire --version',
+        required: false,
+        category: 'analysis',
+        install: {
+            npm: 'npm install -g retire'
+        }
+    },
+    secretfinder: {
+        check: 'secretfinder -h',
+        required: false,
+        category: 'analysis',
+        install: {
+            kali: 'pipx install git+https://github.com/m4ll0k/SecretFinder.git',
+            ubuntu: 'pipx install git+https://github.com/m4ll0k/SecretFinder.git',
+            pip: 'pip install git+https://github.com/m4ll0k/SecretFinder.git'
         }
     },
 

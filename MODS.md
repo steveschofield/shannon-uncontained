@@ -35,14 +35,16 @@ Ensure Shannon can resolve `linkfinder` on PATH even when pipx installs a packag
 ## feat(recon): Integrate Kali discovery tools (2025-12-27)
 
 ### Overview
-Integrated Kali-only discovery tooling for deeper file, JS, parameter, and DNS coverage (feroxbuster/dirsearch/gobuster, waymore/gauplus/subjs, linkfinder/xnlinkfinder, arjun/paramspider, dnsx/shuffledns/puredns/altdns).
+Integrated Kali-only discovery tooling for deeper file, JS, parameter, API, and DNS coverage (feroxbuster/dirsearch/gobuster, waymore/gauplus/subjs/hakrawler, linkfinder/xnlinkfinder/retire/secretfinder, arjun/paramspider/schemathesis, dnsx/shuffledns/puredns/altdns).
 
 ### Modified Files
 - `src/local-source-generator/v2/agents/recon/crawler-agent.js` — Added waymore/gauplus support.
 - `src/local-source-generator/v2/agents/recon/subdomain-hunter-agent.js` — Added dnsx/shuffledns/puredns/altdns resolution and permutations.
 - `src/local-source-generator/v2/agents/recon/content-discovery-agent.js` — Added dirsearch/gobuster support and multi-tool runs.
 - `src/local-source-generator/v2/agents/recon/js-harvester-agent.js` — Added subjs + linkfinder/xnlinkfinder enrichment.
+- `src/local-source-generator/v2/agents/analysis/js-security-agent.js` — Added retire.js + SecretFinder scanning.
 - `src/local-source-generator/v2/agents/vuln-analysis/parameter-discovery-agent.js` — Added arjun/paramspider parameter discovery.
+- `src/local-source-generator/v2/agents/synthesis/schemathesis-agent.js` — Added schemathesis API testing.
 - `src/local-source-generator/v2/tools/normalizers/evidence-normalizers.js` — Added gauplus/waymore normalizers.
 - `src/local-source-generator/v2/tools/preflight.js` — Added tool registry entries and install hints.
 - `src/local-source-generator/v2/tools/runners/tool-runner.js` — Added tool timeouts.

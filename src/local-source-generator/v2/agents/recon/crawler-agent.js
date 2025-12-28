@@ -7,7 +7,7 @@
 
 import { BaseAgent } from '../base-agent.js';
 import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
-import { normalizeKatana, normalizeGau, normalizeGauplus, normalizeGoSpider, normalizeWaybackUrls, normalizeWaymore } from '../../tools/normalizers/evidence-normalizers.js';
+import { normalizeKatana, normalizeGau, normalizeGauplus, normalizeGoSpider, normalizeHakrawler, normalizeWaybackUrls, normalizeWaymore } from '../../tools/normalizers/evidence-normalizers.js';
 import { EVENT_TYPES, createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 
 export class CrawlerAgent extends BaseAgent {
@@ -143,6 +143,44 @@ export class CrawlerAgent extends BaseAgent {
                     event_type: gospiderResult.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
                     target,
                     payload: { tool: 'gospider', error: gospiderResult.error },
+                }));
+            }
+        }
+
+        const hakrawlerAvailable = await isToolAvailable('hakrawler');
+        if (hakrawlerAvailable) {
+            ctx.recordToolInvocation();
+
+            const hakrawlerCmd = `printf "%s\\n" "${target}" | hakrawler -plain -depth ${depth}`;
+            const hakrawlerOptions = getToolRunOptions('hakrawler', inputs.toolConfig);
+            const hakrawlerResult = await runToolWithRetry(hakrawlerCmd, {
+                ...hakrawlerOptions,
+                context: ctx,
+            });
+
+            if (hakrawlerResult.success) {
+                const events = normalizeHakrawler(hakrawlerResult.stdout, target);
+                results.sources.push('hakrawler');
+
+                for (const event of events) {
+                    const path = event.payload.path;
+
+                    if (!seenPaths.has(path)) {
+                        seenPaths.add(path);
+                        ctx.emitEvidence(event);
+                        results.endpoints.push(event.payload);
+
+                        if (path.endsWith('.js')) {
+                            results.js_files.push(event.payload.url);
+                        }
+                    }
+                }
+            } else {
+                ctx.emitEvidence(createEvidenceEvent({
+                    source: 'CrawlerAgent',
+                    event_type: hakrawlerResult.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                    target,
+                    payload: { tool: 'hakrawler', error: hakrawlerResult.error },
                 }));
             }
         }
