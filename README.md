@@ -615,6 +615,16 @@ LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port \
   --export-review-html
 ```
 
+### Export Proxy Bundle
+
+Generate a ZAP/Burp proxy bundle (`deliverables/proxy`) after `generate` completes:
+
+```bash
+LSG_ALLOW_PRIVATE=1 ./shannon.mjs generate http://your-target:port \
+  -o ./shannon-results-$(date +%Y%m%d-%H%M%S) \
+  --export-proxy
+```
+
 ### Unified Logging and Tracing
 
 Shannon now records structured traces, events, and metrics during pipeline execution:

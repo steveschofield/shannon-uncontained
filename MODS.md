@@ -1430,6 +1430,17 @@ When no parameters are discovered, the XSS validator now tries a default `/searc
 
 ---
 
+## feat(cli): Add generate-time proxy bundle export flag (2025-12-27)
+
+### Overview
+Adds `--export-proxy` to `shannon generate` to produce the ZAP/Burp proxy bundle without a separate model command.
+
+### Modified Files
+- `shannon.mjs` — Adds CLI flag, config support, and post-run proxy export.
+- `README.md` — Documents the new generate-time proxy export flag.
+
+---
+
 ## fix(lsg-v2): Skip empty git checkpoint/success commits (2025-12-27)
 
 ### Overview

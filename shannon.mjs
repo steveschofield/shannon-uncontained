@@ -152,6 +152,7 @@ program
   .option('--profile <name>', 'Rate limit profile: stealth, conservative, normal, aggressive', 'normal')
   .option('--config <file>', 'Path to agent configuration JSON (per-agent options)')
   .option('--export-review-html', 'Also export model-review.html into the run workspace')
+  .option('--export-proxy', 'Also export a ZAP/Burp proxy bundle into the run workspace')
   .option('--log-llm-requests', 'Log LLM POST metadata in events.ndjson')
   .option('--unsafe-probes', 'Enable unsafe/lab probes for certain detectors (OFF by default)')
   .option('--lab <list>', 'Comma-separated agent names to enable lab-only behavior (requires --unsafe-probes)')
@@ -167,6 +168,7 @@ program
     let configData;
     let enableExploitation = options.enableExploitation ?? false;
     let exportReviewHtml = options.exportReviewHtml ?? false;
+    let exportProxy = options.exportProxy ?? false;
     let logLlmRequests = options.logLlmRequests ?? false;
     let unsafeProbes = options.unsafeProbes ?? false;
     let labAgentsList = [];
@@ -210,6 +212,10 @@ program
       if (typeof configExportReviewHtml === 'boolean') {
         exportReviewHtml = configExportReviewHtml;
       }
+      const configExportProxy = configData.export_proxy ?? configData.exportProxy;
+      if (typeof configExportProxy === 'boolean') {
+        exportProxy = configExportProxy;
+      }
       const configLogLlmRequests = configData.log_llm_requests ?? configData.logLlmRequests;
       if (typeof configLogLlmRequests === 'boolean') {
         logLlmRequests = configLogLlmRequests;
@@ -242,6 +248,8 @@ program
           'enableExploitation',
           'export_review_html',
           'exportReviewHtml',
+          'export_proxy',
+          'exportProxy',
           'log_llm_requests',
           'logLlmRequests',
           'tool_config',
@@ -283,6 +291,7 @@ program
     console.log(chalk.gray(`Rate Limit Profile: ${options.profile}`));
     console.log(chalk.gray(`Exploitation: ${enableExploitation ? 'enabled (opt-in)' : 'disabled (default)'}`));
     console.log(chalk.gray(`Export Review HTML: ${exportReviewHtml ? 'yes' : 'no'}`));
+    console.log(chalk.gray(`Export Proxy Bundle: ${exportProxy ? 'yes' : 'no'}`));
     console.log(chalk.gray(`Log LLM Requests: ${logLlmRequests ? 'yes' : 'no'}`));
     console.log(chalk.gray(`Unsafe Probes: ${unsafeProbes ? 'enabled (opt-in)' : 'disabled (default)'}`));
     if (unsafeProbes) {
@@ -339,6 +348,9 @@ program
         exportReviewHtml
       });
       console.log(chalk.green(`\n✅ Local source generated at: ${result}`));
+      if (exportProxy) {
+        await modelCommand('export-proxy', null, { workspace: result, target });
+      }
     } catch (error) {
       console.error(chalk.red(`\n❌ Generation failed: ${error.message}`));
       process.exit(1);
