@@ -72,8 +72,10 @@ export class JSSecurityAgent extends BaseAgent {
             return results;
         }
 
+        const workspaceDir = inputs.outputDir || inputs.workspace || process.cwd();
+
         if (useRetire && await isToolAvailable('retire')) {
-            const retireFindings = await this.runRetire(ctx, jsFiles, toolConfig, target);
+            const retireFindings = await this.runRetire(ctx, jsFiles, toolConfig, target, workspaceDir);
             results.vulnerabilities.push(...retireFindings);
         }
 
@@ -100,9 +102,10 @@ export class JSSecurityAgent extends BaseAgent {
         return Array.from(jsFiles);
     }
 
-    async runRetire(ctx, jsFiles, toolConfig, target) {
+    async runRetire(ctx, jsFiles, toolConfig, target, workspaceDir) {
         const { fs, path } = await import('zx');
-        const tmpDir = await fs.mkdtemp(path.join(process.cwd(), 'tmp-retire-'));
+        await fs.ensureDir(workspaceDir);
+        const tmpDir = await fs.mkdtemp(path.join(workspaceDir, 'tmp-retire-'));
         const downloaded = await this.downloadJsFiles(jsFiles, tmpDir);
         if (downloaded.length === 0) return [];
 

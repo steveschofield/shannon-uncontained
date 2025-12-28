@@ -14,6 +14,16 @@ Updates the Schemathesis CLI invocation to use the supported `--url` flag instea
 
 ---
 
+## fix(lsg-v2): Keep retire.js temp files in workspace (2025-12-28)
+
+### Overview
+Ensures retire.js temporary download directories are created under the run workspace/output directory instead of the process CWD.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/analysis/js-security-agent.js` — Use `outputDir`/`workspace` for retire.js temp folders.
+
+---
+
 ## fix(lsg-v2): Install jsbeautifier for SecretFinder (2025-12-27)
 
 ### Overview
