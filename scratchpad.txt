@@ -3,7 +3,7 @@
   --output ./shannon-results-$(date +%Y%m%d-%H%M%S) \
   --debug-tools \
   --enable-exploitation \
-  --export-review-html
+  --export-review-html \
   --export-proxy
 
 ~/code/shannon-uncontained/scripts
