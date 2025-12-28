@@ -93,7 +93,7 @@ These tools are used for deeper file/endpoint discovery on Kali. All are optiona
 - **linkfinder** — `pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git`
 - **xnlinkfinder** — `pipx install xnlinkfinder`
 - **retire** — `npm install -g retire`
-- **secretfinder** — `pipx install git+https://github.com/m4ll0k/SecretFinder.git`
+- **secretfinder** — `git clone https://github.com/m4ll0k/SecretFinder.git ~/.local/share/shannon-tools/secretfinder` then run `python3 ~/.local/share/shannon-tools/secretfinder/SecretFinder.py`
 
 ### Parameter Discovery
 - **arjun** — `pipx install arjun`

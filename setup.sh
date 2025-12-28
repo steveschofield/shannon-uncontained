@@ -7,6 +7,85 @@ set -e
 echo "🔍 Shannon Environment Setup Check"
 echo "================================"
 
+ensure_local_bin_on_path() {
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo "⚠️  $HOME/.local/bin is not on PATH; add it to use installed shims."
+    fi
+}
+
+apt_install() {
+    local tool="$1"
+    if [ "$(id -u)" -eq 0 ]; then
+        apt-get install -y "$tool" || echo "⚠️  Failed to install $tool via apt"
+        return
+    fi
+    if ! command -v sudo &> /dev/null; then
+        echo "⚠️  sudo not available; skipping $tool install"
+        return
+    fi
+    if ! sudo -n true &> /dev/null; then
+        echo "🔐 sudo required to install $tool via apt. You'll be prompted."
+    fi
+    sudo apt-get install -y "$tool" || echo "⚠️  Failed to install $tool via apt"
+}
+
+install_secretfinder() {
+    if command -v secretfinder &> /dev/null; then
+        echo "✅ secretfinder"
+        return
+    fi
+    if ! command -v git &> /dev/null; then
+        echo "⚠️  git not available; skipping secretfinder"
+        return
+    fi
+    local install_dir="$HOME/.local/share/shannon-tools/secretfinder"
+    if [ ! -d "$install_dir/.git" ]; then
+        echo "Installing secretfinder (git)..."
+        git clone https://github.com/m4ll0k/SecretFinder.git "$install_dir" || {
+            echo "⚠️  Failed to install secretfinder via git"
+            return
+        }
+    else
+        echo "✅ secretfinder repo"
+    fi
+    if command -v python3 &> /dev/null; then
+        mkdir -p "$HOME/.local/bin"
+        cat > "$HOME/.local/bin/secretfinder" <<EOF
+#!/usr/bin/env bash
+exec python3 "$HOME/.local/share/shannon-tools/secretfinder/SecretFinder.py" "\$@"
+EOF
+        chmod +x "$HOME/.local/bin/secretfinder"
+        echo "✅ secretfinder (shim)"
+        ensure_local_bin_on_path
+    else
+        echo "⚠️  python3 not available; cannot create secretfinder shim"
+    fi
+}
+
+install_retire() {
+    if command -v retire &> /dev/null; then
+        echo "✅ retire"
+        return
+    fi
+    echo "Installing retire.js (npm)..."
+    local prefix
+    prefix="$(npm config get prefix 2>/dev/null || echo "/usr/local")"
+    if [ "$(id -u)" -ne 0 ] && [ ! -w "$prefix" ]; then
+        if command -v sudo &> /dev/null; then
+            if ! sudo -n true &> /dev/null; then
+                echo "🔐 sudo required to install npm global packages. You'll be prompted."
+            fi
+            sudo npm install -g retire || echo "⚠️  Failed to install retire.js via npm"
+            return
+        fi
+        echo "⚠️  No sudo available; installing retire.js to $HOME/.local"
+        npm install -g --prefix "$HOME/.local" retire || echo "⚠️  Failed to install retire.js via npm"
+        ensure_local_bin_on_path
+        return
+    fi
+    npm install -g retire || echo "⚠️  Failed to install retire.js via npm"
+}
+
 # 1. Check Node.js
 echo -n "Checking Node.js... "
 if ! command -v node &> /dev/null; then
@@ -36,6 +115,12 @@ if ! command -v python3 &> /dev/null; then
 fi
 PY_VERSION=$(python3 --version | awk '{print $2}')
 echo "✅ $PY_VERSION"
+
+# Warn if running inside a Python virtual environment (pipx shims may be hidden)
+if [ -n "${VIRTUAL_ENV:-}" ] || [ -n "${CONDA_PREFIX:-}" ] || [ -n "${PYENV_VERSION:-}" ]; then
+    echo "⚠️  Detected an active Python environment (venv/conda/pyenv)."
+    echo "   pipx shims may not be on PATH; consider 'pipx ensurepath' or deactivate the env."
+fi
 
 echo "--------------------------------"
 echo "📦 External Tools (Recon & Exploit)"
@@ -157,7 +242,7 @@ if [ "${ID:-}" = "kali" ]; then
     for tool in "${APT_TOOLS[@]}"; do
         if ! command -v $tool &> /dev/null; then
             echo "Installing $tool (apt)..."
-            sudo apt-get install -y $tool || echo "⚠️  Failed to install $tool via apt"
+            apt_install "$tool"
         else
             echo "✅ $tool"
         fi
@@ -165,12 +250,12 @@ if [ "${ID:-}" = "kali" ]; then
 
     if ! command -v pipx &> /dev/null; then
         echo "Installing pipx (apt)..."
-        sudo apt-get install -y pipx || echo "⚠️  Failed to install pipx"
+        apt_install "pipx"
     fi
 
     if command -v pipx &> /dev/null; then
         echo "Checking pipx tools..."
-        PY_TOOLS=("waymore" "schemathesis" "secretfinder" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns")
+        PY_TOOLS=("waymore" "schemathesis" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns")
         for tool in "${PY_TOOLS[@]}"; do
             if ! command -v $tool &> /dev/null; then
                 install_cmd="$tool"
@@ -179,9 +264,6 @@ if [ "${ID:-}" = "kali" ]; then
                     linkfinder)
                         install_cmd="git+https://github.com/GerbenJavado/LinkFinder.git"
                         install_args=(--include-deps)
-                        ;;
-                    secretfinder)
-                        install_cmd="git+https://github.com/m4ll0k/SecretFinder.git"
                         ;;
                     paramspider)
                         install_cmd="git+https://github.com/devanshbatham/ParamSpider.git"
@@ -226,12 +308,8 @@ EOF
         echo "⚠️  pipx not available; skipping Python tool installs"
     fi
 
-    if ! command -v retire &> /dev/null; then
-        echo "Installing retire.js (npm)..."
-        npm install -g retire || echo "⚠️  Failed to install retire.js via npm"
-    else
-        echo "✅ retire"
-    fi
+    install_secretfinder
+    install_retire
 fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -261,7 +339,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     if command -v pipx &> /dev/null; then
         echo "Checking pipx tools..."
-        PY_TOOLS=("waymore" "schemathesis" "secretfinder" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns" "dirsearch")
+        PY_TOOLS=("waymore" "schemathesis" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns" "dirsearch")
         for tool in "${PY_TOOLS[@]}"; do
             if ! command -v $tool &> /dev/null; then
                 install_cmd="$tool"
@@ -270,9 +348,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
                     linkfinder)
                         install_cmd="git+https://github.com/GerbenJavado/LinkFinder.git"
                         install_args=(--include-deps)
-                        ;;
-                    secretfinder)
-                        install_cmd="git+https://github.com/m4ll0k/SecretFinder.git"
                         ;;
                     paramspider)
                         install_cmd="git+https://github.com/devanshbatham/ParamSpider.git"
@@ -291,12 +366,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "⚠️  pipx not available; skipping Python tool installs"
     fi
 
-    if ! command -v retire &> /dev/null; then
-        echo "Installing retire.js (npm)..."
-        npm install -g retire || echo "⚠️  Failed to install retire.js via npm"
-    else
-        echo "✅ retire"
-    fi
+    install_secretfinder
+    install_retire
 fi
 
 # 8. Check .env

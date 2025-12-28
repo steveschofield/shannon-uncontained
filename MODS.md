@@ -18,6 +18,30 @@ Updated install guidance and setup automation to use Git-based pipx installs for
 ### Rationale
 Avoid pipx failures on Kali/Linux by pointing users to the upstream Git repositories for tools not available on PyPI.
 
+## fix(setup): Clarify sudo prompts and SecretFinder install (2025-12-27)
+
+### Overview
+Improved setup.sh messaging around sudo-required installs, added a non-pipx SecretFinder install path, and handled npm global installs with user prefixes.
+
+### Modified Files
+- `setup.sh` — Added sudo prompts, SecretFinder shim installer, and safer npm global install fallback.
+- `DEPENDENCIES.md` — Updated SecretFinder install guidance.
+- `README.md` — Updated Python tools quick install block for SecretFinder.
+
+### Rationale
+Avoid silent permission failures and align installation guidance with how SecretFinder is distributed.
+
+## chore(setup): Warn on active Python envs (2025-12-27)
+
+### Overview
+Added a setup warning when a pyenv/virtualenv/conda environment is active so pipx shims don't get masked.
+
+### Modified Files
+- `setup.sh` — Emit warning if VIRTUAL_ENV/CONDA_PREFIX/PYENV_VERSION is set.
+
+### Rationale
+Active Python environments can hide pipx shims, leading to false negatives in tool checks.
+
 ## fix(lsg-v2): Use subjs input file flag (2025-12-27)
 
 ### Overview

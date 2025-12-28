@@ -744,8 +744,11 @@ tools=(sslyze wafw00f trufflehog xsstrike commix waymore schemathesis xnlinkfind
 for t in "${tools[@]}"; do pipx install "$t"; done
 pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git
 pipx install git+https://github.com/devanshbatham/ParamSpider.git
-pipx install git+https://github.com/m4ll0k/SecretFinder.git
 pipx install git+https://github.com/infosec-au/altdns.git
+
+# SecretFinder (not packaged for pipx)
+git clone https://github.com/m4ll0k/SecretFinder.git ~/.local/share/shannon-tools/secretfinder
+python3 ~/.local/share/shannon-tools/secretfinder/SecretFinder.py -h
 
 # Retire.js (Node)
 npm install -g retire
