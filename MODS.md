@@ -4,6 +4,16 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(lsg-v2): Align hakrawler flags with current CLI (2025-12-27)
+
+### Overview
+Updates the hakrawler invocation to use supported flags, preventing failures on newer hakrawler versions.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/recon/crawler-agent.js` — Swap deprecated flags for `-d` and `-u`.
+
+---
+
 ## fix(setup): Correct pipx install sources for non-PyPI tools (2025-12-27)
 
 ### Overview

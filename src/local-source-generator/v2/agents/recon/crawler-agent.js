@@ -151,7 +151,7 @@ export class CrawlerAgent extends BaseAgent {
         if (hakrawlerAvailable) {
             ctx.recordToolInvocation();
 
-            const hakrawlerCmd = `printf "%s\\n" "${target}" | hakrawler -plain -depth ${depth}`;
+            const hakrawlerCmd = `printf "%s\\n" "${target}" | hakrawler -d ${depth} -u`;
             const hakrawlerOptions = getToolRunOptions('hakrawler', inputs.toolConfig);
             const hakrawlerResult = await runToolWithRetry(hakrawlerCmd, {
                 ...hakrawlerOptions,
