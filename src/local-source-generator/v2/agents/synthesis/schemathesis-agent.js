@@ -124,7 +124,7 @@ export class SchemathesisAgent extends BaseAgent {
     }
 
     buildSchemathesisCommand({ openapiPath, target, checks, maxExamples, workers }) {
-        let cmd = `schemathesis run "${openapiPath}" --base-url "${target}"`;
+        let cmd = `schemathesis run "${openapiPath}" --url "${target}"`;
         if (checks) {
             cmd += ` --checks ${checks}`;
         }

@@ -4,6 +4,28 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(lsg-v2): Use schemathesis --url flag (2025-12-27)
+
+### Overview
+Updates the Schemathesis CLI invocation to use the supported `--url` flag instead of the deprecated `--base-url`.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/synthesis/schemathesis-agent.js` — Swap `--base-url` for `--url`.
+
+---
+
+## fix(lsg-v2): Install jsbeautifier for SecretFinder (2025-12-27)
+
+### Overview
+Ensures SecretFinder has its Python dependency available by installing jsbeautifier during setup and documenting the requirement.
+
+### Modified Files
+- `setup.sh` — Add jsbeautifier install/check for SecretFinder.
+- `DEPENDENCIES.md` — Document jsbeautifier requirement for SecretFinder.
+- `README.md` — Include jsbeautifier install step in SecretFinder instructions.
+
+---
+
 ## fix(lsg-v2): Keep subjs/altdns temp folders in workspace (2025-12-27)
 
 ### Overview

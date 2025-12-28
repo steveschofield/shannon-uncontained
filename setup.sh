@@ -49,6 +49,18 @@ install_secretfinder() {
         echo "✅ secretfinder repo"
     fi
     if command -v python3 &> /dev/null; then
+        if ! python3 - <<'PY' >/dev/null 2>&1
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("jsbeautifier") else 1)
+PY
+        then
+            if python3 -m pip --version >/dev/null 2>&1; then
+                echo "Installing jsbeautifier for secretfinder (pip)..."
+                python3 -m pip install --user jsbeautifier || echo "⚠️  Failed to install jsbeautifier via pip"
+            else
+                echo "⚠️  pip not available; install jsbeautifier to use secretfinder"
+            fi
+        fi
         mkdir -p "$HOME/.local/bin"
         cat > "$HOME/.local/bin/secretfinder" <<EOF
 #!/usr/bin/env bash

@@ -748,6 +748,7 @@ pipx install git+https://github.com/infosec-au/altdns.git
 
 # SecretFinder (not packaged for pipx)
 git clone https://github.com/m4ll0k/SecretFinder.git ~/.local/share/shannon-tools/secretfinder
+python3 -m pip install --user jsbeautifier
 python3 ~/.local/share/shannon-tools/secretfinder/SecretFinder.py -h
 
 # Retire.js (Node)
