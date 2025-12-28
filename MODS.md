@@ -4,6 +4,17 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(lsg-v2): Keep subjs/altdns temp folders in workspace (2025-12-27)
+
+### Overview
+Moves subjs and altdns temporary output into the run workspace/output directory instead of the process root.
+
+### Modified Files
+- `src/local-source-generator/v2/agents/recon/js-harvester-agent.js` — Use workspace/outputDir for subjs temp files and JS temp dirs.
+- `src/local-source-generator/v2/agents/recon/subdomain-hunter-agent.js` — Use workspace/outputDir for altdns temp files.
+
+---
+
 ## fix(lsg-v2): Align hakrawler flags with current CLI (2025-12-27)
 
 ### Overview

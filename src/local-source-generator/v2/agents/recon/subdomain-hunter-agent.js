@@ -170,7 +170,9 @@ export class SubdomainHunterAgent extends BaseAgent {
 
         // Optional permutation generation + resolution
         const { fs, path } = await import('zx');
-        const tmpRoot = await fs.mkdtemp(path.join(process.cwd(), 'tmp-subdomains-'));
+        const workspaceDir = inputs.outputDir || inputs.workspace || process.cwd();
+        await fs.ensureDir(workspaceDir);
+        const tmpRoot = await fs.mkdtemp(path.join(workspaceDir, 'tmp-subdomains-'));
         const seedFile = path.join(tmpRoot, 'subdomains.txt');
         const seedList = Array.from(seenSubdomains);
         if (seedList.length > 0) {

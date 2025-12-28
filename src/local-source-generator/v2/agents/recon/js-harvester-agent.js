@@ -135,12 +135,14 @@ export class JSHarvesterAgent extends BaseAgent {
         const seenEndpoints = new Set();
         const seenRoutes = new Set();
 
-        const jsFiles = await this.resolveJsFiles(ctx, target, js_files, useSubjs, toolConfig);
+        const workspaceDir = inputs.outputDir || inputs.workspace || process.cwd();
+        const jsFiles = await this.resolveJsFiles(ctx, target, js_files, useSubjs, toolConfig, workspaceDir);
         const jsFilesToAnalyze = jsFiles.slice(0, maxJsFiles);
         const linkfinderAvailable = useLinkfinder && await isToolAvailable('linkfinder');
         const xnLinkfinderAvailable = useXnLinkfinder && await isToolAvailable('xnlinkfinder');
         const { fs, path } = await import('zx');
-        const tmpDir = await fs.mkdtemp(path.join(process.cwd(), 'tmp-js-'));
+        await fs.ensureDir(workspaceDir);
+        const tmpDir = await fs.mkdtemp(path.join(workspaceDir, 'tmp-js-'));
 
         // Analyze each JS file
         for (const jsUrl of jsFilesToAnalyze) {
@@ -306,7 +308,7 @@ export class JSHarvesterAgent extends BaseAgent {
         return results;
     }
 
-    async resolveJsFiles(ctx, target, jsFiles, useSubjs, toolConfig) {
+    async resolveJsFiles(ctx, target, jsFiles, useSubjs, toolConfig, workspaceDir) {
         const discovered = [];
         const seen = new Set();
 
@@ -329,7 +331,9 @@ export class JSHarvesterAgent extends BaseAgent {
         if (useSubjs && await isToolAvailable('subjs')) {
             ctx.recordToolInvocation();
             const { fs, path } = await import('zx');
-            const tmpFile = path.join(process.cwd(), `subjs-${Date.now()}.txt`);
+            await fs.ensureDir(workspaceDir);
+            const tmpRoot = await fs.mkdtemp(path.join(workspaceDir, 'tmp-subjs-'));
+            const tmpFile = path.join(tmpRoot, `subjs-${Date.now()}.txt`);
             await fs.writeFile(tmpFile, `${target}\n`);
             const subjsOptions = getToolRunOptions('subjs', toolConfig);
             const cmd = `subjs -i "${tmpFile}"`;
