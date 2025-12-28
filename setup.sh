@@ -223,6 +223,47 @@ EOF
     fi
 fi
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "--------------------------------"
+    echo "🍎 macOS Optional Tooling"
+
+    if ! command -v brew &> /dev/null; then
+        echo "⚠️  Homebrew not found; skipping macOS optional installs"
+    else
+        BREW_TOOLS=("feroxbuster" "gobuster" "rustscan" "seclists")
+        for tool in "${BREW_TOOLS[@]}"; do
+            if ! command -v $tool &> /dev/null; then
+                echo "Installing $tool (brew)..."
+                brew install $tool || echo "⚠️  Failed to install $tool via brew"
+            else
+                echo "✅ $tool"
+            fi
+        done
+    fi
+
+    if ! command -v pipx &> /dev/null; then
+        if command -v brew &> /dev/null; then
+            echo "Installing pipx (brew)..."
+            brew install pipx || echo "⚠️  Failed to install pipx"
+        fi
+    fi
+
+    if command -v pipx &> /dev/null; then
+        echo "Checking pipx tools..."
+        PY_TOOLS=("waymore" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns" "dirsearch")
+        for tool in "${PY_TOOLS[@]}"; do
+            if ! command -v $tool &> /dev/null; then
+                echo "Installing $tool (pipx)..."
+                pipx install $tool || echo "⚠️  Failed to install $tool via pipx"
+            else
+                echo "✅ $tool"
+            fi
+        done
+    else
+        echo "⚠️  pipx not available; skipping Python tool installs"
+    fi
+fi
+
 # 8. Check .env
 echo -n "Checking .env configuration... "
 if [ ! -f ".env" ]; then
