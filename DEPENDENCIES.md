@@ -41,9 +41,14 @@ These tools are used by their respective agents.
 - **katana** (Crawling)
 - **nuclei** (Vulnerability scanning)
 - **gau** (GetAllUrls)
+- **gauplus** (Extended URL harvesting)
 - **amass** (Subdomain discovery)
 - **gospider** (Crawling)
 - **waybackurls** (Historical URLs)
+- **subjs** (JS URL discovery)
+- **dnsx** (DNS resolution)
+- **shuffledns** (DNS resolution)
+- **puredns** (DNS resolution)
 
 **Installation**:
 All can be installed via `go install`:
@@ -53,9 +58,14 @@ go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 go install -v github.com/projectdiscovery/katana/cmd/katana@latest
 go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest
 go install -v github.com/lc/gau/v2/cmd/gau@latest
+go install github.com/bp0lr/gauplus@latest
 go install -v github.com/owasp-amass/amass/v4/...@latest
 go install github.com/jaeles-project/gospider@latest
 go install github.com/tomnomnom/waybackurls@latest
+go install github.com/lc/subjs@latest
+go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+go install -v github.com/projectdiscovery/shuffledns/cmd/shuffledns@latest
+go install -v github.com/d3mondev/puredns/v2@latest
 ```
 Ensure `$GOPATH/bin` or `$HOME/go/bin` is in your PATH.
 
@@ -66,6 +76,27 @@ Ensure `$GOPATH/bin` or `$HOME/go/bin` is in your PATH.
 ```bash
 cargo install rustscan
 ```
+
+## Kali Discovery Add-ons (Optional)
+
+These tools are used for deeper file/endpoint discovery on Kali. All are optional and auto-detected.
+
+### Content Discovery
+- **feroxbuster** — `sudo apt-get install feroxbuster` or `cargo install feroxbuster`
+- **dirsearch** — `sudo apt-get install dirsearch` or `pipx install dirsearch`
+- **gobuster** — `sudo apt-get install gobuster` or `go install github.com/OJ/gobuster/v3@latest`
+
+### Historical/JS Discovery
+- **waymore** — `pipx install waymore`
+- **linkfinder** — `pipx install linkfinder`
+- **xnlinkfinder** — `pipx install xnlinkfinder`
+
+### Parameter Discovery
+- **arjun** — `pipx install arjun`
+- **paramspider** — `pipx install paramspider`
+
+### Subdomain Permutations
+- **altdns** — `pipx install altdns`
 
 ## Environment Resolution
 The `shannon` CLI attempts to resolve these tools from your environment.

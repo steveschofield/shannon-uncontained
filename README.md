@@ -122,7 +122,7 @@ cp .env.example .env
 
 ## External Tooling
 
-Shannon shells out to external security tools for recon and exploitation. For full coverage, install the optional recon tools `amass`, `rustscan`, `gospider`, and `waybackurls` alongside the existing toolchain. Running `./setup.sh` validates the toolchain and will install Go-based tools when Go is available, while warning if RustScan is missing. See `DEPENDENCIES.md` for setup guidance.
+Shannon shells out to external security tools for recon and exploitation. For full coverage, install the optional recon tools `amass`, `rustscan`, `gospider`, `waybackurls`, `gauplus`, and `subjs` alongside the existing toolchain. On Kali, Shannon can also leverage `feroxbuster`, `dirsearch`, `gobuster`, `waymore`, `linkfinder`, `xnlinkfinder`, `arjun`, `paramspider`, `dnsx`, `shuffledns`, `puredns`, and `altdns` when present. Running `./setup.sh` validates the toolchain and will install Go-based tools when Go is available, while warning if RustScan is missing; on Kali it will also attempt apt/pipx installs for the optional tooling. See `DEPENDENCIES.md` for setup guidance.
 
 ### Graph View Modes
 
@@ -740,7 +740,7 @@ brew install pipx && pipx ensurepath
 python3 -m pip install --user pipx && pipx ensurepath
 
 # Install Python-based tools
-tools=(sslyze wafw00f trufflehog xsstrike commix)
+tools=(sslyze wafw00f trufflehog xsstrike commix waymore linkfinder xnlinkfinder arjun paramspider altdns dirsearch)
 for t in "${tools[@]}"; do pipx install "$t"; done
 
 # sqlmap is best via package manager
