@@ -1651,3 +1651,15 @@ Ensures the adaptive throttler respects the CLI `--parallel` cap by wiring it in
 - `src/local-source-generator/v2/index.js` — Propagates the `parallel` override (or alias) to the orchestrator.
 - `local-source-generator.mjs` — Passes the CLI `--parallel` value to LSG v2.
 - `src/local-source-generator/v2/test-lsg-v2.mjs` — Aligns the test harness with the `parallel` config name.
+
+---
+
+## fix(setup): Install SecretFinder dependency requests-file (2025-12-28)
+
+### Overview
+Ensures SecretFinder runs without runtime import errors by installing `requests-file` during setup and documenting the dependency.
+
+### Modified Files
+- `setup.sh` — Installs `requests-file` when SecretFinder is configured.
+- `README.md` — Adds `requests-file` to the SecretFinder install steps.
+- `DEPENDENCIES.md` — Notes `requests-file` as a SecretFinder requirement.

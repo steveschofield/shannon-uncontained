@@ -30,23 +30,42 @@ apt_install() {
 }
 
 install_secretfinder() {
-    if command -v secretfinder &> /dev/null; then
+    local secretfinder_path
+    secretfinder_path="$(command -v secretfinder 2>/dev/null || true)"
+    if [ -n "$secretfinder_path" ]; then
         echo "✅ secretfinder"
-        return
     fi
     if ! command -v git &> /dev/null; then
-        echo "⚠️  git not available; skipping secretfinder"
-        return
+        if [ -z "$secretfinder_path" ]; then
+            echo "⚠️  git not available; skipping secretfinder"
+            return
+        fi
     fi
     local install_dir="$HOME/.local/share/shannon-tools/secretfinder"
-    if [ ! -d "$install_dir/.git" ]; then
+    local expects_repo=0
+    if [ -n "$secretfinder_path" ] && [ -f "$secretfinder_path" ] && grep -q "SecretFinder.py" "$secretfinder_path" 2>/dev/null; then
+        expects_repo=1
+    fi
+    if [ ! -d "$install_dir/.git" ] && { [ -z "$secretfinder_path" ] || [ "$expects_repo" -eq 1 ]; }; then
         echo "Installing secretfinder (git)..."
         git clone https://github.com/m4ll0k/SecretFinder.git "$install_dir" || {
             echo "⚠️  Failed to install secretfinder via git"
             return
         }
-    else
+    elif [ -d "$install_dir/.git" ]; then
         echo "✅ secretfinder repo"
+    fi
+    if [ -z "$secretfinder_path" ] && [ ! -d "$install_dir/.git" ]; then
+        return
+    fi
+    local use_repo=0
+    if [ -d "$install_dir/.git" ]; then
+        use_repo=1
+    elif [ "$expects_repo" -eq 1 ]; then
+        use_repo=1
+    fi
+    if [ "$use_repo" -ne 1 ]; then
+        return
     fi
     if command -v python3 &> /dev/null; then
         if ! python3 - <<'PY' >/dev/null 2>&1
@@ -59,6 +78,18 @@ PY
                 python3 -m pip install --user jsbeautifier || echo "⚠️  Failed to install jsbeautifier via pip"
             else
                 echo "⚠️  pip not available; install jsbeautifier to use secretfinder"
+            fi
+        fi
+        if ! python3 - <<'PY' >/dev/null 2>&1
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("requests_file") else 1)
+PY
+        then
+            if python3 -m pip --version >/dev/null 2>&1; then
+                echo "Installing requests-file for secretfinder (pip)..."
+                python3 -m pip install --user requests-file || echo "⚠️  Failed to install requests-file via pip"
+            else
+                echo "⚠️  pip not available; install requests-file to use secretfinder"
             fi
         fi
         mkdir -p "$HOME/.local/bin"
