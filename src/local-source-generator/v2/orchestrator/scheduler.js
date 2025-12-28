@@ -486,6 +486,7 @@ export class Orchestrator extends EventEmitter {
                 'ArchitectInferAgent',
                 'AuthFlowAnalyzer',
                 'DataFlowMapper',
+                'JSSecurityAgent',
                 'BusinessLogicAgent',
                 'VulnHypothesizer',
                 'SecurityHeaderAnalyzer',
@@ -507,6 +508,7 @@ export class Orchestrator extends EventEmitter {
                 'GroundTruthAgent',
                 'SourceGenAgent',
                 'SchemaGenAgent',
+                'SchemathesisAgent',
                 'TestGenAgent',
                 'DocumentationAgent',
                 'BlackboxConfigGenAgent',
@@ -750,6 +752,7 @@ export class Orchestrator extends EventEmitter {
         const synthesisAgents = [
             'SourceGenAgent',
             'SchemaGenAgent',
+            'SchemathesisAgent',
             'TestGenAgent',
             'DocumentationAgent',
         ];

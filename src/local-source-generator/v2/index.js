@@ -50,12 +50,12 @@ export {
 export { LLMClient, getLLMClient, LLM_CAPABILITIES } from './orchestrator/llm-client.js';
 
 // Analysis Agents
-import { registerAnalysisAgents as _registerAnalysisAgents, ArchitectInferAgent, AuthFlowAnalyzer, DataFlowMapper, VulnHypothesizer, BusinessLogicAgent } from './agents/analysis/index.js';
-export { ArchitectInferAgent, AuthFlowAnalyzer, DataFlowMapper, VulnHypothesizer, BusinessLogicAgent, _registerAnalysisAgents as registerAnalysisAgents };
+import { registerAnalysisAgents as _registerAnalysisAgents, ArchitectInferAgent, AuthFlowAnalyzer, DataFlowMapper, VulnHypothesizer, BusinessLogicAgent, JSSecurityAgent } from './agents/analysis/index.js';
+export { ArchitectInferAgent, AuthFlowAnalyzer, DataFlowMapper, VulnHypothesizer, BusinessLogicAgent, JSSecurityAgent, _registerAnalysisAgents as registerAnalysisAgents };
 
 // Synthesis Agents
-import { registerSynthesisAgents as _registerSynthesisAgents, SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, GroundTruthAgent } from './agents/synthesis/index.js';
-export { SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, GroundTruthAgent, _registerSynthesisAgents as registerSynthesisAgents };
+import { registerSynthesisAgents as _registerSynthesisAgents, SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, GroundTruthAgent, SchemathesisAgent } from './agents/synthesis/index.js';
+export { SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, GroundTruthAgent, SchemathesisAgent, _registerSynthesisAgents as registerSynthesisAgents };
 
 // Exploitation Agents
 import { registerExploitationAgents as _registerExploitationAgents, NucleiScanAgent, MetasploitAgent, SQLmapAgent } from './agents/exploitation/index.js';
@@ -98,4 +98,3 @@ export function createLSGv2(options = {}) {
  */
 export const VERSION = '2.0.0-alpha';
 export const ARCHITECTURE = 'world-model-first';
-

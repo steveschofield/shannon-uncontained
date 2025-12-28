@@ -8,8 +8,9 @@ import { TestGenAgent } from './test-gen-agent.js';
 import { DocumentationAgent } from './documentation-agent.js';
 import { GroundTruthAgent } from './ground-truth-agent.js';
 import { BlackboxConfigGenAgent } from './blackbox-config-agent.js';
+import { SchemathesisAgent } from './schemathesis-agent.js';
 
-export { SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, GroundTruthAgent, BlackboxConfigGenAgent };
+export { SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, GroundTruthAgent, BlackboxConfigGenAgent, SchemathesisAgent };
 
 /**
  * Register all synthesis agents with orchestrator
@@ -18,9 +19,9 @@ export { SourceGenAgent, SchemaGenAgent, TestGenAgent, DocumentationAgent, Groun
 export function registerSynthesisAgents(orchestrator) {
     orchestrator.registerAgent(new SourceGenAgent());
     orchestrator.registerAgent(new SchemaGenAgent());
+    orchestrator.registerAgent(new SchemathesisAgent());
     orchestrator.registerAgent(new TestGenAgent());
     orchestrator.registerAgent(new DocumentationAgent());
     orchestrator.registerAgent(new GroundTruthAgent()); // Closed-loop validation
     orchestrator.registerAgent(new BlackboxConfigGenAgent());
 }
-

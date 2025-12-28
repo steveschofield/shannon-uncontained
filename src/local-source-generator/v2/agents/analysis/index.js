@@ -14,6 +14,7 @@ import { SecurityHeaderAnalyzer } from './security-header-analyzer.js';
 import { TLSAnalyzer } from './tls-analyzer.js';
 import { PassiveSecurityAgent } from './passive-security-agent.js';
 import { APISchemaGenerator } from './api-schema-generator.js';
+import { JSSecurityAgent } from './js-security-agent.js';
 
 export {
     ArchitectInferAgent,
@@ -26,6 +27,7 @@ export {
     TLSAnalyzer,
     PassiveSecurityAgent,
     APISchemaGenerator,
+    JSSecurityAgent,
 };
 
 /**
@@ -45,6 +47,7 @@ export function registerAnalysisAgents(orchestrator) {
     orchestrator.registerAgent(new ArchitectInferAgent());
     orchestrator.registerAgent(new AuthFlowAnalyzer());
     orchestrator.registerAgent(new DataFlowMapper());
+    orchestrator.registerAgent(new JSSecurityAgent());
     orchestrator.registerAgent(new VulnHypothesizer());
     orchestrator.registerAgent(new BusinessLogicAgent());
     orchestrator.registerAgent(new SecurityHeaderAnalyzer());

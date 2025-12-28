@@ -44,6 +44,7 @@ These tools are used by their respective agents.
 - **gauplus** (Extended URL harvesting)
 - **amass** (Subdomain discovery)
 - **gospider** (Crawling)
+- **hakrawler** (Crawling)
 - **waybackurls** (Historical URLs)
 - **subjs** (JS URL discovery)
 - **dnsx** (DNS resolution)
@@ -61,6 +62,7 @@ go install -v github.com/lc/gau/v2/cmd/gau@latest
 go install github.com/bp0lr/gauplus@latest
 go install -v github.com/owasp-amass/amass/v4/...@latest
 go install github.com/jaeles-project/gospider@latest
+go install github.com/hakluke/hakrawler@latest
 go install github.com/tomnomnom/waybackurls@latest
 go install github.com/lc/subjs@latest
 go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
@@ -90,10 +92,15 @@ These tools are used for deeper file/endpoint discovery on Kali. All are optiona
 - **waymore** — `pipx install waymore`
 - **linkfinder** — `pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git`
 - **xnlinkfinder** — `pipx install xnlinkfinder`
+- **retire** — `npm install -g retire`
+- **secretfinder** — `pipx install git+https://github.com/m4ll0k/SecretFinder.git`
 
 ### Parameter Discovery
 - **arjun** — `pipx install arjun`
 - **paramspider** — `pipx install git+https://github.com/devanshbatham/ParamSpider.git`
+
+### API Testing
+- **schemathesis** — `pipx install schemathesis`
 
 ### Subdomain Permutations
 - **altdns** — `pipx install git+https://github.com/infosec-au/altdns.git`
