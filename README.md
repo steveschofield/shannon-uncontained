@@ -28,7 +28,7 @@
 
 Shannon-Uncontained is a **penetration testing orchestration framework** that treats security reconnaissance not as a checklist of tools, but as an exercise in **epistemic systems design**. We refuse to contain our observations in the stale categories of "finding" or "non-finding." Reality, as Hitchens might have noted, does not respect such convenient binaries.
 
-Unlike other pentest frameworks that stuff their outputs into Docker containers (ah yes, the great equalizer of modern laziness), we operate **uncontained**. Our world model lives in the open—inspectable, falsifiable, and delightfully uncomfortable for those who prefer their security theater neatly packaged.
+Unlike other pentest frameworks that require Docker just to run, we operate **uncontained** by default: native execution on your host, with Docker/Podman available as an optional deployment path. Our world model lives in the open—inspectable, falsifiable, and delightfully uncomfortable for those who prefer their security theater neatly packaged.
 
 ### The Core Proposition
 
@@ -117,6 +117,8 @@ cp .env.example .env
 # Export interactive knowledge graph
 ./shannon.mjs model export-html --workspace shannon-results/repos/example.com --view provenance
 ```
+
+Container deployment is supported via the `Dockerfile` for teams that prefer Docker/Podman, while native execution remains the default.
 
 > **⚠️ Important:** Shannon requires an LLM provider to function. See the [LLM Provider Setup](#llm-provider-setup) section below for configuration instructions.
 
@@ -360,7 +362,7 @@ The knowledge graph renders edges styled by their epistemic state:
 
 ## Why "Uncontained"?
 
-Because Docker containers are a confession of architectural defeat.
+Because "uncontained" is about epistemic transparency, not a ban on containers.
 
 More seriously: traditional pentest tools often operate in isolated silos. Nmap knows nothing of what Burp discovered. Nuclei doesn't care what your manual testing revealed. Each tool produces its own artifact, and some poor analyst must stitch together a coherent narrative.
 
@@ -680,7 +682,7 @@ Notes
 
 ## DevSecOps: Build-time Vulnerability Scanning (Planned)
 
-Goal: give developers a one-command scan in every build, with fast, deterministic results, clear fail conditions, and evidence-rich reports — all without Docker.
+Goal: give developers a one-command scan in every build, with fast, deterministic results, clear fail conditions, and evidence-rich reports — without requiring Docker (native-first, container optional).
 
 What we will build
 
@@ -693,7 +695,7 @@ Phased plan (MVP)
 
 1) Add CLI scan command (dev mode)
    - `shannon scan --repo . [--report markdown|sarif|json] [--fail-on high]`
-   - Zero-network by default; no Docker.
+   - Zero-network by default; no container requirement.
 2) Implement SAST/SCA/Secrets runners
    - SAST: Semgrep; SCA: osv-scanner (and/or npm audit); Secrets: gitleaks (trufflehog optional).
    - Optional: IaC (Checkov), Container (Trivy) when config/images present.

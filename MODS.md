@@ -4,6 +4,19 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(deploy): Align Docker toolchain with setup.sh (2025-12-28)
+
+### Overview
+Expanded the Docker image to install the same Go/Rust/Python tools used by setup.sh, stabilized install-time behavior, normalized Playwright/Chromium paths, and added a dockerignore to prevent host artifacts. Updated README language to present containers as an optional deployment path.
+
+### Modified Files
+- `Dockerfile` — Install setup.sh toolchain (Go/Rust/Python), skip npm lifecycle scripts during install, and normalize Chromium pathing and Python shims.
+- `.dockerignore` — Exclude host-only artifacts like node_modules and local env files.
+- `README.md` — Clarify native-first posture while supporting Docker/Podman deployments.
+
+### Rationale
+Ensure container builds are reliable and closer to native setup parity without forcing Docker as the default.
+
 ## docs(agents): Refresh AGENTS.md pipeline list (2025-12-27)
 
 ### Overview
