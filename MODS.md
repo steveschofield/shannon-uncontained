@@ -4,6 +4,17 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## docs(agents): Refresh AGENTS.md pipeline list (2025-12-27)
+
+### Overview
+Updated `AGENTS.md` to reflect the current LSG v2 pipeline agents, tool coverage, and component paths.
+
+### Modified Files
+- `AGENTS.md` — Updated agent list and path references.
+
+### Rationale
+Keep agent guidance aligned with the current pipeline configuration.
+
 ## fix(lsg-v2): Use schemathesis --url flag (2025-12-27)
 
 ### Overview

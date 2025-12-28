@@ -20,7 +20,7 @@ This is **Shannon Uncontained**, a fork of the original Shannon project:
 ### Key Differences from Upstream
 
 1. **No Docker requirement** — Native Node.js execution is the default
-2. **LSG v2** — World-model-first architecture with 15 specialized agents
+2. **LSG v2** — World-model-first architecture with 30+ specialized agents
 3. **Epistemic Reasoning** — EBSL/EQBSL uncertainty quantification
 4. **Multi-provider LLM** — Claude, OpenAI, GitHub Models, and local providers
 
@@ -47,52 +47,66 @@ EvidenceGraph → TargetModel → ArtifactManifest
  Exploitation    Blue Team Agents
 ```
 
-### 27 Agents (LSGv2)
+### Current Pipeline Agents (LSGv2)
 
 | Phase | Agent | Purpose |
 |:------|:------|:--------|
-| **Recon** | `NetReconAgent` | Port scanning (nmap) |
-| Recon | `CrawlerAgent` | Endpoint discovery (katana, gau) |
+| **Recon** | `OpenAPIDiscoveryAgent` | OpenAPI/GraphQL spec detection |
+| Recon | `SitemapAgent` | Robots + sitemap endpoint mining |
+| Recon | `NetReconAgent` | Port scanning (nmap, rustscan) |
+| Recon | `CrawlerAgent` | Endpoint discovery (katana, gospider, gau/gauplus, waybackurls/waymore, hakrawler) |
+| Recon | `BrowserCrawlerAgent` | Dynamic browser crawl (Playwright) |
 | Recon | `TechFingerprinterAgent` | Framework detection (whatweb) |
-| Recon | `JSHarvesterAgent` | JavaScript bundle analysis |
+| Recon | `JSHarvesterAgent` | JS bundle analysis (+ subjs/linkfinder/xnlinkfinder) |
 | Recon | `APIDiscovererAgent` | OpenAPI/GraphQL discovery |
-| Recon | `SubdomainHunterAgent` | Subdomain enumeration (subfinder) |
-| Recon | `ContentDiscoveryAgent` | Hidden files/dirs (feroxbuster, ffuf) |
-| Recon | `SecretScannerAgent` | Credential detection (trufflehog, gitleaks) |
+| Recon | `SubdomainHunterAgent` | Subdomain enumeration (subfinder/amass + dnsx/shuffledns/puredns/altdns) |
+| Recon | `ContentDiscoveryAgent` | Hidden files/dirs (feroxbuster/ffuf/dirsearch/gobuster) |
+| Recon | `SecretScannerAgent` | Credential detection (gitleaks) |
 | Recon | `WAFDetector` | WAF detection (wafw00f) |
-| **Analysis** | `ArchitectInferAgent` | Architecture inference via LLM |
-| Analysis | `AuthFlowAnalyzer` | Authentication flow detection |
+| Recon | `CORSProbeAgent` | CORS method discovery |
+| **Analysis** | `AuthFlowDetector` | Auth flow detection (black-box) |
+| Analysis | `PassiveSecurityAgent` | Passive response analysis |
+| Analysis | `APISchemaGenerator` | API schema inference from evidence |
+| Analysis | `ArchitectInferAgent` | Architecture inference via LLM |
+| Analysis | `AuthFlowAnalyzer` | Authentication flow analysis |
 | Analysis | `DataFlowMapper` | Source-to-sink data flow analysis |
+| Analysis | `JSSecurityAgent` | JS dependency + secret scanning (retire/secretfinder) |
 | Analysis | `VulnHypothesizer` | OWASP vulnerability hypotheses |
 | Analysis | `BusinessLogicAgent` | Workflow/state machine detection |
 | Analysis | `SecurityHeaderAnalyzer` | HSTS, CSP, security headers (A-F grading) |
 | Analysis | `TLSAnalyzer` | TLS/SSL config (sslyze, cipher checks) |
-| **Synthesis** | `SourceGenAgent` | Framework-aware code generation |
+| **Synthesis** | `GroundTruthAgent` | Endpoint accessibility validation |
+| Synthesis | `SourceGenAgent` | Framework-aware code generation |
 | Synthesis | `SchemaGenAgent` | OpenAPI/GraphQL schema generation |
+| Synthesis | `SchemathesisAgent` | OpenAPI-based API testing |
 | Synthesis | `TestGenAgent` | API and security test generation |
 | Synthesis | `DocumentationAgent` | Model-driven documentation |
-| Synthesis | `GroundTruthAgent` | Endpoint accessibility validation |
+| Synthesis | `BlackboxConfigGenAgent` | Black-box config output |
 | **Exploitation** | `NucleiScanAgent` | CVE/exposure scanning (nuclei) |
-| Exploitation | `MetasploitAgent` | msfrpc module execution |
+| Exploitation | `EnhancedNucleiScanAgent` | Categorized nuclei scans |
+| Exploitation | `MetasploitRecon` | msfrpc module execution (recon) |
+| Exploitation | `MetasploitExploit` | msfrpc module execution (exploit) |
 | Exploitation | `SQLmapAgent` | SQL injection validation |
 | Exploitation | `XSSValidatorAgent` | XSS confirmation (xsstrike) |
 | Exploitation | `CommandInjectionAgent` | OS command injection (commix) |
+
+Additional vulnerability analysis agents exist under `src/local-source-generator/v2/agents/vuln-analysis/`, but they are not wired into the default pipeline.
 
 ### Key Components
 
 | Component | Path | Purpose |
 |:----------|:-----|:--------|
-| `EvidenceGraph` | `v2/worldmodel/evidence-graph.js` | Append-only event store |
-| `TargetModel` | `v2/worldmodel/target-model.js` | Normalized entity graph |
-| `ArtifactManifest` | `v2/worldmodel/artifact-manifest.js` | Output tracking |
+| `EvidenceGraph` | `src/local-source-generator/v2/worldmodel/evidence-graph.js` | Append-only event store |
+| `TargetModel` | `src/local-source-generator/v2/worldmodel/target-model.js` | Normalized entity graph |
+| `ArtifactManifest` | `src/local-source-generator/v2/worldmodel/artifact-manifest.js` | Output tracking |
 | `EpistemicLedger` | `src/core/EpistemicLedger.js` | EBSL/EQBSL claims |
 | `WorldModel` | `src/core/WorldModel.js` | Unified epistemic world model |
-| `ASVSMapper` | `v2/compliance/asvs-mapper.js` | OWASP ASVS v4.0.3 mapping |
-| `EnhancedReport` | `v2/reports/enhanced-report.js` | EBSL-aware report generation |
-| `ToolPreflight` | `v2/tools/preflight.js` | Tool availability checks |
-| `Orchestrator` | `v2/orchestrator/scheduler.js` | Pipeline controller |
-| `LLMClient` | `v2/orchestrator/llm-client.js` | Capability-based routing |
-| `ValidationHarness` | `v2/synthesis/validators/validation-harness.js` | Code validation |
+| `ASVSMapper` | `src/local-source-generator/v2/compliance/asvs-mapper.js` | OWASP ASVS v4.0.3 mapping |
+| `EnhancedReport` | `src/local-source-generator/v2/reports/enhanced-report.js` | EBSL-aware report generation |
+| `ToolPreflight` | `src/local-source-generator/v2/tools/preflight.js` | Tool availability checks |
+| `Orchestrator` | `src/local-source-generator/v2/orchestrator/scheduler.js` | Pipeline controller |
+| `LLMClient` | `src/local-source-generator/v2/orchestrator/llm-client.js` | Capability-based routing |
+| `ValidationHarness` | `src/local-source-generator/v2/synthesis/validators/validation-harness.js` | Code validation |
 
 ---
 
@@ -212,4 +226,3 @@ If upstream accepts any of our features, we consider that a success.
 ---
 
 *Last updated: 2025-12-23*
-
