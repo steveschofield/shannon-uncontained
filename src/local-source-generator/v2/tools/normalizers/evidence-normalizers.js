@@ -182,6 +182,26 @@ export function normalizeGau(output, target) {
 }
 
 /**
+ * Parse gauplus output to evidence events
+ * @param {string} output - Gauplus output (one URL per line)
+ * @param {string} target - Target domain
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeGauplus(output, target) {
+    return normalizeUrlList(output, target, 'gauplus', 'historical_plus');
+}
+
+/**
+ * Parse waymore output to evidence events
+ * @param {string} output - Waymore output (one URL per line)
+ * @param {string} target - Target domain
+ * @returns {object[]} Array of evidence events
+ */
+export function normalizeWaymore(output, target) {
+    return normalizeUrlList(output, target, 'waymore', 'historical_plus');
+}
+
+/**
  * Parse katana output to evidence events
  * @param {string} output - Katana JSON output
  * @param {string} target - Target URL
@@ -312,6 +332,36 @@ export function normalizeWaybackUrls(output, target) {
                     method,
                     params,
                     discovery_method: 'historical',
+                },
+            }));
+        } catch {
+            // Skip invalid URLs
+        }
+    }
+
+    return events;
+}
+
+function normalizeUrlList(output, target, source, discoveryMethod) {
+    const events = [];
+    const urls = output.split('\n').filter(u => u.trim());
+
+    for (const urlStr of urls) {
+        try {
+            const url = new URL(urlStr.trim());
+            const method = guessMethodFromUrl(url);
+            const params = extractParams(url);
+
+            events.push(createEvidenceEvent({
+                source,
+                event_type: EVENT_TYPES.ENDPOINT_DISCOVERED,
+                target,
+                payload: {
+                    url: urlStr.trim(),
+                    path: url.pathname,
+                    method,
+                    params,
+                    discovery_method: discoveryMethod,
                 },
             }));
         } catch {
@@ -499,9 +549,11 @@ export default {
     normalizeAmass,
     normalizeWhatweb,
     normalizeGau,
+    normalizeGauplus,
     normalizeKatana,
     normalizeGoSpider,
     normalizeWaybackUrls,
+    normalizeWaymore,
     normalizeRustscan,
     normalizeHttpx,
 };

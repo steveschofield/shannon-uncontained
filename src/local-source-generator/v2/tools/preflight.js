@@ -95,6 +95,86 @@ const TOOL_REGISTRY = {
             all: 'go install github.com/tomnomnom/waybackurls@latest'
         }
     },
+    waymore: {
+        check: 'waymore --help',
+        required: false,
+        category: 'recon',
+        install: {
+            kali: 'pipx install waymore',
+            ubuntu: 'pipx install waymore',
+            pip: 'pip install waymore'
+        }
+    },
+    gauplus: {
+        check: 'gauplus --help',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install github.com/bp0lr/gauplus@latest'
+        }
+    },
+    subjs: {
+        check: 'subjs --help',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install github.com/lc/subjs@latest'
+        }
+    },
+    dnsx: {
+        check: 'dnsx -version',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest'
+        }
+    },
+    shuffledns: {
+        check: 'shuffledns -version',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install -v github.com/projectdiscovery/shuffledns/cmd/shuffledns@latest'
+        }
+    },
+    puredns: {
+        check: 'puredns --version',
+        required: false,
+        category: 'recon',
+        install: {
+            all: 'go install -v github.com/d3mondev/puredns/v2@latest'
+        }
+    },
+    altdns: {
+        check: 'altdns -h',
+        required: false,
+        category: 'recon',
+        install: {
+            kali: 'pipx install altdns',
+            ubuntu: 'pipx install altdns',
+            pip: 'pip install altdns'
+        }
+    },
+    linkfinder: {
+        check: 'linkfinder -h',
+        required: false,
+        category: 'recon',
+        install: {
+            kali: 'pipx install linkfinder',
+            ubuntu: 'pipx install linkfinder',
+            pip: 'pip install linkfinder'
+        }
+    },
+    xnlinkfinder: {
+        check: 'xnlinkfinder -h',
+        required: false,
+        category: 'recon',
+        install: {
+            kali: 'pipx install xnlinkfinder',
+            ubuntu: 'pipx install xnlinkfinder',
+            pip: 'pip install xnlinkfinder'
+        }
+    },
 
     // Exploitation tools
     nuclei: {
@@ -148,6 +228,46 @@ const TOOL_REGISTRY = {
         category: 'discovery',
         install: {
             all: 'go install github.com/ffuf/ffuf/v2@latest'
+        }
+    },
+    dirsearch: {
+        check: 'dirsearch --help',
+        required: false,
+        category: 'discovery',
+        install: {
+            kali: 'sudo apt-get install dirsearch',
+            ubuntu: 'sudo apt-get install dirsearch',
+            pip: 'pip install dirsearch'
+        }
+    },
+    gobuster: {
+        check: 'gobuster version',
+        required: false,
+        category: 'discovery',
+        install: {
+            kali: 'sudo apt-get install gobuster',
+            ubuntu: 'sudo apt-get install gobuster',
+            all: 'go install github.com/OJ/gobuster/v3@latest'
+        }
+    },
+    arjun: {
+        check: 'arjun -h',
+        required: false,
+        category: 'discovery',
+        install: {
+            kali: 'pipx install arjun',
+            ubuntu: 'pipx install arjun',
+            pip: 'pip install arjun'
+        }
+    },
+    paramspider: {
+        check: 'paramspider --help',
+        required: false,
+        category: 'discovery',
+        install: {
+            kali: 'pipx install paramspider',
+            ubuntu: 'pipx install paramspider',
+            pip: 'pip install paramspider'
         }
     },
 

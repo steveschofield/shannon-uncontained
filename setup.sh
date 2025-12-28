@@ -100,7 +100,16 @@ fi
 echo "Checking Go binaries..."
 GOBIN=$(go env GOPATH)/bin
 PD_TOOLS=("subfinder" "httpx" "nuclei" "katana" "gau")
-GO_TOOLS=("amass|github.com/owasp-amass/amass/v4/...@latest" "gospider|github.com/jaeles-project/gospider@latest" "waybackurls|github.com/tomnomnom/waybackurls@latest")
+GO_TOOLS=(
+    "amass|github.com/owasp-amass/amass/v4/...@latest"
+    "gospider|github.com/jaeles-project/gospider@latest"
+    "waybackurls|github.com/tomnomnom/waybackurls@latest"
+    "gauplus|github.com/bp0lr/gauplus@latest"
+    "subjs|github.com/lc/subjs@latest"
+    "dnsx|github.com/projectdiscovery/dnsx/cmd/dnsx@latest"
+    "shuffledns|github.com/projectdiscovery/shuffledns/cmd/shuffledns@latest"
+    "puredns|github.com/d3mondev/puredns/v2@latest"
+)
 
 for tool in "${PD_TOOLS[@]}"; do
     if ! command -v $tool &> /dev/null; then
@@ -132,6 +141,46 @@ if ! command -v rustscan &> /dev/null; then
     echo "   Or: cargo install rustscan"
 else
     echo "✅ Found"
+fi
+
+# 7c. Kali optional tooling
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+fi
+
+if [ "${ID:-}" = "kali" ]; then
+    echo "--------------------------------"
+    echo "🐉 Kali Optional Tooling"
+
+    APT_TOOLS=("feroxbuster" "dirsearch" "gobuster")
+    for tool in "${APT_TOOLS[@]}"; do
+        if ! command -v $tool &> /dev/null; then
+            echo "Installing $tool (apt)..."
+            sudo apt-get install -y $tool || echo "⚠️  Failed to install $tool via apt"
+        else
+            echo "✅ $tool"
+        fi
+    done
+
+    if ! command -v pipx &> /dev/null; then
+        echo "Installing pipx (apt)..."
+        sudo apt-get install -y pipx || echo "⚠️  Failed to install pipx"
+    fi
+
+    if command -v pipx &> /dev/null; then
+        echo "Checking pipx tools..."
+        PY_TOOLS=("waymore" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns")
+        for tool in "${PY_TOOLS[@]}"; do
+            if ! command -v $tool &> /dev/null; then
+                echo "Installing $tool (pipx)..."
+                pipx install $tool || echo "⚠️  Failed to install $tool via pipx"
+            else
+                echo "✅ $tool"
+            fi
+        done
+    else
+        echo "⚠️  pipx not available; skipping Python tool installs"
+    fi
 fi
 
 # 8. Check .env

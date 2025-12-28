@@ -7,6 +7,7 @@
 
 import { BaseAgent } from '../base-agent.js';
 import { runTool, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
+import { EVENT_TYPES } from '../../worldmodel/evidence-graph.js';
 
 export class ContentDiscoveryAgent extends BaseAgent {
     constructor(options = {}) {
@@ -48,9 +49,14 @@ export class ContentDiscoveryAgent extends BaseAgent {
                 },
                 tool: {
                     type: 'string',
-                    enum: ['feroxbuster', 'ffuf', 'auto'],
+                    enum: ['feroxbuster', 'ffuf', 'dirsearch', 'gobuster', 'auto', 'all'],
                     default: 'auto',
                     description: 'Tool to use for discovery'
+                },
+                tools: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Optional list of tools to run (overrides tool)'
                 }
             }
         };
@@ -60,7 +66,8 @@ export class ContentDiscoveryAgent extends BaseAgent {
             properties: {
                 discovered: { type: 'array' },
                 summary: { type: 'object' },
-                tool: { type: 'string' }
+                tool: { type: 'string' },
+                tools: { type: 'array', items: { type: 'string' } }
             }
         };
 
@@ -80,7 +87,7 @@ export class ContentDiscoveryAgent extends BaseAgent {
             max_time_ms: 300000,
             max_network_requests: 10000,
             max_tokens: 0,
-            max_tool_invocations: 1
+            max_tool_invocations: 4
         };
 
         // Interesting paths patterns
@@ -112,10 +119,37 @@ export class ContentDiscoveryAgent extends BaseAgent {
         if (await isToolAvailable('feroxbuster')) {
             return 'feroxbuster';
         }
+        if (await isToolAvailable('dirsearch')) {
+            return 'dirsearch';
+        }
         if (await isToolAvailable('ffuf')) {
             return 'ffuf';
         }
+        if (await isToolAvailable('gobuster')) {
+            return 'gobuster';
+        }
         return null;
+    }
+
+    async resolveTools(tool, tools) {
+        if (Array.isArray(tools) && tools.length > 0) {
+            return tools;
+        }
+        if (tool === 'all') {
+            const candidates = ['feroxbuster', 'dirsearch', 'ffuf', 'gobuster'];
+            const available = [];
+            for (const candidate of candidates) {
+                if (await isToolAvailable(candidate)) {
+                    available.push(candidate);
+                }
+            }
+            return available;
+        }
+        if (tool === 'auto') {
+            const selected = await this.detectTool();
+            return selected ? [selected] : [];
+        }
+        return tool ? [tool] : [];
     }
 
     /**
@@ -158,6 +192,40 @@ export class ContentDiscoveryAgent extends BaseAgent {
         cmd += ' -o /dev/stdout -of json';
         cmd += ' -s';  // Silent mode
         cmd += ' -mc 200,201,204,301,302,307,401,403';  // Match codes
+
+        return cmd;
+    }
+
+    /**
+     * Build dirsearch command
+     */
+    buildDirsearchCommand(inputs, outputFile = null) {
+        const { target, wordlist, extensions, threads } = inputs;
+
+        let cmd = `dirsearch -u "${target}" -w "${wordlist}"`;
+        if (extensions.length > 0) {
+            cmd += ` -e ${extensions.join(',')}`;
+        }
+        cmd += ` -t ${threads}`;
+        if (outputFile) {
+            cmd += ` --format json --output "${outputFile}"`;
+        }
+
+        return cmd;
+    }
+
+    /**
+     * Build gobuster command
+     */
+    buildGobusterCommand(inputs) {
+        const { target, wordlist, extensions, threads } = inputs;
+        const extFlag = extensions.length > 0 ? ` -x ${extensions.map(e => `.${e}`).join(',')}` : '';
+
+        let cmd = `gobuster dir -u "${target}" -w "${wordlist}"`;
+        cmd += ` -t ${threads}`;
+        cmd += extFlag;
+        cmd += ' -q';
+        cmd += ' -s 200,201,204,301,302,307,401,403';
 
         return cmd;
     }
@@ -211,6 +279,82 @@ export class ContentDiscoveryAgent extends BaseAgent {
     }
 
     /**
+     * Parse dirsearch JSON output (file or stdout)
+     */
+    parseDirsearchOutput(stdout) {
+        const discovered = [];
+        const trimmed = stdout.trim();
+
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                const data = JSON.parse(trimmed);
+                const entries = Array.isArray(data) ? data : (data.results || []);
+                for (const result of entries) {
+                    if (!result.url) continue;
+                    let pathValue = result.path;
+                    try {
+                        pathValue = pathValue || new URL(result.url).pathname;
+                    } catch {}
+                    discovered.push({
+                        url: result.url,
+                        path: pathValue,
+                        status: result.status || result.code,
+                        size: result.length || result.size || result.words,
+                        method: result.method || 'GET'
+                    });
+                }
+                return discovered;
+            } catch {}
+        }
+
+        // Fallback: parse line output
+        const lines = stdout.split('\n').filter(l => l.trim());
+        for (const line of lines) {
+            const match = line.match(/(\d{3}).*?(https?:\/\/\S+|\/\S+)/);
+            if (match) {
+                const status = parseInt(match[1], 10);
+                const url = match[2].startsWith('http')
+                    ? match[2]
+                    : null;
+                const pathValue = url ? new URL(url).pathname : match[2];
+                discovered.push({
+                    url: url || match[2],
+                    path: pathValue,
+                    status,
+                    method: 'GET'
+                });
+            }
+        }
+
+        return discovered;
+    }
+
+    /**
+     * Parse gobuster output
+     */
+    parseGobusterOutput(stdout, baseUrl) {
+        const discovered = [];
+        const lines = stdout.split('\n').filter(l => l.trim());
+
+        for (const line of lines) {
+            const match = line.match(/^(\S+)\s+\(Status:\s*(\d{3})/i);
+            if (match) {
+                const pathValue = match[1];
+                const status = parseInt(match[2], 10);
+                const url = pathValue.startsWith('http') ? pathValue : new URL(pathValue, baseUrl).toString();
+                discovered.push({
+                    url,
+                    path: new URL(url).pathname,
+                    status,
+                    method: 'GET'
+                });
+            }
+        }
+
+        return discovered;
+    }
+
+    /**
      * Classify discovered path
      */
     classifyPath(path) {
@@ -244,7 +388,8 @@ export class ContentDiscoveryAgent extends BaseAgent {
             rateLimit: providedRateLimit,
             delay: providedDelay,
             recursionDepth = 2,
-            tool = 'auto'
+            tool = 'auto',
+            tools = null,
         } = inputs;
 
         // Apply safer defaults based on selected profile if not explicitly set
@@ -293,43 +438,99 @@ export class ContentDiscoveryAgent extends BaseAgent {
             try { await fs.writeFile(resolvedWordlist, minimal); } catch {}
         }
 
-        // Detect tool
-        let selectedTool = tool;
-        if (tool === 'auto') {
-            selectedTool = await this.detectTool();
-        }
+        // Resolve tools to run
+        const toolList = await this.resolveTools(tool, tools);
 
-        if (!selectedTool) {
+        if (!toolList.length) {
             return {
                 discovered: [],
-                error: 'No content discovery tool available. Install feroxbuster or ffuf.',
+                error: 'No content discovery tool available. Install feroxbuster, ffuf, dirsearch, or gobuster.',
                 tool: null,
+                tools: [],
                 summary: { total: 0 }
             };
         }
 
-        // Build command
-        const command = selectedTool === 'feroxbuster'
-            ? this.buildFeroxbusterCommand({ target, wordlist: resolvedWordlist, extensions, threads, recursionDepth })
-            : this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads, rateLimit, delay });
-
-        ctx.recordToolInvocation();
-        const toolOptions = getToolRunOptions(selectedTool, inputs.toolConfig);
-        const result = await runTool(command, { timeout: toolOptions.timeout, context: ctx });
-
-        // Parse output
-        const discovered = selectedTool === 'feroxbuster'
-            ? this.parseFeroxbusterOutput(result.stdout || '')
-            : this.parseFfufOutput(result.stdout || '');
-
-        // Process and emit evidence for each discovery
+        const discovered = [];
+        const seenUrls = new Set();
         const summary = {
-            total: discovered.length,
+            total: 0,
             byStatus: {},
             byClassification: {},
+            byTool: {},
             sensitive: 0
         };
 
+        const baseTmp = inputs.outputDir || process.cwd();
+        await fs.ensureDir(baseTmp);
+        const tmpDir = await fs.mkdtemp(path.join(baseTmp, 'tmp-content-'));
+
+        for (const selectedTool of toolList) {
+            let command = null;
+            let parseFn = null;
+            let toolOutputFile = null;
+
+            if (selectedTool === 'feroxbuster') {
+                command = this.buildFeroxbusterCommand({ target, wordlist: resolvedWordlist, extensions, threads, recursionDepth });
+                parseFn = (stdout) => this.parseFeroxbusterOutput(stdout);
+            } else if (selectedTool === 'ffuf') {
+                command = this.buildFfufCommand({ target, wordlist: resolvedWordlist, extensions, threads, rateLimit, delay });
+                parseFn = (stdout) => this.parseFfufOutput(stdout);
+            } else if (selectedTool === 'dirsearch') {
+                toolOutputFile = path.join(tmpDir, 'dirsearch.json');
+                command = this.buildDirsearchCommand({ target, wordlist: resolvedWordlist, extensions, threads }, toolOutputFile);
+                parseFn = (stdout) => this.parseDirsearchOutput(stdout);
+            } else if (selectedTool === 'gobuster') {
+                command = this.buildGobusterCommand({ target, wordlist: resolvedWordlist, extensions, threads });
+                parseFn = (stdout) => this.parseGobusterOutput(stdout, target);
+            }
+
+            if (!command || !parseFn) {
+                continue;
+            }
+
+            ctx.recordToolInvocation();
+            const toolOptions = getToolRunOptions(selectedTool, inputs.toolConfig);
+            let result = await runTool(command, { timeout: toolOptions.timeout, context: ctx });
+
+            if (!result.success && selectedTool === 'dirsearch') {
+                const fallback = this.buildDirsearchCommand({ target, wordlist: resolvedWordlist, extensions, threads }, null);
+                result = await runTool(fallback, { timeout: toolOptions.timeout, context: ctx });
+            }
+
+            if (!result.success) {
+                ctx.emitEvidence({
+                    source: this.name,
+                    event_type: result.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                    target,
+                    payload: { tool: selectedTool, error: result.error },
+                });
+                continue;
+            }
+
+            let output = result.stdout || '';
+            if (selectedTool === 'dirsearch' && toolOutputFile) {
+                output = await this.readIfExists(fs, toolOutputFile, output);
+            }
+
+            const parsed = parseFn(output) || [];
+            summary.byTool[selectedTool] = (summary.byTool[selectedTool] || 0) + parsed.length;
+
+            for (const item of parsed) {
+                const url = item.url || (item.path ? new URL(item.path, target).toString() : null);
+                if (!url || seenUrls.has(url)) continue;
+                seenUrls.add(url);
+                item.url = url;
+                try {
+                    item.path = new URL(url).pathname;
+                } catch {}
+                item.source = selectedTool;
+                discovered.push(item);
+            }
+        }
+
+        // Process and emit evidence for each discovery
+        summary.total = discovered.length;
         for (const item of discovered) {
             ctx.recordNetworkRequest();
 
@@ -383,9 +584,19 @@ export class ContentDiscoveryAgent extends BaseAgent {
 
         return {
             discovered,
-            tool: selectedTool,
+            tool: toolList[0] || null,
+            tools: toolList,
             summary
         };
+    }
+
+    async readIfExists(fs, filePath, fallback = '') {
+        try {
+            if (await fs.pathExists(filePath)) {
+                return await fs.readFile(filePath, 'utf-8');
+            }
+        } catch {}
+        return fallback || '';
     }
 }
 

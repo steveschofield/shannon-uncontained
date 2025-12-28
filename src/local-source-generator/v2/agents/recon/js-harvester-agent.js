@@ -8,6 +8,7 @@
 import { BaseAgent } from '../base-agent.js';
 import { createEvidenceEvent, EVENT_TYPES } from '../../worldmodel/evidence-graph.js';
 import { CLAIM_TYPES } from '../../epistemics/ledger.js';
+import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
 
 export class JSHarvesterAgent extends BaseAgent {
     constructor(options = {}) {
@@ -19,6 +20,10 @@ export class JSHarvesterAgent extends BaseAgent {
             properties: {
                 target: { type: 'string', description: 'Target URL' },
                 js_files: { type: 'array', items: { type: 'string' }, description: 'JS file URLs to analyze' },
+                max_js_files: { type: 'number', description: 'Maximum JS files to analyze' },
+                use_subjs: { type: 'boolean', description: 'Use subjs to expand JS file list' },
+                use_linkfinder: { type: 'boolean', description: 'Use linkfinder for JS URL extraction' },
+                use_xnlinkfinder: { type: 'boolean', description: 'Use xnlinkfinder for JS URL extraction' },
             },
         };
 
@@ -47,7 +52,7 @@ export class JSHarvesterAgent extends BaseAgent {
             max_time_ms: 120000,
             max_network_requests: 100,
             max_tokens: 5000,
-            max_tool_invocations: 20,
+            max_tool_invocations: 30,
         };
 
         // Patterns for extraction
@@ -104,7 +109,20 @@ export class JSHarvesterAgent extends BaseAgent {
     }
 
     async run(ctx, inputs) {
-        const { target, js_files = [] } = inputs;
+        const {
+            target,
+            js_files = [],
+            max_js_files: maxJsFilesInput,
+            use_subjs: useSubjsInput,
+            use_linkfinder: useLinkfinderInput,
+            use_xnlinkfinder: useXnLinkfinderInput,
+        } = inputs;
+
+        const maxJsFiles = Number.isFinite(maxJsFilesInput) ? Math.max(1, maxJsFilesInput) : 40;
+        const useSubjs = useSubjsInput !== false;
+        const useLinkfinder = useLinkfinderInput !== false;
+        const useXnLinkfinder = useXnLinkfinderInput !== false;
+        const toolConfig = inputs.toolConfig || ctx.config?.toolConfig || null;
 
         const results = {
             endpoints: [],
@@ -115,9 +133,17 @@ export class JSHarvesterAgent extends BaseAgent {
         };
 
         const seenEndpoints = new Set();
+        const seenRoutes = new Set();
+
+        const jsFiles = await this.resolveJsFiles(ctx, target, js_files, useSubjs, toolConfig);
+        const jsFilesToAnalyze = jsFiles.slice(0, maxJsFiles);
+        const linkfinderAvailable = useLinkfinder && await isToolAvailable('linkfinder');
+        const xnLinkfinderAvailable = useXnLinkfinder && await isToolAvailable('xnlinkfinder');
+        const { fs, path } = await import('zx');
+        const tmpDir = await fs.mkdtemp(path.join(process.cwd(), 'tmp-js-'));
 
         // Analyze each JS file
-        for (const jsUrl of js_files) {
+        for (const jsUrl of jsFilesToAnalyze) {
             ctx.recordNetworkRequest();
 
             try {
@@ -172,7 +198,8 @@ export class JSHarvesterAgent extends BaseAgent {
                     const matches = jsContent.matchAll(pattern);
                     for (const match of matches) {
                         const route = match[1];
-                        if (route && route.startsWith('/') && !results.routes.includes(route)) {
+                        if (route && route.startsWith('/') && !seenRoutes.has(route)) {
+                            seenRoutes.add(route);
                             results.routes.push(route);
 
                             ctx.emitEvidence(createEvidenceEvent({
@@ -231,6 +258,40 @@ export class JSHarvesterAgent extends BaseAgent {
                     }
                 }
 
+                // Optional: LinkFinder/xnLinkFinder enrichment
+                if (linkfinderAvailable || xnLinkfinderAvailable) {
+                    const jsPath = path.join(tmpDir, `${this.slugify(jsUrl)}.js`);
+                    try {
+                        await fs.writeFile(jsPath, jsContent);
+                    } catch {}
+
+                    if (linkfinderAvailable) {
+                        await this.runLinkFinder(ctx, {
+                            target,
+                            jsUrl,
+                            jsPath,
+                            toolName: 'linkfinder',
+                            toolConfig,
+                            seenEndpoints,
+                            seenRoutes,
+                            results,
+                        });
+                    }
+
+                    if (xnLinkfinderAvailable) {
+                        await this.runLinkFinder(ctx, {
+                            target,
+                            jsUrl,
+                            jsPath,
+                            toolName: 'xnlinkfinder',
+                            toolConfig,
+                            seenEndpoints,
+                            seenRoutes,
+                            results,
+                        });
+                    }
+                }
+
             } catch (err) {
                 // Emit error but continue
                 ctx.emitEvidence(createEvidenceEvent({
@@ -243,6 +304,138 @@ export class JSHarvesterAgent extends BaseAgent {
         }
 
         return results;
+    }
+
+    async resolveJsFiles(ctx, target, jsFiles, useSubjs, toolConfig) {
+        const discovered = [];
+        const seen = new Set();
+
+        const add = (url) => {
+            if (!url) return;
+            if (seen.has(url)) return;
+            seen.add(url);
+            discovered.push(url);
+        };
+
+        for (const entry of jsFiles || []) {
+            add(entry);
+        }
+
+        const evidenceJs = this.collectJsFromEvidence(ctx);
+        for (const entry of evidenceJs) {
+            add(entry);
+        }
+
+        if (useSubjs && await isToolAvailable('subjs')) {
+            ctx.recordToolInvocation();
+            const { fs, path } = await import('zx');
+            const tmpFile = path.join(process.cwd(), `subjs-${Date.now()}.txt`);
+            await fs.writeFile(tmpFile, `${target}\n`);
+            const subjsOptions = getToolRunOptions('subjs', toolConfig);
+            const cmds = [
+                `subjs -u ${target}`,
+                `subjs -i "${tmpFile}"`,
+            ];
+            let result = null;
+            for (const cmd of cmds) {
+                const attempt = await runToolWithRetry(cmd, {
+                    ...subjsOptions,
+                    context: ctx,
+                });
+                if (attempt.success) {
+                    result = attempt;
+                    break;
+                }
+                result = attempt;
+            }
+
+            if (result && result.success) {
+                const lines = String(result.stdout || '').split('\n').map(l => l.trim()).filter(Boolean);
+                for (const line of lines) {
+                    if (line.includes('.js')) {
+                        add(line);
+                    }
+                }
+            } else if (result) {
+                ctx.emitEvidence(createEvidenceEvent({
+                    source: 'JSHarvesterAgent',
+                    event_type: result.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                    target,
+                    payload: { tool: 'subjs', error: result.error },
+                }));
+            }
+        }
+
+        return discovered;
+    }
+
+    collectJsFromEvidence(ctx) {
+        const events = ctx.evidenceGraph.getEventsByType(EVENT_TYPES.ENDPOINT_DISCOVERED) || [];
+        const jsFiles = [];
+        for (const event of events) {
+            const url = event.payload?.url || event.payload?.endpoint;
+            if (typeof url === 'string' && url.includes('.js')) {
+                jsFiles.push(url);
+            }
+        }
+        return jsFiles;
+    }
+
+    async runLinkFinder(ctx, { target, jsUrl, jsPath, toolName, toolConfig, seenEndpoints, seenRoutes, results }) {
+        ctx.recordToolInvocation();
+        const toolOptions = getToolRunOptions(toolName, toolConfig);
+        const cmd = `${toolName} -i "${jsPath}" -o cli`;
+        const result = await runToolWithRetry(cmd, {
+            ...toolOptions,
+            context: ctx,
+        });
+
+        if (!result.success) {
+            ctx.emitEvidence(createEvidenceEvent({
+                source: 'JSHarvesterAgent',
+                event_type: result.timedOut ? EVENT_TYPES.TOOL_TIMEOUT : EVENT_TYPES.TOOL_ERROR,
+                target,
+                payload: { tool: toolName, error: result.error, file: jsUrl },
+            }));
+            return;
+        }
+
+        const lines = String(result.stdout || '').split('\n').map(l => l.trim()).filter(Boolean);
+        for (const line of lines) {
+            const endpoint = this.extractEndpointFromLine(line, target);
+            if (!endpoint) continue;
+            if (endpoint.startsWith('/') && !seenRoutes.has(endpoint)) {
+                seenRoutes.add(endpoint);
+                results.routes.push(endpoint);
+            }
+            if (!seenEndpoints.has(endpoint)) {
+                seenEndpoints.add(endpoint);
+                results.endpoints.push({ endpoint, method: 'GET', source: jsUrl });
+                ctx.emitEvidence(createEvidenceEvent({
+                    source: toolName,
+                    event_type: EVENT_TYPES.JS_ROUTE_STRING,
+                    target,
+                    payload: {
+                        route: endpoint,
+                        source_file: jsUrl,
+                        tool: toolName,
+                    },
+                }));
+            }
+        }
+    }
+
+    extractEndpointFromLine(line, target) {
+        if (!line) return null;
+        const urlMatch = line.match(/https?:\/\/\S+/);
+        const pathMatch = line.match(/\/[A-Za-z0-9_\-./?=&%:]+/);
+        const candidate = urlMatch ? urlMatch[0] : (pathMatch ? pathMatch[0] : null);
+        if (!candidate) return null;
+        return this.normalizeEndpoint(candidate, target);
+    }
+
+    slugify(value) {
+        return value.replace(/[^a-z0-9]+/gi, '-').slice(0, 60);
     }
 
     async fetchJSContent(url) {

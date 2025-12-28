@@ -7,7 +7,7 @@
 
 import { BaseAgent } from '../base-agent.js';
 import { runToolWithRetry, isToolAvailable, getToolRunOptions } from '../../tools/runners/tool-runner.js';
-import { normalizeKatana, normalizeGau, normalizeGoSpider, normalizeWaybackUrls } from '../../tools/normalizers/evidence-normalizers.js';
+import { normalizeKatana, normalizeGau, normalizeGauplus, normalizeGoSpider, normalizeWaybackUrls, normalizeWaymore } from '../../tools/normalizers/evidence-normalizers.js';
 import { EVENT_TYPES, createEvidenceEvent } from '../../worldmodel/evidence-graph.js';
 
 export class CrawlerAgent extends BaseAgent {
@@ -180,6 +180,37 @@ export class CrawlerAgent extends BaseAgent {
                 }
             }
 
+            const gauplusAvailable = await isToolAvailable('gauplus');
+            if (gauplusAvailable) {
+                ctx.recordToolInvocation();
+
+                const gauplusCmd = `gauplus -subs ${hostname}`;
+                const gauplusOptions = getToolRunOptions('gauplus', inputs.toolConfig);
+                const gauplusResult = await runToolWithRetry(gauplusCmd, {
+                    ...gauplusOptions,
+                    context: ctx,
+                });
+
+                if (gauplusResult.success) {
+                    const events = normalizeGauplus(gauplusResult.stdout, target);
+                    results.sources.push('gauplus');
+
+                    for (const event of events) {
+                        const path = event.payload.path;
+
+                        if (!seenPaths.has(path)) {
+                            seenPaths.add(path);
+                            ctx.emitEvidence(event);
+                            results.endpoints.push(event.payload);
+
+                            if (path.endsWith('.js')) {
+                                results.js_files.push(event.payload.url);
+                            }
+                        }
+                    }
+                }
+            }
+
             const waybackAvailable = await isToolAvailable('waybackurls');
             if (waybackAvailable) {
                 ctx.recordToolInvocation();
@@ -194,6 +225,48 @@ export class CrawlerAgent extends BaseAgent {
                 if (waybackResult.success) {
                     const events = normalizeWaybackUrls(waybackResult.stdout, target);
                     results.sources.push('waybackurls');
+
+                    for (const event of events) {
+                        const path = event.payload.path;
+
+                        if (!seenPaths.has(path)) {
+                            seenPaths.add(path);
+                            ctx.emitEvidence(event);
+                            results.endpoints.push(event.payload);
+
+                            if (path.endsWith('.js')) {
+                                results.js_files.push(event.payload.url);
+                            }
+                        }
+                    }
+                }
+            }
+
+            const waymoreAvailable = await isToolAvailable('waymore');
+            if (waymoreAvailable) {
+                ctx.recordToolInvocation();
+
+                const waymoreOptions = getToolRunOptions('waymore', inputs.toolConfig);
+                const waymoreCmds = [
+                    `waymore -i ${hostname} -mode U`,
+                    `waymore -i ${hostname}`,
+                ];
+                let waymoreResult = null;
+                for (const cmd of waymoreCmds) {
+                    const result = await runToolWithRetry(cmd, {
+                        ...waymoreOptions,
+                        context: ctx,
+                    });
+                    if (result.success) {
+                        waymoreResult = result;
+                        break;
+                    }
+                    waymoreResult = result;
+                }
+
+                if (waymoreResult && waymoreResult.success) {
+                    const events = normalizeWaymore(waymoreResult.stdout, target);
+                    results.sources.push('waymore');
 
                     for (const event of events) {
                         const path = event.payload.path;
