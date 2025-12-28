@@ -88,15 +88,15 @@ These tools are used for deeper file/endpoint discovery on Kali. All are optiona
 
 ### Historical/JS Discovery
 - **waymore** — `pipx install waymore`
-- **linkfinder** — `pipx install linkfinder`
+- **linkfinder** — `pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git`
 - **xnlinkfinder** — `pipx install xnlinkfinder`
 
 ### Parameter Discovery
 - **arjun** — `pipx install arjun`
-- **paramspider** — `pipx install paramspider`
+- **paramspider** — `pipx install git+https://github.com/devanshbatham/ParamSpider.git`
 
 ### Subdomain Permutations
-- **altdns** — `pipx install altdns`
+- **altdns** — `pipx install git+https://github.com/infosec-au/altdns.git`
 
 ## Environment Resolution
 The `shannon` CLI attempts to resolve these tools from your environment.

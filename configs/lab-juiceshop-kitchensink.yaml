@@ -8,7 +8,7 @@
 #     --config configs/lab-juiceshop-kitchensink.yaml \
 #     -o ./lab-results-juice-kitchensink
 
-uthentication:
+authentication:
   login_type: form  # Options: 'form' or 'sso'
   login_url: "http://192.168.1.130:3000/#/login"
   credentials:

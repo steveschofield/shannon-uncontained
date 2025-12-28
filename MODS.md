@@ -4,6 +4,34 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## fix(setup): Correct pipx install sources for non-PyPI tools (2025-12-27)
+
+### Overview
+Updated install guidance and setup automation to use Git-based pipx installs for LinkFinder, ParamSpider, and altdns, since those tools are not published on PyPI.
+
+### Modified Files
+- `setup.sh` — Use Git-based pipx installs for linkfinder/paramspider/altdns.
+- `src/local-source-generator/v2/tools/preflight.js` — Updated install hints to point to Git sources for non-PyPI tools.
+- `DEPENDENCIES.md` — Updated pipx commands for linkfinder/paramspider/altdns.
+- `README.md` — Updated Python tools quick install block with Git-based installs.
+
+### Rationale
+Avoid pipx failures on Kali/Linux by pointing users to the upstream Git repositories for tools not available on PyPI.
+
+## fix(setup): Handle LinkFinder pipx installs without console scripts (2025-12-27)
+
+### Overview
+Adjusted the Kali setup flow and install hints to account for LinkFinder not shipping a console script, including a pipx `--include-deps` install and a shim generator when needed.
+
+### Modified Files
+- `setup.sh` — Install LinkFinder with `--include-deps` and create a `linkfinder` shim if missing.
+- `src/local-source-generator/v2/tools/preflight.js` — Updated LinkFinder install hint to use `--include-deps`.
+- `DEPENDENCIES.md` — Updated LinkFinder pipx command with `--include-deps`.
+- `README.md` — Updated Python tools quick install block for LinkFinder.
+
+### Rationale
+Ensure Shannon can resolve `linkfinder` on PATH even when pipx installs a package without console entry points.
+
 ## feat(recon): Integrate Kali discovery tools (2025-12-27)
 
 ### Overview

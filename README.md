@@ -740,8 +740,11 @@ brew install pipx && pipx ensurepath
 python3 -m pip install --user pipx && pipx ensurepath
 
 # Install Python-based tools
-tools=(sslyze wafw00f trufflehog xsstrike commix waymore linkfinder xnlinkfinder arjun paramspider altdns dirsearch)
+tools=(sslyze wafw00f trufflehog xsstrike commix waymore xnlinkfinder arjun dirsearch)
 for t in "${tools[@]}"; do pipx install "$t"; done
+pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git
+pipx install git+https://github.com/devanshbatham/ParamSpider.git
+pipx install git+https://github.com/infosec-au/altdns.git
 
 # sqlmap is best via package manager
 # macOS: brew install sqlmap

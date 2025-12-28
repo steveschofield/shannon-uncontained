@@ -4,10 +4,10 @@
   --debug-tools \
   --enable-exploitation \
   --export-review-html
+  --export-proxy
 
 ~/code/shannon-uncontained/scripts
 ./ start-msfrpcd.sh
-using llama model
 export LSG_ALLOW_PRIVATE=1
 export LSG_LOG_LLM_REQUESTS=1
 export LSG_DEBUG_SAVE_OUTPUT=1

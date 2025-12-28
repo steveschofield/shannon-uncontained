@@ -150,9 +150,9 @@ const TOOL_REGISTRY = {
         required: false,
         category: 'recon',
         install: {
-            kali: 'pipx install altdns',
-            ubuntu: 'pipx install altdns',
-            pip: 'pip install altdns'
+            kali: 'pipx install git+https://github.com/infosec-au/altdns.git',
+            ubuntu: 'pipx install git+https://github.com/infosec-au/altdns.git',
+            pip: 'pip install git+https://github.com/infosec-au/altdns.git'
         }
     },
     linkfinder: {
@@ -160,9 +160,9 @@ const TOOL_REGISTRY = {
         required: false,
         category: 'recon',
         install: {
-            kali: 'pipx install linkfinder',
-            ubuntu: 'pipx install linkfinder',
-            pip: 'pip install linkfinder'
+            kali: 'pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git',
+            ubuntu: 'pipx install --include-deps git+https://github.com/GerbenJavado/LinkFinder.git',
+            pip: 'pip install git+https://github.com/GerbenJavado/LinkFinder.git'
         }
     },
     xnlinkfinder: {
@@ -265,9 +265,9 @@ const TOOL_REGISTRY = {
         required: false,
         category: 'discovery',
         install: {
-            kali: 'pipx install paramspider',
-            ubuntu: 'pipx install paramspider',
-            pip: 'pip install paramspider'
+            kali: 'pipx install git+https://github.com/devanshbatham/ParamSpider.git',
+            ubuntu: 'pipx install git+https://github.com/devanshbatham/ParamSpider.git',
+            pip: 'pip install git+https://github.com/devanshbatham/ParamSpider.git'
         }
     },
 

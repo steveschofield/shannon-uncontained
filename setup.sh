@@ -172,8 +172,48 @@ if [ "${ID:-}" = "kali" ]; then
         PY_TOOLS=("waymore" "linkfinder" "xnlinkfinder" "arjun" "paramspider" "altdns")
         for tool in "${PY_TOOLS[@]}"; do
             if ! command -v $tool &> /dev/null; then
+                install_cmd="$tool"
+                install_args=()
+                case "$tool" in
+                    linkfinder)
+                        install_cmd="git+https://github.com/GerbenJavado/LinkFinder.git"
+                        install_args=(--include-deps)
+                        ;;
+                    paramspider)
+                        install_cmd="git+https://github.com/devanshbatham/ParamSpider.git"
+                        ;;
+                    altdns)
+                        install_cmd="git+https://github.com/infosec-au/altdns.git"
+                        ;;
+                esac
                 echo "Installing $tool (pipx)..."
-                pipx install $tool || echo "⚠️  Failed to install $tool via pipx"
+                pipx install "${install_args[@]}" "$install_cmd" || echo "⚠️  Failed to install $tool via pipx"
+                if [ "$tool" = "linkfinder" ] && ! command -v linkfinder &> /dev/null; then
+                    linkfinder_venv="$(python3 - <<'PY'
+import json
+import subprocess
+
+try:
+    data = json.loads(subprocess.check_output(["pipx", "list", "--json"], text=True))
+    venvs = data.get("venvs", {})
+    for key in ("linkfinder", "LinkFinder"):
+        venv = venvs.get(key)
+        if venv and venv.get("venv_dir"):
+            print(venv["venv_dir"])
+            break
+except Exception:
+    pass
+PY
+)"
+                    if [ -n "$linkfinder_venv" ] && [ -x "$linkfinder_venv/bin/python" ]; then
+                        mkdir -p "$HOME/.local/bin"
+                        cat > "$HOME/.local/bin/linkfinder" <<EOF
+#!/usr/bin/env bash
+exec "$linkfinder_venv/bin/python" -m linkfinder "\$@"
+EOF
+                        chmod +x "$HOME/.local/bin/linkfinder"
+                    fi
+                fi
             else
                 echo "✅ $tool"
             fi
