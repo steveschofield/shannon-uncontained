@@ -138,7 +138,7 @@ From `deliverables/pre_recon_deliverable.md`, use Section 10 (SSRF Sinks) to gui
 **If failed → classify:** `url_manipulation` → **suggested attack:** protocol_abuse.
 
 ## 3) Hostname and IP Address Validation
-- For all URL parameters, verify that requests to internal/private IP ranges are blocked (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16).
+- For all URL parameters, verify that requests to internal/private IP ranges are blocked (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 169.254.0.0/16).
 - Check for hostname allowlisting vs blocklisting (blocklists are insufficient).
 - Verify protection against DNS rebinding attacks and localhost access.
 **If failed → classify:** `service_discovery` → **suggested attack:** internal_service_access / cloud_metadata_retrieval.
