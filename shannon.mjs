@@ -12,6 +12,8 @@ import { runCommand } from './src/cli/commands/RunCommand.js';
 import { evidenceCommand } from './src/cli/commands/EvidenceCommand.js';
 import { modelCommand } from './src/cli/commands/ModelCommand.js';
 import UnifiedLogger from './src/logging/unified-logger.js';
+import path from 'path';
+import { defaultConsoleLogFilename, startConsoleFileTee } from './src/logging/console-file-tee.js';
 
 dotenv.config();
 
@@ -24,7 +26,34 @@ program
 program
   .option('-q, --quiet', 'Suppress output')
   .option('-v, --verbose', 'Verbose output')
-  .option('--debug', 'Debug mode');
+  .option('--debug', 'Debug mode')
+  .option('--no-console-log', 'Disable writing console output to a timestamped log file')
+  .option('--console-log-file <file>', 'Override console log file path (implies --console-log)');
+
+program.hook('preAction', (thisCommand, actionCommand) => {
+  const rootOpts = thisCommand.opts();
+  const envEnabled = process.env.SHANNON_CONSOLE_LOG;
+
+  if (rootOpts.consoleLog === false) return;
+  if (typeof envEnabled === 'string' && ['0', 'false', 'no', 'off'].includes(envEnabled.toLowerCase())) return;
+
+  const envFile = process.env.SHANNON_CONSOLE_LOG_FILE;
+  const actionOpts = typeof actionCommand?.opts === 'function' ? actionCommand.opts() : {};
+  const inferredDir = actionOpts.workspace || actionOpts.output;
+  const defaultPath = path.join(inferredDir || process.cwd(), defaultConsoleLogFilename());
+  const logFilePath = rootOpts.consoleLogFile || envFile || defaultPath;
+
+  try {
+    const tee = startConsoleFileTee(logFilePath);
+    if (!rootOpts.quiet) {
+      console.log(chalk.gray(`Console log: ${tee.logFilePath}`));
+    }
+  } catch (err) {
+    if (!rootOpts.quiet) {
+      console.error(chalk.yellow(`⚠ Failed to start console log file: ${err.message}`));
+    }
+  }
+});
 
 // RUN COMMAND
 program

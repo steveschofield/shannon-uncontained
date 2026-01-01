@@ -634,8 +634,14 @@ Shannon now records structured traces, events, and metrics during pipeline execu
 - Traces: `<workspace>/deliverables/logs/traces/*.json`
 - Events (NDJSON): `<workspace>/deliverables/logs/events/events.ndjson`
 - Metrics: `<workspace>/deliverables/logs/metrics/`
+- Console output: `<workspace>/console-YYYYMMDD-HHMMSS.log` (or `./console-YYYYMMDD-HHMMSS.log` when no workspace/output is inferred)
 
 Tracing is enabled for `shannon run`, `shannon generate`, and `shannon model synthesize`. Each agent run is wrapped in a trace; a session ID ties related logs together. No flags required.
+
+Console output capture is enabled by default:
+
+- Disable: `--no-console-log` or `SHANNON_CONSOLE_LOG=0`
+- Override path: `--console-log-file <file>` or `SHANNON_CONSOLE_LOG_FILE=<file>`
 
 Recorded span details:
 

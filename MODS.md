@@ -4,6 +4,18 @@ This document tracks significant modifications made to the Shannon codebase.
 
 ---
 
+## feat(cli): Tee console output to timestamped log file (2026-01-01)
+
+### Overview
+Adds a default console tee so all stdout/stderr is also written to a timestamped log file for easier debugging and sharing.
+
+### Modified Files
+- `src/logging/console-file-tee.js` — New utility to tee stdout/stderr to a log file.
+- `shannon.mjs` — Enables console capture by default and adds `--no-console-log` + `--console-log-file`.
+- `README.md` — Documents console capture behavior and controls.
+
+---
+
 ## fix(deploy): Align Docker toolchain with setup.sh (2025-12-28)
 
 ### Overview
